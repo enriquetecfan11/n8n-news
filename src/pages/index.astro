@@ -1,11 +1,11 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
-import { getCollection } from 'astro:content';
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { getCollection } from "astro:content";
 
-const posts = await getCollection('blog');
+const posts = await getCollection("blog");
 ---
 
 <!doctype html>
@@ -15,24 +15,77 @@ const posts = await getCollection('blog');
 	</head>
 	<body>
 		<Header />
+		<div class="tradingview-widget-container">
+			<div class="tradingview-widget-container__widget"></div>
+			<script type="text/javascript">
+				const script = document.createElement("script");
+				script.src =
+					"https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+				script.async = true;
+				script.innerHTML = JSON.stringify({
+					symbols: [
+						{ proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
+						{ proName: "FOREXCOM:NSXUSD", title: "NASDAQ" },
+						{ proName: "FOREXCOM:DJI", title: "Dow Jones" },
+						{ proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
+						{ proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
+						{ proName: "NASDAQ:AAPL", title: "Apple" },
+						{ proName: "NASDAQ:MSFT", title: "Microsoft" },
+						{ proName: "NASDAQ:GOOGL", title: "Google" },
+						{ proName: "NASDAQ:META", title: "Meta" },
+						{ proName: "NASDAQ:NVDA", title: "Nvidia" },
+						{ proName: "NASDAQ:AMZN", title: "Amazon" },
+						{ proName: "NASDAQ:TSLA", title: "Tesla" },
+						{ proName: "NASDAQ:AMD", title: "AMD" },
+						{ proName: "NYSE:BRK.B", title: "Berkshire Hathaway" },
+						{ proName: "OANDA:XAUUSD", title: "Gold" },
+						{ proName: "OANDA:USOIL", title: "Oil" },
+					],
+					showSymbolLogo: true,
+					colorTheme: "light",
+					isTransparent: false,
+					displayMode: "adaptive",
+					locale: "es",
+				});
+				document.currentScript.parentNode.appendChild(script);
+			</script>
+		</div>
 		<main>
+			<h1 class="news-title">
+				Noticias del dia:{" "}
+				{new Date().toLocaleDateString("es-ES", {
+					weekday: "long",
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				})}
+			</h1>
 			<ol class="post-list">
-				{posts.map((post) => (
-				  <li class="post-line">
-					<div class="post-content">
-						<a href={`/blog/${post.id}`} class="post-title">{post.data.title}</a>
-						<span class="post-meta">
-							<time datetime={post.data.pubDate.toISOString()}>
-								{post.data.pubDate.toLocaleDateString('es-ES', {
-									year: 'numeric',
-									month: 'short',
-									day: 'numeric'
-								})}
-							</time>
-						</span>
-					</div>
-				  </li>
-				))}
+				{
+					posts.map((post) => (
+						<li class="post-line">
+							<div class="post-content">
+								<a href={`/blog/${post.id}`} class="post-title">
+									{post.data.title}
+								</a>
+								<span class="post-meta">
+									<time
+										datetime={post.data.pubDate.toISOString()}
+									>
+										{post.data.pubDate.toLocaleDateString(
+											"es-ES",
+											{
+												year: "numeric",
+												month: "short",
+												day: "numeric",
+											},
+										)}
+									</time>
+								</span>
+							</div>
+						</li>
+					))
+				}
 			</ol>
 		</main>
 		<Footer />
@@ -50,6 +103,11 @@ const posts = await getCollection('blog');
 	main {
 		max-width: 85%;
 		margin: 10px auto;
+	}
+	.news-title {
+		font-size: 14pt;
+		font-weight: bold;
+		margin-bottom: 10px;
 	}
 
 	.post-list {
@@ -100,7 +158,7 @@ const posts = await getCollection('blog');
 			max-width: 100%;
 			margin: 10px;
 		}
-		
+
 		.post-line {
 			padding: 4px 0;
 		}
