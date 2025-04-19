@@ -6,9 +6,18 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const posts = (await getCollection('blog')).sort((a, b) => {
+	// Get dates without time
+	const dateA = new Date(a.data.pubDate.getFullYear(), a.data.pubDate.getMonth(), a.data.pubDate.getDate());
+	const dateB = new Date(b.data.pubDate.getFullYear(), b.data.pubDate.getMonth(), b.data.pubDate.getDate());
+	
+	// Compare dates first (newest day first)
+	const dateCompare = dateB.getTime() - dateA.getTime();
+	if (dateCompare !== 0) return dateCompare;
+	
+	// If same date, sort by complete timestamp (newest first)
+	return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+});
 ---
 
 <!doctype html>
@@ -44,7 +53,7 @@ const posts = (await getCollection('blog')).sort(
 			}
 			.title {
 				margin: 0;
-				color: rgb(var(--black));
+				color: #601229;
 				line-height: 1;
 			}
 			.date {

@@ -5,7 +5,18 @@ import Footer from "../components/Footer.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
 
-const posts = await getCollection("blog");
+const posts = (await getCollection("blog")).sort((a, b) => {
+	// Get dates without time
+	const dateA = new Date(a.data.pubDate.getFullYear(), a.data.pubDate.getMonth(), a.data.pubDate.getDate());
+	const dateB = new Date(b.data.pubDate.getFullYear(), b.data.pubDate.getMonth(), b.data.pubDate.getDate());
+	
+	// Compare dates first (newest day first)
+	const dateCompare = dateB.getTime() - dateA.getTime();
+	if (dateCompare !== 0) return dateCompare;
+	
+	// If same date, sort by complete timestamp (newest first)
+	return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+});
 ---
 
 <!doctype html>
@@ -52,7 +63,6 @@ const posts = await getCollection("blog");
 		</div>
 		<main>
 			<div class="container">
-				<h1 class="main-title">Noticias Nundusoft</h1>
 				<ol class="news-list">
 					{
 						posts.map((post) => (
@@ -115,7 +125,7 @@ const posts = await getCollection("blog");
 	.news-link {
 		font-size: 1.25rem;
 		font-weight: 600;
-		color: rgb(var(--black));
+		color: #601229;
 		text-decoration: none;
 		transition: color 0.2s;
 	}
