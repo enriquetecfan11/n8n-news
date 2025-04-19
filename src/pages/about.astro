@@ -1,14 +1,242 @@
 ---
-import Layout from '../layouts/BlogPost.astro';
+import Layout from "../layouts/BlogPost.astro";
 ---
 
 <Layout
 	title="Sobre Nosotros"
-	description="Somos un equipo de desarrolladores web apasionados por crear soluciones innovadoras y de alta calidad."
+	description="Expertos en desarrollo de software para el sector financiero, con amplia experiencia en entidades bancarias, aseguradoras y gestoras de fondos de inversión."
 	pubDate={new Date()}
 >
-	<p>Somos un equipo de desarrolladores web apasionados por crear soluciones innovadoras y de alta calidad.</p>
-	<p>Nundusoft es una empresa de desarrollo de software que se dedica a crear soluciones innovadoras y de alta calidad para nuestros clientes.</p>
-	<p>Nuestro equipo de desarrolladores está formado por profesionales altamente capacitados y con una gran experiencia en el desarrollo de software.</p>
-	<p>Nuestro objetivo es crear soluciones de software que satisfagan las necesidades de nuestros clientes y que les permitan mejorar su eficiencia y productividad.</p>
+	<div class="about-hero">
+		<div class="hero-content">
+			<h1>Impulsamos la innovación financiera</h1>
+			<p class="subtitle">
+				Soluciones tecnológicas avanzadas para el sector financiero
+			</p>
+		</div>
+	</div>
+
+	<section class="about-intro">
+		<h2>¿Quiénes Somos?</h2>
+		<p>
+			En <span class="highlight">Nundusoft</span>, nos especializamos en
+			el desarrollo de soluciones tecnológicas a medida para una amplia
+			variedad de industrias. Tenemos una sólida experiencia en el sector
+			financiero, trabajando con entidades bancarias, aseguradoras y
+			gestoras de fondos de inversión, aunque nuestros servicios no se
+			limitan a este ámbito.
+		</p>
+	</section>
+
+	<section class="mission-section">
+		<h2>Nuestra Misión</h2>
+		<blockquote>
+			<p>
+				Proporcionar herramientas tecnológicas avanzadas que faciliten
+				la toma de decisiones, aumenten la seguridad y promuevan la
+				eficiencia operativa.
+			</p>
+		</blockquote>
+	</section>
+
+	<section class="services-section">
+		<h2>¿Qué Ofrecemos?</h2>
+		<div class="service-cards">
+			<div class="service-card">
+				<div class="card-icon">📊</div>
+				<h3>Consultoría software</h3>
+				<p>
+					Ofrecemos auditoría de procesos, definición estratégica,
+					consultoría de cumplimiento legal, optimización de procesos
+					y mejora de la comunicación con el cliente.
+				</p>
+			</div>
+			<div class="service-card">
+				<div class="card-icon">💻</div>
+				<h3>Desarrollo personalizado</h3>
+				<p>
+					Diseñamos soluciones a medida integrando tecnologías
+					avanzadas como IA y machine learning, siguiendo un proceso
+					de desarrollo ágil y continuo.
+				</p>
+			</div>
+			<div class="service-card">
+				<div class="card-icon">🔧</div>
+				<h3>Soporte y mantenimiento</h3>
+				<p>
+					Proporcionamos soporte continuo 24/7, actualizaciones
+					periódicas y mejoras constantes para garantizar la
+					estabilidad, seguridad y eficiencia del software.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="differentiators-section">
+		<h2>¿Qué nos diferencia?</h2>
+		<div class="differentiators-content">
+			<div class="text-content">
+				<p>
+					Nos diferenciamos por desarrollar software para el sector
+					financiero de forma <span class="highlight">innovadora</span
+					>, con un equipo altamente especializado y comprometido con
+					la excelencia en el servicio.
+				</p>
+				<p>
+					Como parte de <a
+						href="https://cfazuaga.com/"
+						target="_blank"
+						class="corporate-link">Corporación Financiera Azuaga</a
+					>, contamos con el respaldo y la experiencia de un sólido
+					conglomerado financiero.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="join-section">
+		<h2>¿Quieres unirte a nuestro equipo?</h2>
+		<div class="join-content">
+			<p>
+				En Nundu Desarrollos, buscamos constantemente profesionales
+				talentosos y apasionados para fortalecer nuestro equipo. Si
+				deseas unirte a una empresa innovadora y en crecimiento, te
+				invitamos a enviarnos tu currículum.
+			</p>
+			<a
+				href="https://nundusoft.com/sobre-nundu-software/"
+				class="cta-button"
+				target="_blank">Contáctanos</a
+			>
+		</div>
+	</section>
 </Layout>
+
+<style>
+	.about-hero {
+		background-color: var(--accent);
+		border-radius: 8px;
+		padding: 4rem 2rem;
+		text-align: center;
+		margin: 0 0 3rem;
+		color: white;
+	}
+
+	.hero-content h1 {
+		margin-bottom: 1rem;
+		font-size: 2.5rem;
+		font-weight: 700;
+		color: white;
+	}
+
+	.subtitle {
+		font-size: 1.2rem;
+		max-width: 600px;
+		margin: 0 auto;
+		opacity: 0.9;
+	}
+
+	section {
+		margin-bottom: 4rem;
+	}
+
+	.highlight {
+		color: var(--accent);
+		font-weight: 600;
+	}
+
+	.mission-section blockquote {
+		font-size: 1.2rem;
+		margin: 2rem 0;
+		max-width: 800px;
+	}
+
+	.service-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.service-card {
+		background-color: white;
+		border-radius: 8px;
+		padding: 2rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
+	}
+
+	.service-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+	}
+
+	.card-icon {
+		font-size: 2.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.service-card h3 {
+		margin-bottom: 1rem;
+		font-size: 1.3rem;
+	}
+
+	.differentiators-section {
+		padding: 2rem 0;
+	}
+
+	.corporate-link {
+		display: inline-block;
+		font-weight: 600;
+		border-bottom: 2px solid var(--accent);
+	}
+
+	.corporate-link:hover {
+		opacity: 0.8;
+	}
+
+	.join-section {
+		background-color: rgba(var(--gray-light), 0.5);
+		border-radius: 8px;
+		padding: 2.5rem;
+		text-align: center;
+	}
+
+	.join-content {
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.cta-button {
+		display: inline-block;
+		background-color: var(--accent);
+		color: white;
+		padding: 0.8rem 1.8rem;
+		border-radius: 6px;
+		font-weight: 600;
+		margin-top: 1rem;
+		transition: background-color 0.3s ease;
+	}
+
+	.cta-button:hover {
+		background-color: var(--accent-dark);
+		color: white;
+		text-decoration: none;
+	}
+
+	@media (max-width: 768px) {
+		.about-hero {
+			padding: 3rem 1.5rem;
+		}
+
+		.hero-content h1 {
+			font-size: 2rem;
+		}
+
+		.service-cards {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

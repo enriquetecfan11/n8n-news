@@ -9,7 +9,7 @@ const posts = await getCollection("blog");
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
@@ -51,24 +51,16 @@ const posts = await getCollection("blog");
 			</script>
 		</div>
 		<main>
-			<h1 class="news-title">
-				Noticias del dia:{" "}
-				{new Date().toLocaleDateString("es-ES", {
-					weekday: "long",
-					year: "numeric",
-					month: "long",
-					day: "numeric",
-				})}
-			</h1>
-			<ol class="post-list">
-				{
-					posts.map((post) => (
-						<li class="post-line">
-							<div class="post-content">
-								<a href={`/blog/${post.id}`} class="post-title">
+			<div class="container">
+				<h1 class="main-title">Noticias Nundusoft</h1>
+				<ol class="news-list">
+					{
+						posts.map((post) => (
+							<li class="news-item">
+								<a href={`/blog/${post.id}/`} class="news-link">
 									{post.data.title}
 								</a>
-								<span class="post-meta">
+								<div class="news-date">
 									<time
 										datetime={post.data.pubDate.toISOString()}
 									>
@@ -76,91 +68,81 @@ const posts = await getCollection("blog");
 											"es-ES",
 											{
 												year: "numeric",
-												month: "short",
+												month: "long",
 												day: "numeric",
 											},
 										)}
 									</time>
-								</span>
-							</div>
-						</li>
-					))
-				}
-			</ol>
+								</div>
+								{post.data.description && (
+									<p class="news-desc">
+										{post.data.description}
+									</p>
+								)}
+							</li>
+						))
+					}
+				</ol>
+			</div>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	body {
-		font-family: Verdana, Geneva, sans-serif;
-		background-color: #fff;
+	.container {
+		max-width: 700px;
+		margin: 0 auto;
+		padding: 2rem 1rem 4rem;
+	}
+	.main-title {
+		font-size: 2.2rem;
+		font-weight: 700;
+		color: var(--accent);
+		margin-bottom: 2.5rem;
+		text-align: left;
+	}
+	.news-list {
+		list-style: none;
+		padding: 0;
 		margin: 0;
-		padding: 8px 8px 60px 8px;
 	}
-
-	main {
-		max-width: 85%;
-		margin: 10px auto;
+	.news-item {
+		margin-bottom: 2.5rem;
+		border-bottom: 1px solid rgba(var(--gray-light), 1);
+		padding-bottom: 2rem;
 	}
-	.news-title {
-		font-size: 14pt;
-		font-weight: bold;
-		margin-bottom: 10px;
-	}
-
-	.post-list {
-		padding: 0 0 0 2.5em;
-		margin: 0;
-		color: #828282;
-	}
-
-	.post-list li::marker {
-		font-size: 10pt;
-	}
-
-	.post-line {
-		padding: 2px 0;
-		line-height: 1.5;
-	}
-
-	.post-content {
-		display: inline;
-	}
-
-	.post-title {
+	.news-link {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: rgb(var(--black));
 		text-decoration: none;
-		color: #000000;
-		font-size: 10pt;
+		transition: color 0.2s;
 	}
-
-	.post-title:visited {
-		color: #828282;
-	}
-
-	.post-title:hover {
+	.news-link:hover {
+		color: var(--accent);
 		text-decoration: underline;
 	}
-
-	.post-meta {
-		font-size: 8pt;
-		color: #828282;
-		margin-left: 5px;
+	.news-date {
+		font-size: 0.95rem;
+		color: rgb(var(--gray));
+		margin-top: 0.2rem;
+		margin-bottom: 0.7rem;
 	}
-
-	time {
-		color: #828282;
+	.news-desc {
+		font-size: 1rem;
+		color: rgb(var(--gray-dark));
+		margin: 0.5rem 0 0 0;
 	}
-
-	@media (max-width: 750px) {
-		main {
-			max-width: 100%;
-			margin: 10px;
+	@media (max-width: 700px) {
+		.container {
+			padding: 1rem 0.5rem 3rem;
 		}
-
-		.post-line {
-			padding: 4px 0;
+		.main-title {
+			font-size: 1.4rem;
+		}
+		.news-link {
+			font-size: 1.05rem;
 		}
 	}
 </style>

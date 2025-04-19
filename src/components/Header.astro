@@ -1,35 +1,52 @@
 ---
-import HeaderLink from './HeaderLink.astro';
-import { SITE_TITLE } from '../consts';
+import HeaderLink from "./HeaderLink.astro";
+import { SITE_TITLE } from "../consts";
 ---
 
 <header>
-	<nav>
-		<div class="logo-section">
-			<a href="/" class="logo">{SITE_TITLE}</a>
-		</div>
-		<div class="nav-links">
-			<HeaderLink href="/">Inicio</HeaderLink>
-			<span class="separator">|</span>
-			<HeaderLink href="/about">Sobre Nosotros</HeaderLink>
-		</div>
-	</nav>
+	<div class="container">
+		<nav>
+			<div class="logo-section">
+				<a href="/" class="logo">
+					<img
+						src="/nundu_logo_sin_margen.svg"
+						alt="Nundu Logo"
+						class="logo-img"
+					/>
+					<span class="site-name">{SITE_TITLE}</span>
+				</a>
+			</div>
+			<div class="nav-links">
+				<HeaderLink href="/">Inicio</HeaderLink>
+				<HeaderLink href="/about">Sobre Nosotros</HeaderLink>
+			</div>
+		</nav>
+	</div>
 </header>
 
 <style>
 	header {
 		background-color: #ffffff;
-		padding: 20px;
-		margin-bottom: 10px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		padding: 0.75rem 0.5rem;
+	}
+
+	.container {
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1rem;
 	}
 
 	nav {
 		display: flex;
 		align-items: center;
-		gap: 5px;
-		padding: 2px 4px;
-		font-size: 13px;
-		line-height: 12px;
+		justify-content: space-between;
+		height: 70px;
+		gap: 1rem;
 	}
 
 	.logo-section {
@@ -38,35 +55,49 @@ import { SITE_TITLE } from '../consts';
 	}
 
 	.logo {
-		font-weight: bold;
-		color: #000;
+		display: flex;
+		align-items: center;
 		text-decoration: none;
-		margin-right: 10px;
+	}
+
+	.logo-img {
+		height: 40px;
+		width: auto;
+		max-height: 40px;
+		object-fit: contain;
+		margin-right: 12px;
+	}
+
+	.site-name {
+		font-weight: 700;
+		font-size: 1.6rem;
+		color: var(--accent);
+		letter-spacing: -0.3px;
+		white-space: nowrap;
 	}
 
 	.nav-links {
 		display: flex;
 		align-items: center;
-		gap: 5px;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 	}
 
-	.separator {
-		color: #000;
-		margin: 0 2px;
-	}
-
-	@media (max-width: 600px) {
+	@media (max-width: 720px) {
 		nav {
+			height: auto;
+			padding: 1rem 0;
 			flex-direction: column;
 			align-items: flex-start;
-			gap: 8px;
-			padding: 6px;
+			gap: 1rem;
 		}
 
 		.nav-links {
 			width: 100%;
-			justify-content: flex-start;
-			padding: 2px 0;
+			gap: 1.2rem;
+			justify-content: center;
+			text-align: center;
 		}
 	}
 </style>

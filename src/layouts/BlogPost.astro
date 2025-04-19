@@ -1,107 +1,109 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
+import type { CollectionEntry } from "astro:content";
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import FormattedDate from "../components/FormattedDate.astro";
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<"blog">["data"];
 
 const { title, description, pubDate, updatedDate } = Astro.props;
 ---
 
 <html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-  body {
-    background-color: #f5f7fa;
-    margin: 0;
-    font-family: 'Inter', system-ui, sans-serif;
-    color: #333;
-  }
- 
-  main {
-    width: 100%;
-    min-height: calc(100vh - 160px);
-    padding: 5rem 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    background-color: #f7f9fa;
-  }
- 
-  .prose {
-    width: 100%;
-    max-width: 700px;
-    background: #ffffff;
-    padding: 3rem 2.5rem;
-    margin: 0 auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    line-height: 1.85;
-    font-size: 1.05rem;
-  }
- 
-  .title {
-    margin-bottom: 2rem;
-    text-align: center;
-  }
- 
-  .title h1 {
-    margin-bottom: 0.5rem;
-    font-size: 3rem;
-    font-weight: 800;
-    color: #222;
-  }
- 
-  .date {
-    font-size: 0.95rem;
-    color: #888;
-  }
- 
-  .last-updated-on {
-    font-size: 0.85rem;
-    font-style: italic;
-    color: #aaa;
-    margin-top: 0.5rem;
-  }
- 
-  hr {
-    margin: 2.5rem 0;
-    border: none;
-    border-top: 1px solid #e0e0e0;
-  }
- 
-  article {
-    width: 100%;
-  }
-		</style>
-	</head>
+  <head>
+    <BaseHead title={title} description={description} />
+    <style>
+      body {
+        background-color: #f5f7fa;
+        margin: 0;
+        font-family: "Inter", system-ui, sans-serif;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
+      main {
+        flex: 1;
+        padding: 5rem 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        background-color: #f7f9fa;
+      }
+
+      .prose {
+        width: 100%;
+        max-width: 700px;
+        background: #ffffff;
+        padding: 3rem 2.5rem;
+        margin: 0 auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        line-height: 1.85;
+        font-size: 1.05rem;
+      }
+
+      .title {
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .title h1 {
+        margin-bottom: 0.5rem;
+        font-size: 3rem;
+        font-weight: 800;
+        color: #222;
+      }
+
+      .date {
+        font-size: 0.95rem;
+        color: #888;
+      }
+
+      .last-updated-on {
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #aaa;
+        margin-top: 0.5rem;
+      }
+
+      hr {
+        margin: 2.5rem 0;
+        border: none;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      article {
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <Header />
+    <main>
+      <article>
+        <div class="prose">
+          <div class="title">
+            <div class="date">
+              <FormattedDate date={pubDate} />
+              {
+                updatedDate && (
+                  <div class="last-updated-on">
+                    Last updated on <FormattedDate date={updatedDate} />
+                  </div>
+                )
+              }
+            </div>
+            <h1>{title}</h1>
+            <hr />
+          </div>
+          <slot />
+        </div>
+      </article>
+    </main>
+    <Footer />
+  </body>
 </html>

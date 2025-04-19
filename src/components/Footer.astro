@@ -1,29 +1,157 @@
 ---
 const today = new Date();
+import { SITE_TITLE } from "../consts";
 ---
 
 <footer>
-	<a href="https://nundusoft.com">Nundusoft</a> | &copy; {today.getFullYear()}
+	<div class="container">
+		<div class="footer-content">
+			<div class="footer-logo">
+				<a href="/" class="footer-brand">{SITE_TITLE}</a>
+				<p class="tagline">
+					Soluciones tecnológicas avanzadas para el sector financiero
+				</p>
+			</div>
+			<div class="footer-links">
+				<div class="links-group">
+					<h5>Sitio</h5>
+					<ul>
+						<li><a href="/">Inicio</a></li>
+						<li><a href="/about">Sobre Nosotros</a></li>
+					</ul>
+				</div>
+				<div class="links-group">
+					<h5>Contacto</h5>
+					<ul>
+						<li>
+							<a
+								href="https://nundusoft.com/contacto/"
+								target="_blank">Contáctanos</a
+							>
+						</li>
+						<li>
+							<a
+								href="https://es.linkedin.com/company/nundu-desarrollos"
+								target="_blank">LinkedIn</a
+							>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>
+				&copy; {today.getFullYear()}
+				{SITE_TITLE}. Todos los derechos reservados.
+			</p>
+		</div>
+	</div>
 </footer>
 
 <style>
 	footer {
-		position: fixed;
-		bottom: 0;
+		background-color: #f8f9fa;
+		border-top: 1px solid rgba(var(--gray-light), 1);
+		padding: 3rem 0 1.5rem;
 		width: 100%;
-		padding: 15px 0;
-		text-align: center;
-		font-size: 12px;
-		background: #f6f6ef;
-		border-top: 2px solid #ff6600;
+		margin-top: auto;
 	}
 
-	a {
-		color: #828282;
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	.footer-content {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 2rem;
+	}
+
+	.footer-logo {
+		max-width: 400px;
+	}
+
+	.footer-brand {
+		font-weight: 600;
+		font-size: 1.2rem;
+		color: var(--accent);
 		text-decoration: none;
+		letter-spacing: -0.5px;
 	}
 
-	a:hover {
-		text-decoration: underline;
+	.tagline {
+		color: rgb(var(--gray));
+		font-size: 0.9rem;
+		margin-top: 0.5rem;
+		line-height: 1.5;
+	}
+
+	.footer-links {
+		display: flex;
+		gap: 3rem;
+	}
+
+	.links-group h5 {
+		margin: 0 0 1rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgb(var(--black));
+	}
+
+	.links-group ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.links-group ul li {
+		margin-bottom: 0.5rem;
+	}
+
+	.links-group ul li a {
+		color: rgb(var(--gray));
+		text-decoration: none;
+		font-size: 0.9rem;
+		transition: color 0.2s ease;
+	}
+
+	.links-group ul li a:hover {
+		color: var(--accent);
+	}
+
+	.footer-bottom {
+		padding-top: 1.5rem;
+		border-top: 1px solid rgba(var(--gray-light), 1);
+		text-align: center;
+	}
+
+	.footer-bottom p {
+		margin: 0;
+		font-size: 0.85rem;
+		color: rgb(var(--gray));
+	}
+
+	@media (max-width: 768px) {
+		.footer-content {
+			flex-direction: column;
+			gap: 2rem;
+		}
+
+		.footer-logo {
+			max-width: 100%;
+		}
+
+		.footer-links {
+			gap: 2rem;
+		}
+	}
+
+	@media (max-width: 576px) {
+		.footer-links {
+			flex-direction: column;
+			gap: 1.5rem;
+		}
 	}
 </style>
