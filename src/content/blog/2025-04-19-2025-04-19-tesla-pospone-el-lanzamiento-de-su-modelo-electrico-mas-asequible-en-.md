@@ -1,12 +1,10 @@
 ---
 title: "Tesla pospone el lanzamiento de su modelo eléctrico más asequible en Estados Unidos"
-description: "pubDate: 2025-04-19"
+description: "Tesla y el lanzamiento modelo electrico"
 pubDate: "2025-04-19"
 updatedDate: "2025-04-19" # Fecha actual como updatedDate
 link: "https://es.investing.com/news/company-news/tesla-retrasa-el-lanzamiento-de-su-vehiculo-electrico-mas-asequible-en-eeuu-3106051"
 ---
-
-pubDate: 2025-04-19
 
 El fabricante de automóviles eléctricos estadounidense Tesla, liderado por Elon Musk, ha decidido retrasar el lanzamiento de su vehículo eléctrico más asequible en Estados Unidos. Según fuentes cercanas a la empresa, la nueva fecha de lanzamiento se espera que sea en el tercer trimestre de este año.
 
