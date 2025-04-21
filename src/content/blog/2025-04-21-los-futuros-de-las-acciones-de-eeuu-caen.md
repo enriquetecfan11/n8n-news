@@ -1,7 +1,7 @@
 ---
 title: "Los futuros de las acciones de EE.UU. caen tras pérdidas semanales en Wall St; se avecinan resultados de Tesla y Google"
 description: "El mercado de acciones estadounidense experimenta una semana negativa, lo que afecta a los futuros de las acciones; se espera que los resultados de empresas como Tesla y Alphabet, propietaria de Google, ayuden a determinar el rumbo del mercado."
-pubDate: "21 de abril de 2025"
+pubDate: "2025-04-21"
 link: "https://es.investing.com/news/stock-market-news/los-futuros-de-las-acciones-estadounidenses-caen-tras-perdidas-semanales-en-wall-st-expectativa-por-resultados-de-tesla-y-alphabet-3106202"
 ---
 
