@@ -1,0 +1,115 @@
+---
+// Componente para el panel superior con fecha actual y etiqueta del ticker
+const today = new Date();
+
+// Formato personalizado más elegante
+const weekdays = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+];
+const months = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+];
+
+const weekday = weekdays[today.getDay()];
+const day = today.getDate();
+const month = months[today.getMonth()];
+const year = today.getFullYear();
+
+// Formato: "Lunes, 21 abril 2025"
+const formattedDate = `${weekday}, ${day} ${month} ${year}`;
+---
+
+<div class="top-panel">
+    <div class="wrapper">
+        <div class="top-panel-content">
+            <div class="current-date">{formattedDate}</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Panel superior con fecha y ticker */
+    .top-panel {
+        background: #2c3e50; /* Color fijo en lugar de la variable para garantizar que funcione */
+        background: linear-gradient(
+            135deg,
+            #c64221 0%,
+            #2c3e50 100%
+        ); /* Gradiente directo en lugar de usar la variable */
+        color: white;
+        padding: 0.75rem 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .top-panel-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .current-date {
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .ticker-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        background-color: rgba(255, 255, 255, 0.15);
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+    }
+
+    .ticker-label .dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--accent);
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 rgba(230, 57, 70, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(230, 57, 70, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(230, 57, 70, 0);
+        }
+    }
+
+    .wrapper {
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+</style>

@@ -2,157 +2,119 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import StockTicker from "../components/finance/StockTicker.astro";
+import TopPanel from "../components/news/TopPanel.astro";
+import NewsList from "../components/news/NewsList.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
 
+// Obtener las noticias ordenadas por fecha (las más recientes primero)
 const posts = (await getCollection("blog")).sort((a, b) => {
 	// Get dates without time
-	const dateA = new Date(a.data.pubDate.getFullYear(), a.data.pubDate.getMonth(), a.data.pubDate.getDate());
-	const dateB = new Date(b.data.pubDate.getFullYear(), b.data.pubDate.getMonth(), b.data.pubDate.getDate());
-	
+	const dateA = new Date(
+		a.data.pubDate.getFullYear(),
+		a.data.pubDate.getMonth(),
+		a.data.pubDate.getDate(),
+	);
+	const dateB = new Date(
+		b.data.pubDate.getFullYear(),
+		b.data.pubDate.getMonth(),
+		b.data.pubDate.getDate(),
+	);
+
 	// Compare dates first (newest day first)
 	const dateCompare = dateB.getTime() - dateA.getTime();
 	if (dateCompare !== 0) return dateCompare;
-	
+
 	// If same date, sort by complete timestamp (newest first)
 	return b.data.pubDate.getTime() - a.data.pubDate.getTime();
 });
+
+// Agrupar noticias por fecha
+const groupedPosts = posts.reduce((groups, post) => {
+	const date = post.data.pubDate.toLocaleDateString("es-ES", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+
+	if (!groups[date]) {
+		groups[date] = [];
+	}
+
+	groups[date].push(post);
+	return groups;
+}, {});
 ---
 
 <!doctype html>
 <html lang="es">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Open+Sans:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- Importar las variables CSS globales -->
+		<link rel="stylesheet" href="../styles/news-variables.css" />
 	</head>
 	<body>
 		<Header />
-		<div class="tradingview-widget-container">
-			<div class="tradingview-widget-container__widget"></div>
-			<script type="text/javascript">
-				const script = document.createElement("script");
-				script.src =
-					"https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-				script.async = true;
-				script.innerHTML = JSON.stringify({
-					symbols: [
-						{ proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
-						{ proName: "FOREXCOM:NSXUSD", title: "NASDAQ" },
-						{ proName: "FOREXCOM:DJI", title: "Dow Jones" },
-						{ proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
-						{ proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
-						{ proName: "NASDAQ:AAPL", title: "Apple" },
-						{ proName: "NASDAQ:MSFT", title: "Microsoft" },
-						{ proName: "NASDAQ:GOOGL", title: "Google" },
-						{ proName: "NASDAQ:META", title: "Meta" },
-						{ proName: "NASDAQ:NVDA", title: "Nvidia" },
-						{ proName: "NASDAQ:AMZN", title: "Amazon" },
-						{ proName: "NASDAQ:TSLA", title: "Tesla" },
-						{ proName: "NASDAQ:AMD", title: "AMD" },
-						{ proName: "NYSE:BRK.B", title: "Berkshire Hathaway" },
-						{ proName: "OANDA:XAUUSD", title: "Gold" },
-						{ proName: "OANDA:USOIL", title: "Oil" },
-					],
-					showSymbolLogo: true,
-					colorTheme: "light",
-					isTransparent: false,
-					displayMode: "adaptive",
-					locale: "es",
-				});
-				document.currentScript.parentNode.appendChild(script);
-			</script>
-		</div>
-		<main>
-			<div class="container">
-				<ol class="news-list">
-					{
-						posts.map((post) => (
-							<li class="news-item">
-								<a href={`/blog/${post.id}/`} class="news-link">
-									{post.data.title}
-								</a>
-								<div class="news-date">
-									<time
-										datetime={post.data.pubDate.toISOString()}
-									>
-										{post.data.pubDate.toLocaleDateString(
-											"es-ES",
-											{
-												year: "numeric",
-												month: "long",
-												day: "numeric",
-											},
-										)}
-									</time>
-								</div>
-								{post.data.description && (
-									<p class="news-desc">
-										{post.data.description}
-									</p>
-								)}
-							</li>
-						))
-					}
-				</ol>
+
+		<!-- Panel superior con fecha y ticker -->
+		<TopPanel />
+
+		<!-- Ticker financiero mejorado -->
+		<section class="ticker-section">
+			<div class="wrapper ticker-container">
+				<StockTicker
+					speed={80}
+					refreshInterval={60000}
+					darkMode={false}
+					data-refresh-interval={60000}
+				/>
+			</div>
+		</section>
+
+		<!-- Últimas noticias agrupadas por fecha -->
+		<main class="main-content">
+			<div class="wrapper">
+				<NewsList groupedPosts={groupedPosts} />
 			</div>
 		</main>
+
 		<Footer />
 	</body>
 </html>
 
 <style>
-	.container {
-		max-width: 700px;
-		margin: 0 auto;
-		padding: 2rem 1rem 4rem;
+	/* Ticker financiero */
+	.ticker-section {
+		padding: 0.8rem 0;
+		background-color: var(--background-alt);
+		border-bottom: 1px solid var(--border);
+		box-shadow: var(--shadow-sm);
 	}
-	.main-title {
-		font-size: 2.2rem;
-		font-weight: 700;
-		color: var(--accent);
-		margin-bottom: 2.5rem;
-		text-align: left;
+
+	.ticker-container {
+		max-width: 1280px;
 	}
-	.news-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-	.news-item {
-		margin-bottom: 2.5rem;
-		border-bottom: 1px solid rgba(var(--gray-light), 1);
-		padding-bottom: 2rem;
-	}
-	.news-link {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: #601229;
-		text-decoration: none;
-		transition: color 0.2s;
-	}
-	.news-link:hover {
-		color: var(--accent);
-		text-decoration: underline;
-	}
-	.news-date {
-		font-size: 0.95rem;
-		color: rgb(var(--gray));
-		margin-top: 0.2rem;
-		margin-bottom: 0.7rem;
-	}
-	.news-desc {
-		font-size: 1rem;
-		color: rgb(var(--gray-dark));
-		margin: 0.5rem 0 0 0;
-	}
-	@media (max-width: 700px) {
-		.container {
-			padding: 1rem 0.5rem 3rem;
-		}
-		.main-title {
-			font-size: 1.4rem;
-		}
-		.news-link {
-			font-size: 1.05rem;
-		}
+
+	/* Últimas noticias */
+	.main-content {
+		padding: 3.5rem 0;
+		background-color: var(--background);
+		background-image: radial-gradient(
+				circle at 25% 5%,
+				rgba(52, 152, 219, 0.03) 0%,
+				transparent 25%
+			),
+			radial-gradient(
+				circle at 85% 90%,
+				rgba(231, 76, 60, 0.03) 0%,
+				transparent 25%
+			);
 	}
 </style>

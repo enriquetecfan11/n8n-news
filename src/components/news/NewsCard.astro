@@ -1,0 +1,166 @@
+---
+// Componente para cada tarjeta de noticia individual
+export interface Props {
+    title: string;
+    description?: string;
+    category?: string;
+    url: string;
+}
+
+const { title, description, category, url } = Astro.props;
+---
+
+<article class="news-item">
+    <a href={url} class="news-link">
+        <div class="news-content">
+            <h4 class="news-title">{title}</h4>
+            <div class="news-meta">
+                {category && <span class="news-category">{category}</span>}
+                <span class="news-reading">Leer artículo</span>
+            </div>
+            {description && <p class="news-excerpt">{description}</p>}
+        </div>
+    </a>
+</article>
+
+<style>
+    .news-item {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+        position: relative;
+    }
+
+    .news-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--accent-light);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .news-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .news-item:hover::before {
+        opacity: 1;
+    }
+
+    .news-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        padding: 1.8rem;
+    }
+
+    .news-title {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 0.8rem;
+        line-height: 1.35;
+        transition: color 0.3s ease;
+    }
+
+    .news-item:hover .news-title {
+        color: var(--accent);
+    }
+
+    .news-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-lighter);
+    }
+
+    .news-reading {
+        font-weight: 500;
+        color: var(--accent-secondary);
+        position: relative;
+        padding-right: 20px;
+        transition: color 0.2s ease;
+    }
+
+    .news-reading::after {
+        content: "→";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: transform 0.2s ease;
+    }
+
+    .news-item:hover .news-reading {
+        color: var(--accent);
+    }
+
+    .news-item:hover .news-reading::after {
+        transform: translate(3px, -50%);
+    }
+
+    .news-category {
+        color: white;
+        font-weight: 600;
+        background: var(--accent-secondary);
+        padding: 0.25rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        transition: background-color 0.3s ease;
+    }
+
+    .news-excerpt {
+        color: var(--text-light);
+        margin: 0.7rem 0 0;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        position: relative;
+        padding-left: 1rem;
+        border-left: 3px solid var(--border);
+        transition: border-color 0.3s ease;
+    }
+
+    .news-item:hover .news-excerpt {
+        border-left-color: var(--accent-light);
+    }
+
+    @media (max-width: 768px) {
+        .news-title {
+            font-size: 1.3rem;
+        }
+
+        .news-link {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .news-title {
+            font-size: 1.2rem;
+        }
+
+        .news-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .news-excerpt {
+            font-size: 1rem;
+            padding-left: 0.8rem;
+        }
+    }
+</style>

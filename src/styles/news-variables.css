@@ -1,0 +1,41 @@
+/* Variables - Paleta de colores mejorada */
+:root {
+    --primary: #2c3e50;
+    --primary-light: #34495e;
+    --primary-dark: #1a252f;
+    --accent: #e74c3c;
+    --accent-light: #ff6b6b;
+    --accent-secondary: #3498db;
+    --accent-tertiary: #2ecc71;
+    --text: #2c3e50;
+    --text-light: #5d6d7e;
+    --text-lighter: #7f8c8d;
+    --border: #ecf0f1;
+    --background: #fff;
+    --background-alt: #f9f9f9;
+    --background-dark: #2c3e50;
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+    --gradient-primary: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    --gradient-accent: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    --font-heading: "Playfair Display", Georgia, serif;
+    --font-body: "Open Sans", system-ui, -apple-system, sans-serif;
+}
+
+/* Estilos globales básicos */
+body {
+    font-family: var(--font-body);
+    background-color: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}

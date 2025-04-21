@@ -1,0 +1,115 @@
+---
+// Componente para mostrar la lista de noticias agrupadas por fecha
+import NewsCard from "./NewsCard.astro";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+    groupedPosts: Record<string, CollectionEntry<"blog">[]>;
+}
+
+const { groupedPosts } = Astro.props;
+---
+
+<div class="news-column">
+    <div class="section-header">
+        <h2 class="section-title">Últimas Noticias</h2>
+        <div class="section-divider"></div>
+    </div>
+
+    {
+        Object.entries(groupedPosts).map(([date, datePosts]) => (
+            <div class="news-date-group">
+                <h3 class="date-heading">{date}</h3>
+                <div class="news-list">
+                    {datePosts.map((post) => (
+                        <NewsCard
+                            title={post.data.title}
+                            description={post.data.description}
+                            category={post.data.category}
+                            url={`/blog/${post.id}/`}
+                        />
+                    ))}
+                </div>
+            </div>
+        ))
+    }
+</div>
+
+<style>
+    /* Secciones generales */
+    .section-header {
+        position: relative;
+        margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+        font-family: var(--font-heading);
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0 0 0.5rem;
+        position: relative;
+        letter-spacing: -0.3px;
+    }
+
+    .section-divider {
+        width: 80px;
+        height: 4px;
+        background: var(--gradient-accent);
+        margin-top: 0.8rem;
+        border-radius: 2px;
+    }
+
+    .news-column {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .news-date-group {
+        margin-bottom: 3rem;
+    }
+
+    .date-heading {
+        font-family: var(--font-heading);
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.8rem;
+        position: relative;
+    }
+
+    .date-heading::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100px;
+        height: 3px;
+        background: var(--accent-secondary);
+        border-radius: 2px;
+    }
+
+    .news-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .date-heading {
+            font-size: 1.4rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .section-title {
+            font-size: 1.6rem;
+        }
+    }
+</style>
