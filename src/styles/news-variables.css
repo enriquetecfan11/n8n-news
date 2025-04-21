@@ -1,12 +1,17 @@
-/* Variables - Paleta de colores mejorada */
+/* Variables - Paleta de colores unificada */
 :root {
     --primary: #2c3e50;
     --primary-light: #34495e;
     --primary-dark: #1a252f;
     --accent: #e74c3c;
+    --accent-dark: #c0392b;
     --accent-light: #ff6b6b;
     --accent-secondary: #3498db;
     --accent-tertiary: #2ecc71;
+    --black: 15, 18, 25;
+    --gray: 96, 115, 159;
+    --gray-light: 240, 242, 245;
+    --gray-dark: 34, 41, 57;
     --text: #2c3e50;
     --text-light: #5d6d7e;
     --text-lighter: #7f8c8d;
@@ -17,10 +22,15 @@
     --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
     --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+    --box-shadow: var(--shadow);
     --gradient-primary: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     --gradient-accent: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    
+    /* Tipografía unificada */
+    --font-fallback: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+    --font-sans: 'Atkinson', var(--font-fallback);
     --font-heading: "Playfair Display", Georgia, serif;
-    --font-body: "Open Sans", system-ui, -apple-system, sans-serif;
+    --font-body: 'Atkinson', var(--font-fallback);
 }
 
 /* Estilos globales básicos */

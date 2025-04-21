@@ -18,7 +18,9 @@ import { SITE_TITLE } from "../consts";
 			</div>
 			<div class="nav-links">
 				<HeaderLink href="/" class="nav-link">Inicio</HeaderLink>
-				<HeaderLink href="/about" class="nav-link">Sobre Nosotros</HeaderLink>
+				<HeaderLink href="/about" class="nav-link"
+					>Sobre Nosotros</HeaderLink
+				>
 			</div>
 		</nav>
 	</div>
@@ -26,13 +28,14 @@ import { SITE_TITLE } from "../consts";
 
 <style>
 	header {
-		background-color: #ffffff;
+		background-color: var(--background);
 		position: sticky;
 		top: 0;
 		z-index: 100;
 		padding: 0.75rem 0.5rem;
+		box-shadow: var(--shadow-sm);
+		font-family: var(--font-body);
 	}
-
 
 	.container {
 		width: 100%;
@@ -70,7 +73,7 @@ import { SITE_TITLE } from "../consts";
 	.site-name {
 		font-weight: 700;
 		font-size: 1.6rem;
-		color: #601229;
+		color: var(--accent);
 		letter-spacing: -0.3px;
 		white-space: nowrap;
 	}
@@ -81,11 +84,17 @@ import { SITE_TITLE } from "../consts";
 		gap: 1.5rem;
 		flex-wrap: wrap;
 		justify-content: flex-end;
-		color: #601229;
+		color: var(--accent);
 	}
 
 	.nav-link {
-		color: #601229;
+		color: var(--text);
+		font-weight: 600;
+		transition: color 0.2s ease;
+	}
+
+	.nav-link:hover {
+		color: var(--accent);
 	}
 
 	@media (max-width: 720px) {
