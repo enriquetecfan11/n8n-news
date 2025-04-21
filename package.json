@@ -6,12 +6,14 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate": "node validate-md.js"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.4",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.3.0",
-    "astro": "^5.7.3"
+    "astro": "^5.7.3",
+    "chalk": "^4.1.2"
   }
 }
