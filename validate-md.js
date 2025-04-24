@@ -90,9 +90,13 @@ async function validateMarkdownFile(filePath) {
         });
 
         // Verificar campos requeridos
+        const missingFields = [];
         for (const field of REQUIRED_FIELDS) {
             if (!frontmatter[field]) {
                 errors.push(`Falta el campo requerido: ${field}`);
+                missingFields.push(field);
+                // marcar como corregible para generar valores por defecto
+                fixable = true;
             }
         }
 
@@ -131,6 +135,28 @@ async function validateMarkdownFile(filePath) {
         if (AUTO_FIX && fixable) {
             let fixedContent = content;
             let offset = 3; // Iniciar después de la primera línea de frontmatter "---"
+
+            // Si no tiene frontmatter, crear uno completo con valores por defecto
+            if (!content.startsWith('---')) {
+                const defaultFM = `---\n${REQUIRED_FIELDS.map(f => `${f}: "${f === 'pubDate' ? new Date().toISOString() : 'Pendiente'}"`).join('\n')}\n---\n\n`;
+                fixedContent = defaultFM + content;
+                return { isValid: true, errors: [], fixable, fixedContent };
+            }
+            // Si el frontmatter no está cerrado, cerrarlo
+            if (frontmatterEnd === -1) {
+                fixedContent = content + '\n---\n';
+                return { isValid: true, errors: [], fixable, fixedContent };
+            }
+            // Insertar campos faltantes con valores por defecto
+            if (missingFields.length > 0) {
+                let insertion = '';
+                missingFields.forEach(field => {
+                    const defaultVal = field === 'pubDate' ? new Date().toISOString() : 'Pendiente';
+                    insertion += `${field}: "${defaultVal}"\n`;
+                });
+                fixedContent = content.substring(0, frontmatterEnd) + insertion + content.substring(frontmatterEnd);
+                return { isValid: true, errors: [], fixable, fixedContent };
+            }
 
             for (const fix of fixes) {
                 const startOfLine = fixedContent.indexOf(fix.original, offset);
