@@ -15,8 +15,9 @@ const BLOG_DIR = path.join(__dirname, 'src/content/blog');
 // Campos requeridos según el esquema
 const REQUIRED_FIELDS = ['title', 'description', 'pubDate'];
 
-// Bandera para modo de corrección automática
+// Banderas para modo de corrección automática y eliminación de archivos inválidos
 const AUTO_FIX = process.argv.includes('--fix');
+const DELETE_INVALID = process.argv.includes('--delete-invalid');
 
 /**
  * Limpia el valor de un campo eliminando comentarios y espacios en blanco
@@ -190,6 +191,20 @@ async function validateMarkdownFile(filePath) {
 }
 
 /**
+ * Elimina un archivo que no pasó la validación
+ * @param {string} filePath - Ruta completa del archivo a eliminar
+ */
+async function deleteInvalidFile(filePath) {
+    try {
+        await fs.promises.unlink(filePath);
+        return true;
+    } catch (error) {
+        console.error(chalk.red(`Error al eliminar el archivo ${path.basename(filePath)}: ${error.message}`));
+        return false;
+    }
+}
+
+/**
  * Función principal que valida todos los archivos Markdown
  */
 async function validateAllMarkdownFiles() {
@@ -202,6 +217,7 @@ async function validateAllMarkdownFiles() {
         let validCount = 0;
         let invalidCount = 0;
         let fixedCount = 0;
+        let deletedCount = 0;
         const issues = [];
 
         for (const file of mdFiles) {
@@ -217,12 +233,28 @@ async function validateAllMarkdownFiles() {
                 validCount++;
                 console.log(chalk.green(`✓ ${file}`));
             } else {
-                invalidCount++;
-                console.log(chalk.red(`✗ ${file}`));
-                errors.forEach(error => {
-                    console.log(chalk.red(`  - ${error}`));
-                    issues.push({ file, error });
-                });
+                // Si el archivo no es válido y está activada la bandera de eliminación
+                if (DELETE_INVALID) {
+                    const deleted = await deleteInvalidFile(filePath);
+                    if (deleted) {
+                        deletedCount++;
+                        console.log(chalk.red(`🗑 ${file} (eliminado)`));
+                    } else {
+                        invalidCount++;
+                        console.log(chalk.red(`✗ ${file} (no se pudo eliminar)`));
+                        errors.forEach(error => {
+                            console.log(chalk.red(`  - ${error}`));
+                            issues.push({ file, error });
+                        });
+                    }
+                } else {
+                    invalidCount++;
+                    console.log(chalk.red(`✗ ${file}`));
+                    errors.forEach(error => {
+                        console.log(chalk.red(`  - ${error}`));
+                        issues.push({ file, error });
+                    });
+                }
             }
         }
 
@@ -234,6 +266,10 @@ async function validateAllMarkdownFiles() {
             console.log(chalk.yellow(`Archivos corregidos: ${fixedCount}`));
         }
 
+        if (DELETE_INVALID) {
+            console.log(chalk.red(`Archivos eliminados: ${deletedCount}`));
+        }
+
         if (invalidCount > 0) {
             console.log(chalk.red(`Archivos con problemas: ${invalidCount}`));
             console.log('\n=== Problemas encontrados ===');
@@ -243,13 +279,16 @@ async function validateAllMarkdownFiles() {
 
             if (AUTO_FIX) {
                 console.log(chalk.yellow('\nAlgunos archivos no pudieron ser corregidos automáticamente. Por favor, corrígelos manualmente.'));
-            } else {
+            } else if (!DELETE_INVALID) {
                 console.log(chalk.yellow('\nPuedes intentar corregir automáticamente algunos problemas ejecutando: npm run validate -- --fix'));
+                console.log(chalk.yellow('O eliminar los archivos inválidos ejecutando: npm run validate -- --delete-invalid'));
             }
 
             process.exit(1);
         } else if (fixedCount > 0) {
             console.log(chalk.green('\n¡Todos los archivos han sido corregidos y son válidos!'));
+        } else if (deletedCount > 0) {
+            console.log(chalk.green('\n¡Todos los archivos inválidos han sido eliminados!'));
         } else {
             console.log(chalk.green('\n¡Todos los archivos Markdown son válidos!'));
         }

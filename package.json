@@ -7,7 +7,11 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "validate": "node validate-md.js"
+    "validate": "node validate-md.js",
+    "v": "node validate-md.js",
+    "vfix": "node validate-md.js --fix",
+    "vdel": "node validate-md.js --delete-invalid",
+    "vfixa": "node validate-md.js --fix --delete-invalid"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.4",
