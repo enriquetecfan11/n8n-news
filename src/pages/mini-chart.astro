@@ -1,0 +1,36 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import StockHeatmap from "../components/finance/StockHeatmap.astro";
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <BaseHead
+            title={`Mapa de Calor | ${SITE_TITLE}`}
+            description={SITE_DESCRIPTION}
+        />
+        <style>
+            .main-content {
+                width: 100%;
+                max-width: 1280px;
+                margin: 0 auto;
+                padding: 1em;
+            }
+            .page-title {
+                margin-bottom: 1em;
+            }
+        </style>
+    </head>
+    <body>
+        <Header />
+        <main class="main-content">
+            <h1 class="page-title">Mapa de Calor de Acciones en tiempo real</h1>
+            <StockHeatmap />
+        </main>
+        <Footer />
+    </body>
+</html>
