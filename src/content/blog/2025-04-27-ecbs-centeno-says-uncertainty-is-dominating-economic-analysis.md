@@ -1,7 +1,7 @@
 ---
 title: "La incertidumbre domina el análisis económico, según el miembro del BCE Centeno"
 description: "El miembro del consejo de gobierno del Banco Central Europeo (BCE) Mario Centeno destaca la incertidumbre generada por la política comercial de los EE. UU."
-pubDate: "27 de abril de 2025"
+pubDate: "2025-4-27"
 link: "https://www.bloomberg.com/news/articles/2025-04-27/ecb-s-centeno-says-uncertainty-is-dominating-economic-analysis"
 ---
 

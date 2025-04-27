@@ -1,7 +1,7 @@
 ---
 title: "La guerra comercial golpea a las empresas extranjeras en China con aranceles dobles"
 description: "La tensión comercial entre China y Occidente obliga a muchos fabricantes a pagar aranceles tanto en importaciones como en exportaciones."
-pubDate: "27 de abril de 2025"
+pubDate: "2025-4-27"
 link: "https://www.ft.com/content/04c41f8b-d745-4cb5-a06f-c7e3022bd385"
 ---
 

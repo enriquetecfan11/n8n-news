@@ -1,7 +1,7 @@
 ---
 title: "Prohibición de Nvidia H20: Evaluando el impacto en la IA y desarrollo de software en China"
 description: "El bloqueo de Nvidia H20 en China puede tener consecuencias significativas en el desarrollo de inteligencia artificial y software en el país."
-pubDate: "2023-04-27"
+pubDate: "2025-4-27"
 link: "https://es.investing.com/news/stock-market-news/prohibicion-de-nvidia-h20-evaluando-el-impacto-en-la-ia-y-desarrollo-de-software-en-china-3115746"
 ---
 
