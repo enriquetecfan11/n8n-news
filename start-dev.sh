@@ -11,9 +11,10 @@ echo "📤 Verificando si hay archivos nuevos para subir..."
 if [ -n "$(git status --porcelain)" ]; then
     echo "Hay cambios para subir al repositorio"
     git add .
-    echo "💾 Ingresa un mensaje para el commit:"
-    read commit_message
-    git commit -m "$commit_message"
+    git commit -m "remove invalid markdown files"
+    echo "✅ Cambios añadidos al commit"
+    echo "✅ Commit realizado con éxito"
+    echo "📤 Subiendo cambios al repositorio..."
     git push
     echo "✅ Cambios subidos correctamente"
 else
