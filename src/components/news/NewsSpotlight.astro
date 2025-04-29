@@ -1,0 +1,72 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import NewsCard from './NewsCard.astro'; // Reutilizar NewsCard o crear uno específico
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+}
+
+const { posts } = Astro.props;
+
+const mainPost = posts[0];
+const secondaryPosts = posts.slice(1, 3);
+---
+<div class="spotlight-container">
+	{mainPost && (
+		<div class="spotlight-primary">
+			<!-- Usar una versión grande de NewsCard o un estilo específico -->
+			<NewsCard post={mainPost} isLarge={true} class="spotlight-main-card" />
+		</div>
+	)}
+	{secondaryPosts.length > 0 && (
+		<div class="spotlight-secondary">
+			{secondaryPosts.map(post => (
+				<NewsCard post={post} isLarge={false} class="spotlight-card" />
+			))}
+		</div>
+	)}
+</div>
+
+<style>
+	/* Estilos adaptados de global.css para el spotlight */
+	.spotlight-container {
+		display: grid;
+		grid-template-columns: 2fr 1fr;
+		gap: 2.5rem;
+	}
+
+	.spotlight-primary {
+		/* Estilos para la tarjeta principal si son necesarios */
+	}
+
+	.spotlight-secondary {
+		display: grid;
+		grid-template-rows: 1fr 1fr;
+		gap: 1.8rem;
+	}
+
+	/* Estilos para las tarjetas (pueden heredar de global.css o definirse aquí) */
+	.spotlight-main-card {
+		/* Estilos específicos si NewsCard no los cubre */
+	}
+	.spotlight-card {
+		/* Estilos específicos si NewsCard no los cubre */
+	}
+
+	@media (max-width: 1024px) {
+		.spotlight-container {
+			grid-template-columns: 1fr;
+		}
+		.spotlight-secondary {
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: auto;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.spotlight-secondary {
+			grid-template-columns: 1fr;
+		}
+	}
+
+</style>

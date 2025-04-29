@@ -65,23 +65,3 @@ const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
-
-<!-- Theme initialization script - ejecutado antes de renderizar la página -->
-<script is:inline>
-	// Inmediatamente al cargar, establecer el tema
-	(function () {
-		function getInitialTheme() {
-			const savedTheme = localStorage.getItem("theme");
-			if (savedTheme) return savedTheme;
-
-			// Si no hay tema guardado, usar preferencia del sistema
-			return window.matchMedia("(prefers-color-scheme: dark)").matches
-				? "dark"
-				: "light";
-		}
-
-		// Aplicar tema inmediatamente para evitar parpadeo
-		const initialTheme = getInitialTheme();
-		document.documentElement.setAttribute("data-theme", initialTheme);
-	})();
-</script>

@@ -6,51 +6,53 @@
 
 /* Estilos globales compartidos */
 :root {
-	--accent: #0055A4;
-	--accent-dark: #003b72;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 240, 242, 245;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+	/* Paleta de colores refinada para finanzas */
+	--accent: #0D47A1;
+	/* Azul corporativo más oscuro */
+	--accent-dark: #002171;
+	--accent-light: #5472d3;
+	/* Un azul más claro para acentos secundarios */
+	--black: 18, 25, 33;
+	/* Negro ligeramente más suave */
+	--gray: 108, 117, 125;
+	/* Gris neutro */
+	--gray-light: 233, 236, 239;
+	/* Gris muy claro para fondos/bordes */
+	--gray-dark: 52, 58, 64;
+	/* Gris oscuro para texto o elementos */
+	--gray-gradient: rgba(var(--gray-light), 0.5), #fff;
+	--box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	/* Sombra más sutil */
 
+	/* Tipografía más limpia y consistente */
+	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--font-fallback: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
 	--font-body: 'Open Sans', var(--font-fallback);
-	--font-heading: 'Playfair Display', Georgia, serif;
+	--font-heading: 'Open Sans', var(--font-fallback);
+	/* Usar Open Sans también para encabezados */
 
-	--primary: #14213d;
-	--primary-light: #233863;
-	--primary-dark: #0c1428;
-	--accent-light: #ff4d5c;
-	--text: #333333;
-	--text-light: #666666;
-	--text-lighter: #888888;
-	--border: #e2e8f0;
+	/* Colores primarios y de texto ajustados */
+	--primary: #1a2b47;
+	/* Azul marino oscuro */
+	--primary-light: #2a4a75;
+	--primary-dark: #0f1a2d;
+	--text: #212529;
+	/* Color de texto principal más oscuro */
+	--text-light: #495057;
+	/* Gris para texto secundario */
+	--text-lighter: #6c757d;
+	--border: #dee2e6;
+	/* Borde estándar */
 	--background: #ffffff;
-	--background-alt: #f8fafb;
-	--background-dark: #171923;
+	--background-alt: #f8f9fa;
+	/* Fondo alternativo ligeramente gris */
+	--background-dark: #121821;
+	/* Fondo oscuro refinado */
 
-	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-	--shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Tema oscuro */
-[data-theme='dark'] {
-	--text: #f0f0f0;
-	--text-light: #cccccc;
-	--text-lighter: #999999;
-	--border: #333943;
-	--background: #121212;
-	--background-alt: #1e1e1e;
-	--background-dark: #000000;
-	--accent-light: #ff6b6b;
-	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-	--shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
-	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
-	--gray-gradient: rgba(30, 30, 30, 0.5), #121212;
+	/* Sombras refinadas */
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--shadow: 0 3px 6px rgba(0, 0, 0, 0.07);
+	--shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 @font-face {
@@ -77,23 +79,27 @@ body {
 }
 
 body {
-	font-family: var(--font-sans);
+	font-family: var(--font-body);
+	/* Asegurar uso de font-body */
 	text-align: left;
-	background-color: var(--background);
 	color: var(--text);
+	background-color: var(--background);
 	font-size: 16px;
-	line-height: 1.6;
+	/* Mantener tamaño base */
+	line-height: 1.7;
+	/* Ligeramente más espaciado */
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
-	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 main {
-	width: 900px;
+	width: 1100px;
+	/* Aumentar ancho máximo para aprovechar espacio */
 	max-width: calc(100% - 2em);
 	margin: 0 auto;
-	padding: 2em 1em 4em;
+	padding: 2.5em 1em 4em;
+	/* Ajustar padding */
 	flex: 1;
 }
 
@@ -103,57 +109,81 @@ h3,
 h4,
 h5,
 h6 {
-	margin: 0 0 0.7rem 0;
-	color: var(--text);
-	line-height: 1.3;
-	font-weight: 600;
-	letter-spacing: -0.02em;
+	margin: 0 0 0.8rem 0;
+	/* Ajustar margen inferior */
+	color: var(--primary-dark);
+	/* Usar un color oscuro consistente */
+	line-height: 1.4;
+	/* Ajustar interlineado */
+	font-weight: 700;
+	/* Hacer encabezados más bold por defecto */
+	font-family: var(--font-heading);
+	/* Asegurar uso de font-heading */
+	letter-spacing: -0.01em;
+	/* Ajuste sutil */
 }
 
 h1 {
-	font-size: 2.5em;
-	margin-bottom: 1rem;
+	font-size: 2.8em;
+	/* Ajustar tamaños */
+	margin-bottom: 1.2rem;
 }
 
 h2 {
-	font-size: 1.8em;
-	margin-top: 1.8em;
+	font-size: 2em;
+	margin-top: 2em;
 }
 
 h3 {
-	font-size: 1.4em;
+	font-size: 1.6em;
+	font-weight: 600;
+	/* Ligeramente menos bold */
 }
 
 h4 {
-	font-size: 1.2em;
+	font-size: 1.3em;
+	font-weight: 600;
 }
 
 h5 {
-	font-size: 1em;
+	font-size: 1.1em;
+	font-weight: 600;
 }
 
 strong,
 b {
-	font-weight: 600;
+	font-weight: 700;
+	/* Asegurar bold */
+	color: var(--text);
+	/* Color ligeramente más oscuro que el texto normal */
 }
 
 a {
 	color: var(--accent);
 	text-decoration: none;
-	transition: color 0.2s ease;
+	/* Quitar subrayado por defecto */
+	transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 a:hover {
 	color: var(--accent-dark);
+	text-decoration: underline;
+	/* Subrayar en hover */
 }
 
 p {
-	margin-bottom: 1.2em;
-	line-height: 1.8;
+	margin-bottom: 1.3em;
+	/* Ajustar margen */
+	line-height: 1.75;
+	/* Mejorar legibilidad */
+	color: var(--text-light);
+	/* Usar color de texto secundario para párrafos */
 }
 
 .prose p {
-	margin-bottom: 1.5em;
+	margin-bottom: 1.6em;
+	color: var(--text);
+	/* Párrafos dentro de .prose con color principal */
 }
 
 textarea {
@@ -179,32 +209,34 @@ table {
 
 table td,
 table th {
-	padding: 0.75em;
-	border-bottom: 1px solid rgba(var(--gray-light), 1);
+	padding: 0.8em 1em;
+	/* Ajustar padding */
+	border-bottom: 1px solid var(--border);
+	/* Usar variable de borde */
 }
 
 table th {
-	background-color: rgba(var(--gray-light), 0.5);
+	background-color: var(--background-alt);
+	/* Usar fondo alternativo */
 	font-weight: 600;
-	text-align: left;
-}
-
-img {
-	max-width: 100%;
-	height: auto;
-	border-radius: 6px;
-	display: block;
-	margin: 1.5em 0;
-	box-shadow: var(--box-shadow);
+	color: var(--text);
+	font-size: 0.9em;
 }
 
 code {
-	padding: 2px 5px;
-	background-color: var(--background-alt);
-	border-radius: 3px;
+	padding: 3px 6px;
+	/* Ajustar padding */
+	background-color: var(--gray-light);
+	/* Fondo gris claro */
+	border-radius: 4px;
 	font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 	font-size: 0.9em;
-	color: var(--text);
+	color: var(--primary-dark);
+	/* Color oscuro */
+	;
+	/* <-- Added semicolon */
+	border: 1px solid var(--border);
+	/* Borde sutil */
 }
 
 pre {
@@ -287,9 +319,11 @@ li {
 
 .wrapper {
 	width: 100%;
-	max-width: 1280px;
+	max-width: 1140px;
+	/* Ajustar max-width del wrapper */
 	margin: 0 auto;
-	padding: 0 1.5rem;
+	padding: 0 1rem;
+	/* Asegurar padding lateral */
 }
 
 /* Layout de dos columnas */
@@ -398,13 +432,16 @@ li {
 
 .spotlight-excerpt {
 	color: var(--text-light);
-	margin: 0 0 1rem;
+	margin: 0 0 1.2rem;
+	/* Más margen inferior */
 	display: -webkit-box;
 	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
+	line-clamp: 3;
+	/* <-- Added standard property */
 	font-size: 1rem;
-	line-height: 1.5;
+	line-height: 1.6;
 	flex-grow: 1;
 }
 

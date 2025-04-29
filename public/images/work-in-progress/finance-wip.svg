@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <style>
+    .text { font-family: Arial, sans-serif; fill: #333; }
+    .icon { fill: #4B9CD3; }
+    .gear { animation: rotate 8s linear infinite; }
+    @keyframes rotate {
+      from { transform: rotate(0deg); transform-origin: 200px 150px; }
+      to { transform: rotate(360deg); transform-origin: 200px 150px; }
+    }
+  </style>
+  <rect width="400" height="300" fill="#f9f9f9"/>
+  <g class="gear" transform="translate(160, 100)">
+    <circle cx="40" cy="50" r="35" class="icon" opacity="0.8"/>
+    <path d="M40,10 L44,25 L60,25 L47,35 L52,50 L40,40 L28,50 L33,35 L20,25 L36,25 Z" class="icon"/>
+  </g>
+  <path d="M200,200 L220,200 L210,180 Z M180,200 L200,200 L190,180 Z" fill="#4B9CD3"/>
+  <rect x="160" y="200" width="80" height="40" rx="5" fill="#4B9CD3"/>
+  <text x="200" y="250" text-anchor="middle" class="text" font-size="12">Proximamente</text>
+</svg>

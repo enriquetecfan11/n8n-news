@@ -1,7 +1,7 @@
 ---
 import HeaderLink from "./HeaderLink.astro";
 import { SITE_TITLE } from "../consts";
-import ThemeToggle from "./ThemeToggle.astro";
+// import ThemeToggle from "./ThemeToggle.astro"; // Comentado o eliminado si no se usa
 ---
 
 <header>
@@ -39,18 +39,19 @@ import ThemeToggle from "./ThemeToggle.astro";
 
 <style>
 	header {
-		background-color: var(--background);
+		background-color: var(--background); /* Usar variable */
 		position: sticky;
 		top: 0;
 		z-index: 100;
-		padding: 0.75rem 0.5rem;
-		box-shadow: var(--shadow-sm);
+		padding: 0.5rem 0; /* Reducir padding vertical */
+		box-shadow: var(--shadow-sm); /* Usar sombra refinada */
+		border-bottom: 1px solid var(--border); /* Añadir borde inferior sutil */
 		font-family: var(--font-body);
 	}
 
 	.container {
 		width: 100%;
-		max-width: 1200px;
+		max-width: 1200px; /* Coherente con otros contenedores */
 		margin: 0 auto;
 		padding: 0 1rem;
 	}
@@ -59,59 +60,79 @@ import ThemeToggle from "./ThemeToggle.astro";
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		height: 70px;
-		gap: 1rem;
+		min-height: 65px; /* Altura mínima */
+		gap: 1.5rem; /* Ajustar gap */
 	}
 
 	.logo-section {
-		display: flex;
-		align-items: center;
+		/* ... existing styles ... */
 	}
 
 	.logo {
-		display: flex;
-		align-items: center;
-		text-decoration: none;
+		/* ... existing styles ... */
 	}
 
 	.logo-img {
-		height: 40px;
+		height: 38px; /* Ajustar tamaño logo */
 		width: auto;
-		max-height: 40px;
-		margin-right: 12px;
+		max-height: 38px;
+		margin-right: 10px; /* Ajustar margen */
+		/* Quitar box-shadow y border si los tuviera */
+		box-shadow: none;
+		border: none;
+		border-radius: 0;
+		margin-top: 0;
+		margin-bottom: 0;
 	}
 
 	.site-name {
 		font-weight: 700;
-		font-size: 1.6rem;
-		color: var(--accent);
-		letter-spacing: -0.3px;
+		font-size: 1.5rem; /* Ajustar tamaño */
+		color: var(--primary-dark); /* Usar color primario oscuro */
+		letter-spacing: -0.2px;
 		white-space: nowrap;
 	}
 
 	.nav-links {
 		display: flex;
 		align-items: center;
-		gap: 1.5rem;
+		gap: 1.8rem; /* Aumentar separación entre links */
 		flex-wrap: wrap;
 		justify-content: flex-end;
-		color: var(--accent);
 	}
 
-	.nav-link {
-		color: var(--text);
+	/* Estilo específico para HeaderLink aplicado externamente */
+	:global(.nav-link) {
+		/* Usar :global para aplicar a componente hijo */
+		color: var(--text-light); /* Color de texto secundario */
 		font-weight: 600;
-		transition: color 0.2s ease;
+		font-size: 0.95rem; /* Ligeramente más grande */
+		text-decoration: none; /* Asegurar que no hay subrayado */
+		padding: 0.5rem 0; /* Padding vertical para área de click */
+		border-bottom: 2px solid transparent; /* Espacio para borde en hover/active */
+		transition:
+			color 0.2s ease,
+			border-color 0.2s ease;
 	}
 
-	.nav-link:hover {
+	:global(.nav-link:hover) {
+		color: var(--accent); /* Color de acento en hover */
+		border-bottom-color: var(--accent); /* Mostrar borde en hover */
+		text-decoration: none; /* No subrayar texto */
+	}
+
+	/* Estilo para el enlace activo (requiere JS o lógica Astro para añadir clase 'active') */
+	:global(.nav-link.active) {
 		color: var(--accent);
+		font-weight: 700;
+		border-bottom-color: var(--accent);
 	}
 
-	@media (max-width: 720px) {
+	@media (max-width: 860px) {
+		/* Ajustar breakpoint */
 		nav {
-			height: auto;
-			padding: 1rem 0;
+			min-height: auto; /* Altura automática */
+			padding: 0.8rem 0;
 			flex-direction: column;
 			align-items: flex-start;
 			gap: 1rem;
@@ -119,9 +140,15 @@ import ThemeToggle from "./ThemeToggle.astro";
 
 		.nav-links {
 			width: 100%;
-			gap: 1.2rem;
-			justify-content: center;
-			text-align: center;
+			gap: 1rem; /* Reducir gap */
+			justify-content: flex-start; /* Alinear a la izquierda */
+			padding-top: 0.5rem;
 		}
+		:global(.nav-link) {
+			padding: 0.4rem 0;
+		}
+	}
+	@media (max-width: 720px) {
+		/* Mantener ajustes previos si son necesarios */
 	}
 </style>

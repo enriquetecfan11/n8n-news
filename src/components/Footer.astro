@@ -6,18 +6,47 @@ import { SITE_TITLE } from "../consts";
 <footer>
 	<div class="container">
 		<div class="footer-content">
-			<div class="footer-logo">
-				<a href="/" class="footer-brand">{SITE_TITLE}</a>
+			<div class="footer-info">
+				<a href="/" class="footer-brand">
+					<img
+						src="/nundu_logo_sin_margen.svg"
+						alt="{SITE_TITLE} Logo"
+						class="footer-logo-img"
+					/>
+					{SITE_TITLE}
+				</a>
 				<p class="tagline">
-					Soluciones tecnológicas avanzadas para el sector financiero
+					Noticias y análisis del sector financiero.
+				</p>
+				<p class="copyright-mobile">
+					&copy; {today.getFullYear()}
+					{SITE_TITLE}. Todos los derechos reservados.
 				</p>
 			</div>
 			<div class="footer-links">
 				<div class="links-group">
-					<h5>Sitio</h5>
+					<h5>Navegación</h5>
 					<ul>
 						<li><a href="/">Inicio</a></li>
+						<li><a href="/market-overview">Vista Mercados</a></li>
+						<li><a href="/mini-chart">Mapa de Calor</a></li>
+						<li><a href="/economic-calendar">Calendario</a></li>
 						<li><a href="/about">Sobre Nosotros</a></li>
+					</ul>
+				</div>
+				<div class="links-group">
+					<h5>Legal</h5>
+					<ul>
+						<li>
+							<a href="/privacy-policy">Política de Privacidad</a>
+						</li>
+						<li>
+							<a href="/terms-of-service">Términos de Servicio</a>
+						</li>
+						<li>
+							<a href="/disclaimer"
+								>Descargo de Responsabilidad</a>
+						</li>
 					</ul>
 				</div>
 				<div class="links-group">
@@ -26,23 +55,32 @@ import { SITE_TITLE } from "../consts";
 						<li>
 							<a
 								href="https://nundusoft.com/contacto/"
-								target="_blank">Contáctanos</a
-							>
+								target="_blank"
+								rel="noopener noreferrer">Contáctanos</a>
 						</li>
 						<li>
 							<a
 								href="https://es.linkedin.com/company/nundu-desarrollos"
-								target="_blank">LinkedIn</a
-							>
+								target="_blank"
+								rel="noopener noreferrer">LinkedIn</a>
 						</li>
+						<!-- Añadir más enlaces sociales si existen -->
 					</ul>
 				</div>
 			</div>
 		</div>
 		<div class="footer-bottom">
-			<p>
+			<p class="copyright-desktop">
 				&copy; {today.getFullYear()}
-				{SITE_TITLE}. Todos los derechos reservados.
+				{SITE_TITLE}. Todos los derechos reservados. | <a
+					href="/privacy-policy">Política de Privacidad</a
+				> | <a href="/terms-of-service">Términos de Servicio</a> | <a
+					href="/disclaimer">Descargo de Responsabilidad</a
+				>
+			</p>
+			<p class="disclaimer-text">
+				La información proporcionada en este sitio es solo para fines
+				informativos y no debe considerarse asesoramiento financiero.
 			</p>
 		</div>
 	</div>
@@ -50,54 +88,79 @@ import { SITE_TITLE } from "../consts";
 
 <style>
 	footer {
-		background-color: #f8f9fa;
-		border-top: 1px solid rgba(var(--gray-light), 1);
-		padding: 3rem 0 1.5rem;
+		background-color: var(--background-alt); /* Fondo alternativo */
+		border-top: 1px solid var(--border); /* Usar variable de borde */
+		padding: 3.5rem 0 2rem; /* Ajustar padding */
 		width: 100%;
-		margin-top: auto;
+		margin-top: auto; /* Empujar al fondo */
+		color: var(--text-light); /* Color de texto secundario por defecto */
+		font-size: 0.9rem; /* Tamaño de fuente base para el footer */
 	}
 
 	.container {
-		max-width: 1100px;
+		max-width: 1200px; /* Coherente con header */
 		margin: 0 auto;
-		padding: 0 1.5rem;
+		padding: 0 1rem;
 	}
 
 	.footer-content {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 2rem;
+		display: grid;
+		grid-template-columns: 1fr 2fr; /* Más espacio para los links */
+		gap: 3rem; /* Separación entre logo y links */
+		margin-bottom: 2.5rem; /* Separación antes del bottom */
 	}
 
-	.footer-logo {
-		max-width: 400px;
+	.footer-info {
+		/* Contenedor para logo y tagline */
 	}
 
 	.footer-brand {
-		font-weight: 600;
-		font-size: 1.2rem;
-		color: var(--accent);
+		display: inline-flex; /* Para alinear imagen y texto */
+		align-items: center;
+		font-weight: 700; /* Más bold */
+		font-size: 1.3rem; /* Tamaño ajustado */
+		color: var(--primary-dark); /* Color oscuro */
 		text-decoration: none;
-		letter-spacing: -0.5px;
+		margin-bottom: 0.8rem; /* Espacio bajo el logo/nombre */
+	}
+
+	.footer-logo-img {
+		height: 30px; /* Tamaño del logo en footer */
+		width: auto;
+		margin-right: 8px;
+		/* Quitar estilos de imagen por defecto */
+		box-shadow: none;
+		border: none;
+		border-radius: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		display: inline-block; /* Asegurar que es inline */
 	}
 
 	.tagline {
-		color: rgb(var(--gray));
+		color: var(--text-light);
 		font-size: 0.9rem;
-		margin-top: 0.5rem;
-		line-height: 1.5;
+		margin-top: 0;
+		margin-bottom: 1rem; /* Espacio antes del copyright mobile */
+		line-height: 1.6;
 	}
 
 	.footer-links {
-		display: flex;
-		gap: 3rem;
+		display: grid;
+		grid-template-columns: repeat(
+			auto-fit,
+			minmax(150px, 1fr)
+		); /* Columnas adaptables */
+		gap: 2rem; /* Espacio entre grupos de links */
 	}
 
 	.links-group h5 {
 		margin: 0 0 1rem;
-		font-size: 0.95rem;
+		font-size: 1rem; /* Encabezado de grupo más grande */
 		font-weight: 600;
-		color: rgb(var(--black));
+		color: var(--text); /* Color de texto principal */
+		text-transform: uppercase; /* Mayúsculas */
+		letter-spacing: 0.5px;
 	}
 
 	.links-group ul {
@@ -107,51 +170,108 @@ import { SITE_TITLE } from "../consts";
 	}
 
 	.links-group ul li {
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.6rem; /* Espacio entre links */
 	}
 
 	.links-group ul li a {
-		color: rgb(var(--gray));
+		color: var(--text-light); /* Color secundario para links */
 		text-decoration: none;
 		font-size: 0.9rem;
 		transition: color 0.2s ease;
 	}
 
 	.links-group ul li a:hover {
-		color: var(--accent);
+		color: var(--accent); /* Color de acento en hover */
+		text-decoration: underline;
 	}
 
 	.footer-bottom {
-		padding-top: 1.5rem;
-		border-top: 1px solid rgba(var(--gray-light), 1);
+		padding-top: 2rem; /* Más espacio arriba */
+		border-top: 1px solid var(--border); /* Usar variable */
 		text-align: center;
 	}
 
 	.footer-bottom p {
-		margin: 0;
+		margin: 0 0 0.5rem; /* Espacio entre párrafos del bottom */
 		font-size: 0.85rem;
-		color: rgb(var(--gray));
+		color: var(
+			--text-lighter
+		); /* Color más claro para copyright/disclaimer */
+		line-height: 1.5;
+	}
+	.footer-bottom a {
+		color: var(--text-lighter);
+		text-decoration: none;
+	}
+	.footer-bottom a:hover {
+		color: var(--accent);
+		text-decoration: underline;
+	}
+
+	.copyright-mobile {
+		display: none; /* Ocultar en desktop */
+		margin-top: 1.5rem;
+		font-size: 0.85rem;
+		color: var(--text-lighter);
+	}
+	.copyright-desktop {
+		display: block; /* Mostrar en desktop */
+	}
+	.disclaimer-text {
+		font-style: italic;
+		margin-top: 1rem; /* Espacio sobre el disclaimer */
+	}
+
+	@media (max-width: 992px) {
+		/* Ajustar breakpoint */
+		.footer-content {
+			grid-template-columns: 1fr; /* Una columna en pantallas medianas */
+			gap: 2.5rem;
+		}
+		.footer-info {
+			text-align: center; /* Centrar info del logo */
+		}
+		.footer-brand {
+			justify-content: center; /* Centrar logo y nombre */
+		}
+		.footer-links {
+			grid-template-columns: repeat(
+				auto-fit,
+				minmax(180px, 1fr)
+			); /* Ajustar columnas de links */
+			text-align: center; /* Centrar texto de links */
+		}
+		.links-group h5 {
+			margin-bottom: 0.8rem;
+		}
 	}
 
 	@media (max-width: 768px) {
-		.footer-content {
-			flex-direction: column;
-			gap: 2rem;
-		}
-
-		.footer-logo {
-			max-width: 100%;
-		}
-
 		.footer-links {
-			gap: 2rem;
+			grid-template-columns: repeat(2, 1fr); /* Dos columnas en móvil */
+			gap: 1.5rem 1rem; /* Ajustar gaps */
+		}
+		.copyright-desktop {
+			display: none; /* Ocultar en móvil */
+		}
+		.copyright-mobile {
+			display: block; /* Mostrar en móvil */
+		}
+		.footer-bottom {
+			padding-top: 1.5rem;
 		}
 	}
 
-	@media (max-width: 576px) {
+	@media (max-width: 480px) {
 		.footer-links {
-			flex-direction: column;
-			gap: 1.5rem;
+			grid-template-columns: 1fr; /* Una columna en pantallas muy pequeñas */
+			text-align: left; /* Alinear a la izquierda en una columna */
+		}
+		.footer-info {
+			text-align: left; /* Alinear a la izquierda */
+		}
+		.footer-brand {
+			justify-content: flex-start; /* Alinear a la izquierda */
 		}
 	}
 </style>

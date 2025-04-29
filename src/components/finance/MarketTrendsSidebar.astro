@@ -1,0 +1,122 @@
+---
+interface Trend {
+    symbol: string;
+    value: string;
+    change: "up" | "down";
+}
+
+interface Props {
+    trends: Trend[];
+    title?: string;
+}
+
+const { trends, title = "Tendencias" } = Astro.props;
+---
+
+<div class="trends-widget">
+    <h3 class="widget-title">{title}</h3>
+    <ul class="trends-list">
+        {
+            trends.map((trend) => (
+                <li class:list={["trend-item", trend.change]}>
+                    <span class="trend-symbol">{trend.symbol}</span>
+                    <span class="trend-value">{trend.value}</span>
+                </li>
+            ))
+        }
+    </ul>
+    <a href="/market-overview" class="widget-link">Ver más</a>
+</div>
+
+<style>
+    .trends-widget {
+        background: var(--background-alt);
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border);
+    }
+
+    .widget-title {
+        font-family: var(--font-heading);
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin: 0 0 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .trends-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+    }
+
+    .trend-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.95rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .trend-item:last-child {
+        border-bottom: none;
+    }
+
+    .trend-symbol {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .trend-item.up .trend-value {
+        color: #10b981; /* Verde para subida */
+        font-weight: 700;
+        position: relative;
+        padding-left: 18px;
+    }
+
+    .trend-item.up .trend-value::before {
+        content: "▲";
+        position: absolute;
+        left: 0;
+        font-size: 11px;
+    }
+
+    .trend-item.down .trend-value {
+        color: #ef4444; /* Rojo para bajada */
+        font-weight: 700;
+        position: relative;
+        padding-left: 18px;
+    }
+
+    .trend-item.down .trend-value::before {
+        content: "▼";
+        position: absolute;
+        left: 0;
+        font-size: 11px;
+    }
+
+    .widget-link {
+        display: block; /* Ocupar todo el ancho */
+        text-align: center;
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 0.5rem;
+        border: 1px solid var(--accent);
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .widget-link:hover {
+        background-color: var(--accent);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
