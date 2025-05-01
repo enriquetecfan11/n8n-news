@@ -25,7 +25,8 @@
     --box-shadow: var(--shadow);
     --gradient-primary: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     --gradient-accent: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    
+    --transition-theme: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
     /* Tipografía unificada */
     --font-fallback: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
     --font-sans: 'Atkinson', var(--font-fallback);
@@ -48,4 +49,60 @@ body {
     max-width: 1280px;
     margin: 0 auto;
     padding: 0 1.5rem;
+}
+
+/* Dark mode styles */
+body.dark-theme {
+    --background: #121620;
+    --background-main: #1a212e;
+    --background-alt: #242e42;
+    --text-main: #f1f5f9;
+    --text: #e2e8f0;
+    --text-light: #cbd5e1;
+    --text-lighter: #94a3b8;
+    --border: #2d3748;
+    --accent-blue: #1e40af;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.35);
+}
+
+/* Transition for all elements when changing theme */
+body, body * {
+    transition: var(--transition-theme);
+}
+
+/* Dark theme adjustments for news cards */
+body.dark-theme .news-card {
+    background-color: var(--background-main);
+    border-color: var(--border);
+}
+
+body.dark-theme .news-excerpt blockquote {
+    border-left-color: #3e4c5e;
+    color: #94a3b8;
+}
+
+body.dark-theme .top-panel {
+    background: #1a212e;
+}
+
+body.dark-theme .news-excerpt p {
+    color: var(--text-light);
+}
+
+body.dark-theme .date-heading {
+    color: #f1f5f9;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Optimized images */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }

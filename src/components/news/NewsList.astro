@@ -15,6 +15,7 @@ const now = new Date();
 const day = now.getDate();
 const month = now.getMonth();
 const year = now.getFullYear();
+const weekday = new Date().toLocaleString("es-ES", { weekday: "long" });
 
 const months = [
     "enero",
@@ -47,10 +48,14 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
                         >
                             <div class="date-header">
                                 <h3 class="date-heading">
-                                    Noticias del dia: {date}
+                                    {dateIndex === 0 ? (
+                                        <>🔥 Noticias del día: {date}</>
+                                    ) : (
+                                        <>Noticias del día: {date}</>
+                                    )}
                                 </h3>
                             </div>
-                            <div class="news-list">
+                            <div class="news-grid">
                                 {datePosts.map((post, index) => (
                                     <NewsCard
                                         title={post.data.title}
@@ -59,6 +64,10 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
                                         isHighlight={
                                             index === 0 && dateIndex === 0
                                         }
+                                        category={
+                                            post.data.category || "Noticias"
+                                        }
+                                        pubDate={post.data.pubDate}
                                     />
                                 ))}
                             </div>
@@ -85,7 +94,7 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
     }
 
     .news-column {
-        max-width: 850px;
+        max-width: 1000px;
         width: 100%;
     }
 
@@ -115,11 +124,11 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
         width: 4px;
         background: linear-gradient(
             to bottom,
-            var(--accent-secondary) 0%,
+            var(--accent) 0%,
             rgba(0, 0, 0, 0) 100%
         );
         border-radius: 4px;
-        opacity: 0.6;
+        opacity: 0.8;
     }
 
     /* Encabezado de fecha */
@@ -136,30 +145,17 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
         font-family: var(--font-heading);
         font-size: 1.7rem;
         font-weight: 700;
-        color: var(--primary);
+        color: var(--accent-blue);
         margin: 0;
         position: relative;
         letter-spacing: -0.3px;
         line-height: 1.2;
     }
 
-    .today-tag {
-        background-color: var(--accent-secondary);
-        color: #000000;
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 0.2rem 0.8rem;
-        border-radius: 20px;
-        margin-left: 12px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-    }
-
-    /* Lista de noticias */
-    .news-list {
-        display: flex;
-        flex-direction: column;
+    /* Grid de noticias */
+    .news-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
 
@@ -189,6 +185,11 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
             margin-bottom: 2.5rem;
             padding-bottom: 1.5rem;
         }
+
+        .news-grid {
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
     }
 
     @media (max-width: 480px) {
@@ -198,15 +199,6 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
 
         .date-heading {
             font-size: 1.3rem;
-        }
-
-        .today-tag {
-            font-size: 0.7rem;
-            padding: 0.15rem 0.7rem;
-        }
-
-        .news-list {
-            gap: 1.2rem;
         }
     }
 </style>

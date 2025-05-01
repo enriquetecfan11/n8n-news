@@ -3,7 +3,6 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StockTicker from "../components/finance/StockTicker.astro";
-// import TopPanel from "../components/news/TopPanel.astro";
 import NewsList from "../components/news/NewsList.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
@@ -54,7 +53,7 @@ const groupedPosts = posts.reduce((groups, post) => {
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Open+Sans:wght@400;500;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
 			rel="stylesheet"
 		/>
 		<!-- Importar las variables CSS globales -->
@@ -62,9 +61,6 @@ const groupedPosts = posts.reduce((groups, post) => {
 	</head>
 	<body>
 		<Header />
-
-		<!-- Panel superior con fecha y ticker -->
-		<!-- <TopPanel /> -->
 
 		<!-- Ticker financiero mejorado -->
 		<section class="ticker-section">

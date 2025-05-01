@@ -8,46 +8,40 @@
 :root {
 	/* Paleta de colores refinada para finanzas */
 	--accent: #0D47A1;
-	/* Azul corporativo más oscuro */
 	--accent-dark: #002171;
 	--accent-light: #5472d3;
-	/* Un azul más claro para acentos secundarios */
 	--black: 18, 25, 33;
-	/* Negro ligeramente más suave */
 	--gray: 108, 117, 125;
-	/* Gris neutro */
 	--gray-light: 233, 236, 239;
-	/* Gris muy claro para fondos/bordes */
 	--gray-dark: 52, 58, 64;
-	/* Gris oscuro para texto o elementos */
 	--gray-gradient: rgba(var(--gray-light), 0.5), #fff;
 	--box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-	/* Sombra más sutil */
 
-	/* Tipografía más limpia y consistente */
+	/* Nueva paleta de colores según las especificaciones */
+	--background-main: #ffffff;
+	--background-alt: #f9f9f9;
+	--text-main: #1e1e1e;
+	--market-up: #4CAF50;
+	--market-down: #F44336;
+	--accent-blue: #0d1b2a;
+
+	/* Tipografía moderna */
 	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--font-fallback: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
-	--font-body: 'Open Sans', var(--font-fallback);
-	--font-heading: 'Open Sans', var(--font-fallback);
-	/* Usar Open Sans también para encabezados */
+	--font-body: 'Inter', var(--font-fallback);
+	--font-heading: 'Inter', var(--font-fallback);
 
 	/* Colores primarios y de texto ajustados */
-	--primary: #1a2b47;
-	/* Azul marino oscuro */
+	--primary: #0d1b2a;
 	--primary-light: #2a4a75;
 	--primary-dark: #0f1a2d;
-	--text: #212529;
-	/* Color de texto principal más oscuro */
+	--text: #1e1e1e;
 	--text-light: #495057;
-	/* Gris para texto secundario */
 	--text-lighter: #6c757d;
 	--border: #dee2e6;
-	/* Borde estándar */
 	--background: #ffffff;
-	--background-alt: #f8f9fa;
-	/* Fondo alternativo ligeramente gris */
+	--background-alt: #f9f9f9;
 	--background-dark: #121821;
-	/* Fondo oscuro refinado */
 
 	/* Sombras refinadas */
 	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
