@@ -1,23 +1,24 @@
 ---
 import HeaderLink from "./HeaderLink.astro";
 import { SITE_TITLE } from "../consts";
+import Analytics from '@vercel/analytics/astro';
 // import ThemeToggle from "./ThemeToggle.astro"; // Comentado o eliminado si no se usa
 ---
 
 <header>
 	<div class="container">
 		<nav>
-			<div class="logo-section">
+			<!-- <div class="logo-section">
 				<a href="/" class="logo">
 					<img
 						src="/nundu_logo_sin_margen.svg"
 						alt="Nundu Logo"
 						class="logo-img"
 					/>
-					<span class="site-name">{SITE_TITLE}</span>
-				</a>
-			</div>
+					</a>
+					</div> -->
 			<div class="nav-links">
+				<span class="site-name">{SITE_TITLE}</span>
 				<HeaderLink href="/" class="nav-link">Inicio</HeaderLink>
 				<HeaderLink href="/market-overview" class="nav-link"
 					>Vista Mercados</HeaderLink
@@ -36,6 +37,7 @@ import { SITE_TITLE } from "../consts";
 		</nav>
 	</div>
 </header>
+<Analytics />
 
 <style>
 	header {

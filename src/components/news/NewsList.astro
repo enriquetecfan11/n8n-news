@@ -8,11 +8,16 @@ interface Props {
 }
 
 const { groupedPosts } = Astro.props;
+
+// Obtener la fecha actual y formatearla en español
+const now = new Date();
+const options = { day: 'numeric', month: 'long', year: 'numeric' };
+const formattedDate = now.toLocaleDateString('es-ES', options);
 ---
 
 <div class="news-column">
     <div class="section-header">
-        <h2 class="section-title">Últimas Noticias</h2>
+        <h2 class="section-title">Últimas Noticias actualizadas: {formattedDate}</h2>
         <div class="section-divider"></div>
     </div>
 
