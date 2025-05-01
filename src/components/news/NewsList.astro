@@ -2,6 +2,7 @@
 // Componente para mostrar la lista de noticias agrupadas por fecha
 import NewsCard from "./NewsCard.astro";
 import type { CollectionEntry } from "astro:content";
+import TopPanel from "./TopPanel.astro";
 
 interface Props {
     groupedPosts: Record<string, CollectionEntry<"blog">[]>;
@@ -11,110 +12,201 @@ const { groupedPosts } = Astro.props;
 
 // Obtener la fecha actual y formatearla en español
 const now = new Date();
-const options = { day: 'numeric', month: 'long', year: 'numeric' };
-const formattedDate = now.toLocaleDateString('es-ES', options);
+const day = now.getDate();
+const month = now.getMonth();
+const year = now.getFullYear();
+
+const months = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+];
+
+const formattedDate = `${day} de ${months[month]} de ${year}`;
 ---
 
-<div class="news-column">
-    <div class="section-header">
-        <h2 class="section-title">Últimas Noticias actualizadas: {formattedDate}</h2>
-        <div class="section-divider"></div>
-    </div>
+<div class="news-container">
+    <TopPanel date={formattedDate} />
 
-    {
-        Object.entries(groupedPosts).map(([date, datePosts]) => (
-            <div class="news-date-group">
-                <h3 class="date-heading">{date}</h3>
-                <div class="news-list">
-                    {datePosts.map((post) => (
-                        <NewsCard
-                            title={post.data.title}
-                            description={post.data.description}
-                            category={post.data.category}
-                            url={`/blog/${post.id}/`}
-                        />
-                    ))}
-                </div>
-            </div>
-        ))
-    }
+    <div class="news-content">
+        <div class="news-column">
+            {
+                Object.entries(groupedPosts).map(
+                    ([date, datePosts], dateIndex) => (
+                        <div
+                            class={`news-date-group ${dateIndex === 0 ? "today-group" : ""}`}
+                        >
+                            <div class="date-header">
+                                <h3 class="date-heading">
+                                    Noticias del dia: {date}
+                                </h3>
+                            </div>
+                            <div class="news-list">
+                                {datePosts.map((post, index) => (
+                                    <NewsCard
+                                        title={post.data.title}
+                                        description={post.data.description}
+                                        url={`/blog/${post.id}/`}
+                                        isHighlight={
+                                            index === 0 && dateIndex === 0
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ),
+                )
+            }
+        </div>
+    </div>
 </div>
 
 <style>
-    /* Secciones generales */
-    .section-header {
-        position: relative;
-        margin-bottom: 2.5rem;
+    /* Contenedor principal */
+    .news-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
     }
 
-    .section-title {
-        font-family: var(--font-heading);
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin: 0 0 0.5rem;
-        position: relative;
-        letter-spacing: -0.3px;
-    }
-
-    .section-divider {
-        width: 80px;
-        height: 4px;
-        background: var(--gradient-accent);
-        margin-top: 0.8rem;
-        border-radius: 2px;
+    .news-content {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
     }
 
     .news-column {
-        max-width: 900px;
-        margin: 0 auto;
+        max-width: 850px;
+        width: 100%;
     }
 
+    /* Agrupación de noticias por fecha */
     .news-date-group {
-        margin-bottom: 3rem;
+        margin-bottom: 3.5rem;
+        position: relative;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .news-date-group:last-child {
+        border-bottom: none;
+        margin-bottom: 2rem;
+    }
+
+    .today-group {
+        position: relative;
+    }
+
+    .today-group::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -20px;
+        width: 4px;
+        background: linear-gradient(
+            to bottom,
+            var(--accent-secondary) 0%,
+            rgba(0, 0, 0, 0) 100%
+        );
+        border-radius: 4px;
+        opacity: 0.6;
+    }
+
+    /* Encabezado de fecha */
+    .date-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.8rem;
+        position: relative;
+        background-color: var(--background);
+        padding: 0.8rem 0;
     }
 
     .date-heading {
         font-family: var(--font-heading);
-        font-size: 1.6rem;
+        font-size: 1.7rem;
         font-weight: 700;
         color: var(--primary);
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.8rem;
+        margin: 0;
         position: relative;
+        letter-spacing: -0.3px;
+        line-height: 1.2;
     }
 
-    .date-heading::after {
-        content: "";
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 100px;
-        height: 3px;
-        background: var(--accent-secondary);
-        border-radius: 2px;
+    .today-tag {
+        background-color: var(--accent-secondary);
+        color: #000000;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        margin-left: 12px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
     }
 
+    /* Lista de noticias */
     .news-list {
         display: flex;
         flex-direction: column;
-        gap: 1.8rem;
+        gap: 1.5rem;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1024px) {
+        .news-container {
+            max-width: 100%;
+        }
     }
 
     @media (max-width: 768px) {
-        .section-title {
-            font-size: 1.8rem;
+        .date-header {
+            padding: 0.6rem 0;
+            margin-bottom: 1.5rem;
         }
 
         .date-heading {
             font-size: 1.4rem;
         }
+
+        .today-group::before {
+            left: -15px;
+            width: 3px;
+        }
+
+        .news-date-group {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+        }
     }
 
     @media (max-width: 480px) {
-        .section-title {
-            font-size: 1.6rem;
+        .news-container {
+            padding: 0 0.8rem;
+        }
+
+        .date-heading {
+            font-size: 1.3rem;
+        }
+
+        .today-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.7rem;
+        }
+
+        .news-list {
+            gap: 1.2rem;
         }
     }
 </style>

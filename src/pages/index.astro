@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StockTicker from "../components/finance/StockTicker.astro";
-import TopPanel from "../components/news/TopPanel.astro";
+// import TopPanel from "../components/news/TopPanel.astro";
 import NewsList from "../components/news/NewsList.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
@@ -64,7 +64,7 @@ const groupedPosts = posts.reduce((groups, post) => {
 		<Header />
 
 		<!-- Panel superior con fecha y ticker -->
-		<TopPanel />
+		<!-- <TopPanel /> -->
 
 		<!-- Ticker financiero mejorado -->
 		<section class="ticker-section">
