@@ -2,21 +2,13 @@
 // Componente para mostrar una tarjeta de noticia individual
 interface Props {
     title: string;
-    description: string;
     url: string;
     isHighlight?: boolean;
     category?: string;
     pubDate?: Date;
 }
 
-const {
-    title,
-    description,
-    url,
-    isHighlight = false,
-    category,
-    pubDate,
-} = Astro.props;
+const { title, url, isHighlight = false, category, pubDate } = Astro.props;
 
 // Función para obtener el icono según la categoría
 function getCategoryIcon(category?: string): string {
@@ -95,11 +87,7 @@ const timeAgo = getRelativeTime(pubDate);
         <h3 class="news-title">
             {title}
         </h3>
-        <div class="news-excerpt">
-            <blockquote>
-                <p>{description}</p>
-            </blockquote>
-        </div>
+        <div class="news-excerpt"></div>
         <div class="card-footer">
             <div class="actions">
                 <span class="read-more">Ver detalles</span>
