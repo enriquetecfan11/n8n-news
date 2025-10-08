@@ -1,7 +1,13 @@
 ---
 title: "Futuros de acciones estadounidenses caen con el dólar y el petróleo crudo: resumen de mercados"
 description: "El dólar se debilita y los futuros de índices de acciones estadounidenses caen, amenazando con poner fin a la racha ganadora más larga del S&P 500 en dos décadas, mientras la incertidumbre sobre la política comercial estadounidense pesa sobre los mercados."
-pubDate: 2025-05-04
+pubDate: "2025-05-04"
+impact: "bajo"
+sectors: ["energía", "política"]
+source: "Bloomberg"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 El dólar estadounidense se debilitó y los futuros de índices de acciones estadounidenses cayeron, lo que pone en peligro el récord de 20 años de la racha ganadora del S&P 500, según datos de Bloomberg. La incertidumbre sobre la política comercial estadounidense sigue pesando sobre los mercados.

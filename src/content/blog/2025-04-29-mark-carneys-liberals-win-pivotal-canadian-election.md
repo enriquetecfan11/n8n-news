@@ -1,7 +1,13 @@
 ---
 title: "Los liberales de Mark Carney ganan elección canadiense crucial"
 description: "El exgobernador del Banco de Inglaterra capitaliza el sentimiento anti-Trump para asegurar un mandato para su partido."
-pubDate: 2025-04-29
+pubDate: "2025-04-29"
+impact: "alto"
+sectors: ["finanzas", "política", "economía", "automotriz"]
+source: "Financial Times"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["DIA", "F", "C"]
 ---
 El exgobernador del Banco de Inglaterra Mark Carney ha capitalizado el sentimiento anti-Trump para liderar a los liberales canadienses a una victoria decisiva en las elecciones federales.
 

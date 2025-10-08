@@ -1,7 +1,13 @@
 ---
 title: "Warren Buffett se jubilará de Berkshire Hathaway después de seis décadas"
 description: "El 'Oráculo de Omaha' anuncia planes para retirarse de su conglomerado expandido en la histórica reunión anual"
-pubDate: 2025-05-03
+pubDate: "2025-05-03"
+impact: "alto"
+sectors: ["finanzas", "energía", "automotriz"]
+source: "Financial Times"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 El inversor y empresario Warren Buffett, conocido como el 'Oráculo de Omaha', ha anunciado que se jubilará como director ejecutivo de Berkshire Hathaway, la conglomerada que ha liderado durante más de seis décadas.

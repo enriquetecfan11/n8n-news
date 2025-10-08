@@ -1,7 +1,13 @@
 ---
 title: "Trump anuncia acuerdo comercial con Reino Unido"
 description: "El presidente estadounidense asegura que el pacto 'revolucionario' será el primer de muchos, mientras transmite optimismo sobre las negociaciones con China."
-pubDate: 2025-05-08
+pubDate: "2025-05-08"
+impact: "alto"
+sectors: ["política"]
+source: "Financial Times"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["EUR", "F", "C"]
 ---
 
 Donald Trump, el presidente de Estados Unidos, ha anunciado un acuerdo comercial con el Reino Unido que describe como un "breakthrough" (avance revolucionario). Dicho acuerdo se espera que sea el primer de muchos entre Estados Unidos y Europa, según Trump.

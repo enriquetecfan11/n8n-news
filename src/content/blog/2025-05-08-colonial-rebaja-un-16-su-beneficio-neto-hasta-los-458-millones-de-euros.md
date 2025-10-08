@@ -1,7 +1,13 @@
 ---
 title: "Colonial rebaja un 16% su beneficio neto hasta los 45,8 millones de euros"
 description: "La inmobiliaria española Colonial informa un descenso en su beneficio neto, aunque su beneficio neto recurrente y EBITDA crecen en el primer trimestre."
-pubDate: 2025-05-08
+pubDate: "2025-05-08"
+impact: "medio"
+sectors: ["finanzas"]
+source: "Fuente desconocida"
+sentiment: "neutral"
+relevanceScore: "9"
+tickers: ["EUR", "F", "C"]
 ---
 
 La inmobiliaria española Colonial ha presentado sus resultados financieros para el primer trimestre, mostrando una caída del 16% en su beneficio neto hasta los 45,8 millones de euros. A pesar de esta baja, su beneficio neto recurrente ha crecido en igual medida hasta los 55 millones de euros.

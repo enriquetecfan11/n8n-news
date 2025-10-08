@@ -1,7 +1,13 @@
 ---
 title: "Precio del Bitcoin hoy: estable en 97.000 dólares ante esperanzas entre EE.UU. y China"
 description: "El precio del Bitcoin se mantiene estable en 97.000 dólares debido a las esperanzas de un acuerdo entre EE.UU. y China sobre regulaciones de criptomonedas."
-pubDate: 2025-05-02
+pubDate: "2025-05-02"
+impact: "medio"
+sectors: []
+source: "Investing.com"
+sentiment: "positivo"
+relevanceScore: "8"
+tickers: ["C"]
 ---
 
 El precio del Bitcoin ha alcanzado una nueva cota de 97.000 dólares en la actualidad, según los datos de Investing.com. Esta estabilidad se debe a las esperanzas de un acuerdo entre Estados Unidos y China sobre la regulación de las criptomonedas.

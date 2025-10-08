@@ -1,7 +1,13 @@
 ---
 title: "El asesor principal de Trump luchó por calmar a los inversionistas en conversaciones después de la inestabilidad del mercado"
 description: "El asesor económico de la Casa Blanca, Stephen Miran, intentó convencer a los inversores después de que los aranceles desencadenaran una tormenta en Wall Street."
-pubDate: 2025-04-29
+pubDate: "2025-04-29"
+impact: "alto"
+sectors: ["finanzas", "política", "economía", "automotriz", "comercio"]
+source: "Financial Times"
+sentiment: "negativo"
+relevanceScore: "10"
+tickers: ["DIA", "F", "C"]
 ---
 
 **Stephen Miran se reunió con fondos de cobertura y gerentes de activos importantes después de que los aranceles desencadenaran una tormenta en Wall Street**

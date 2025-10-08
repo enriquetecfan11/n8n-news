@@ -1,7 +1,13 @@
 ---
 title: "Exportadores chinos 'lavados' en países de terceros para evitar aranceles de Trump"
 description: "China exporta productos a través de países de Asia para evitar impuestos en EE. UU."
-pubDate: 2025-05-05
+pubDate: "2025-05-05"
+impact: "alto"
+sectors: ["tecnología", "política", "automotriz", "comercio"]
+source: "Financial Times"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["DIA", "F", "C"]
 ---
 
 Los exportadores chinos están utilizando estrategias para "lavar" sus productos en países de terceros antes de enviarlos a los Estados Unidos, según fuentes comerciales, en un intento por evadir los aranceles impuestos por el presidente Donald Trump.

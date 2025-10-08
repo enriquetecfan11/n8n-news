@@ -1,7 +1,13 @@
 ---
 title: "Gana Reforma sus primeros consejos en un auge de elecciones locales en el Reino Unido"
 description: "El partido de Nigel Farage gana una victoria en una elección suplementaria contra el Laborismo."
-pubDate: 2025-05-02
+pubDate: "2025-05-02"
+impact: "alto"
+sectors: ["política", "automotriz", "comercio"]
+source: "Financial Times"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 El Partido de la Reforma ha logrado su primer éxito en el Reino Unido en las elecciones locales, después de ganar una elección suplementaria en un consejo municipal en el este de Inglaterra.
 

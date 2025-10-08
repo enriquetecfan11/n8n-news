@@ -1,7 +1,13 @@
 ---
 title: "Apocalíptico: Tory wipes out como Farage estalla en consejos ingleses"
 description: "La derrota de la Reform Party en elecciones locales plantea desafíos importantes para Conservadores y Laboristas"
-pubDate: 2025-05-02
+pubDate: "2025-05-02"
+impact: "alto"
+sectors: ["política", "comercio"]
+source: "Financial Times"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["EUR", "F", "C"]
 ---
 
 La derrota electoral de la Reform Party en las elecciones locales en Inglaterra ha llevado a un "apocalipsis" para el Partido Conservador y al Partido Laborista, según analistas políticos. La ruta de la Reform Party en estas elecciones ha sido "imparable" y ha dejado a los dos principales partidos del país con una grave crisis de identidad.

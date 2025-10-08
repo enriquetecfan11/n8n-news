@@ -1,7 +1,13 @@
 ---
 title: "¿Y si hay acuerdo EE.UU.-China? Nuestra IA destaca 3 acciones a vigilar"
 description: "La inteligencia artificial de Investing.com analiza el impacto de un posible acuerdo entre Estados Unidos y China en el mercado de acciones."
-pubDate: 2025-05-09
+pubDate: "2025-05-09"
+impact: "medio"
+sectors: ["tecnología", "política", "comercio"]
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 ¿Y si hay acuerdo EE.UU.-China? Nuestra IA destaca 3 acciones a vigilar

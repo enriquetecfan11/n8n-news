@@ -1,7 +1,13 @@
 ---
 title: "Donald Trump va a cesar al asesor de seguridad nacional Mike Waltz"
 description: "Donald Trump planea cesar al asesor de seguridad nacional Mike Waltz después de un escándalo sobre el uso de un grupo de chat para discutir ataques militares en Yemen."
-pubDate: 2025-05-01
+pubDate: "2025-05-01"
+impact: "alto"
+sectors: ["finanzas", "política"]
+source: "Financial Times"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 Donald Trump planea cesar al asesor de seguridad nacional Mike Waltz después de un escándalo sobre el uso de un grupo de chat para discutir ataques militares en Yemen. Según informa The Financial Times, la decisión ya se ha tomado y se espera que anuncie la noticia en breve.

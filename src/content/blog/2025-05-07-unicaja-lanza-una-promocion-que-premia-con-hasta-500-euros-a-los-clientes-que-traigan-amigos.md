@@ -1,7 +1,13 @@
 ---
 title: "Unicaja lanza una promoción que premia con hasta 500 euros a los clientes que traigan ‘amigos’"
 description: "La entidad financiera ofrece un incentivo a los clientes que atraen nuevos clientes a sus oficinas."
-pubDate: 2025-05-07
+pubDate: "2025-05-07"
+impact: "bajo"
+sectors: ["tecnología"]
+source: "Fuente desconocida"
+sentiment: "positivo"
+relevanceScore: "9"
+tickers: ["EUR", "F", "C"]
 ---
 
 La entidad financiera Unicaja ha lanzado una promoción que premia a los clientes que traen nuevos clientes a sus oficinas. La iniciativa busca fomentar la expansión de la red de oficinas de la entidad y se encuentra disponible hasta el próximo 31 de julio.

@@ -1,7 +1,13 @@
 ---
-title: ¿Subirá más este valor de telecomunicaciones, que avanza ya más de un 20% en mayo?
-description: Análisis de la tendencia del valor de telecomunicaciones en mayo.
-pubDate: 2025-05-06
+title: "¿Subirá más este valor de telecomunicaciones, que avanza ya más de un 20% en mayo?"
+description: "Análisis de la tendencia del valor de telecomunicaciones en mayo."
+pubDate: "2025-05-06"
+impact: "alto"
+sectors: ["economía"]
+source: "Investing.com"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 El valor de telecomunicaciones ha experimentado un aumento significativo en mayo, superando el 20%. Pero ¿qué impulsa este rápido crecimiento y ¿podría seguir subiendo en el futuro?

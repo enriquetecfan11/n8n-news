@@ -1,7 +1,13 @@
 ---
 title: "Acuerdo comercial entre EE.UU. y Reino Unido aprieta las cadenas de suministro de China"
 description: "Los diplomáticos afirman que las disposiciones sobre sectores estratégicos del pacto pueden servir de modelo para Washington"
-pubDate: 2025-05-09
+pubDate: "2025-05-09"
+impact: "medio"
+sectors: ["energía", "consumo", "economía", "comercio"]
+source: "Financial Times"
+sentiment: "negativo"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 Los diplomáticos estadounidenses y británicos están celebrando el acuerdo comercial entre EE.UU. y Reino Unido, que establece nuevas normas para las empresas que operan en sectores estratégicos, como tecnología y defensa. Según fuentes diplomáticas, las disposiciones del pacto pueden servir como un modelo para otros países, incluyendo a Washington.

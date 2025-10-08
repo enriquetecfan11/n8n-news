@@ -1,7 +1,13 @@
 ---
 title: "Los futuros suben; acuerdo comercial EE.UU.-Reino Unido; decisión de la Fed"
 description: "El mercado financiero se mueve en posiciones positivas en respuesta a la noticia de un acuerdo comercial entre EE.UU. y Reino Unido, y la decisión de la Fed sobre la tasa de interés."
-pubDate: 2025-05-08
+pubDate: "2025-05-08"
+impact: "alto"
+sectors: ["finanzas", "economía", "comercio"]
+source: "Investing.com"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 Los futuros suben en este momento después de que EE.UU. y Reino Unido alcanzaron un acuerdo comercial. El acuerdo, que fue anunciado ayer, busca reducir las tensiones comerciales entre los dos países y mejorar las exportaciones.

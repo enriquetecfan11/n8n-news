@@ -1,7 +1,13 @@
 ---
 title: "India lanza ataques militares contra Pakistán"
 description: "La India responde con ataques militares después de vincular a Pakistán a un ataque terrorista en el Cachemira administrada por India."
-pubDate: 2025-05-07
+pubDate: "2025-05-07"
+impact: "alto"
+sectors: ["automotriz"]
+source: "Financial Times"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["DIA", "F", "C"]
 ---
 
 India lanza ataques militares contra Pakistán después de vincular a Islamabad a un ataque terrorista en el Cachemira administrada por India. Según informes, la India lanzó ataques aéreos y terrestres contra instalaciones militares y posiciones del ejército pakistaní en las primeras horas del miércoles.

@@ -1,7 +1,13 @@
 ---
 title: "La montaña rusa bursátil lanza señales de alerta: Atentos a estas recomendaciones"
 description: "La volatilidad en los mercados financieros puede tener consecuencias graves para los inversores. A continuación, se presentan algunos consejos para minimizar el riesgo."
-pubDate: 2025-05-06
+pubDate: "2025-05-06"
+impact: "bajo"
+sectors: ["finanzas", "economía", "automotriz", "comercio"]
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "9"
+tickers: ["F", "C"]
 ---
 
 La montaña rusa bursátil lanza señales de alerta: Atentos a estas recomendaciones

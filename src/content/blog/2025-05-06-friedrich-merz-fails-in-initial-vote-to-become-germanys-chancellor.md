@@ -1,7 +1,13 @@
 ---
 title: "Friedrich Merz fracasa en el voto inicial para convertirse en canciller de Alemania"
 description: "El líder político alemán sufre un duro revés en su intento de llegar al cargo más importante del país."
-pubDate: 2025-05-06
+pubDate: "2025-05-06"
+impact: "alto"
+sectors: ["finanzas", "política", "economía", "automotriz", "comercio"]
+source: "Financial Times"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["DIA", "EUR", "F", "C"]
 ---
 Los mercados financieros reaccionaron con inquietud después de que Friedrich Merz, el líder de la Unión Cristiana Democrática (CDU) y principal contendiente para la cancillería alemana, sufriera un duro revés en el voto inicial.
 

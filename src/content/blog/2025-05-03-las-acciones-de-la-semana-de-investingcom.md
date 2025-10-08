@@ -1,7 +1,13 @@
 ---
 title: "Las acciones de la semana de Investing.com"
 description: "Resumen de las noticias y tendencias en el mercado de valores de la semana."
-pubDate: 2025-05-03
+pubDate: "2025-05-03"
+impact: "bajo"
+sectors: []
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "7"
+tickers: ["F", "C"]
 ---
 
 Las acciones de la semana de Investing.com

@@ -1,7 +1,13 @@
 ---
 title: "La Fed acorralada por preocupaciones de inflación y crecimiento: director ejecutivo de deVere"
 description: "El director ejecutivo de deVere analiza la situación actual de la Fed y sus inquietudes sobre la inflación y el crecimiento."
-pubDate: 2025-04-30
+pubDate: "2025-04-30"
+impact: "alto"
+sectors: ["finanzas", "economía", "comercio"]
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 La directora ejecutiva de deVere, firmó un artículo en el que reveló que la Fed se encuentra acorralada por preocupaciones sobre la inflación y el crecimiento. Según la experta, la agencia de gestión de activos ha ido incrementando su tasa de interés para tratar de controlar la inflación, pero este aumento puede afectar negativamente el crecimiento económico.

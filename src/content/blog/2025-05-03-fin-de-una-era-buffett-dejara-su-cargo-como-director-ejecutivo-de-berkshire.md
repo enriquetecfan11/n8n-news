@@ -1,7 +1,13 @@
 ---
 title: "Fin de una era: Buffett dejará su cargo como director ejecutivo de Berkshire"
 description: "El legendario inversor y CEO de Berkshire Hathaway, Warren Buffett, anuncia su retirada como director ejecutivo de la empresa."
-pubDate: 2025-05-03
+pubDate: "2025-05-03"
+impact: "alto"
+sectors: ["tecnología", "finanzas", "consumo", "economía", "automotriz", "comercio"]
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 La era de Warren Buffett como director ejecutivo de Berkshire Hathaway está a punto de llegar a su fin. El legendario inversor y CEO de la empresa, conocido por sus inversiones exitosas y su estilo inversor a largo plazo, ha anunciado que dejará su cargo como director ejecutivo de la empresa.
 

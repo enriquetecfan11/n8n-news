@@ -1,7 +1,13 @@
 ---
 title: "La economía de Hungría contrae inesperadamente debido a una caída en la producción industrial"
 description: "La economía húngara experimenta una contracción inesperada en el primer trimestre, destacando la exposición comercial del país incluso antes de que el presidente estadounidense Donald Trump lanzara una guerra de aranceles globales."
-pubDate: 2025-04-30
+pubDate: "2025-04-30"
+impact: "alto"
+sectors: ["política", "economía", "automotriz", "comercio"]
+source: "Bloomberg"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["EUR", "F", "C"]
 ---
 
 La economía de Hungría contrae inesperadamente debido a una caída en la producción industrial, lo que destaca la exposición comercial del país incluso antes de que el presidente estadounidense Donald Trump lanzara una guerra de aranceles globales.

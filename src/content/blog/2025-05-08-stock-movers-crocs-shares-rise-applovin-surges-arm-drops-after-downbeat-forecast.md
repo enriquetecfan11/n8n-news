@@ -1,7 +1,13 @@
 ---
 title: "Movers de acciones: Crocs sube, AppLovin surgió, Arm cae después de la predicción decepcionante"
 description: "Análisis de las fluctuaciones en el mercado bursátil"
-pubDate: 2025-05-08
+pubDate: "2025-05-08"
+impact: "medio"
+sectors: ["tecnología", "consumo"]
+source: "Bloomberg"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C", "GS"]
 ---
 
 On this episode of Movers de acciones:

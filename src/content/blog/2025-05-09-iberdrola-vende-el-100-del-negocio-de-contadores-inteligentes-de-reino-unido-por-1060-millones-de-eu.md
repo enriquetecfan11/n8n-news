@@ -1,7 +1,13 @@
 ---
 title: "Iberdrola vende el 100% del negocio de contadores inteligentes de Reino Unido por 1.060 millones de euros"
 description: "La empresa española ha firmado un acuerdo con Macquarie para vender la sociedad propietaria de los contadores inteligentes en el Reino Unido."
-pubDate: 2025-05-09
+pubDate: "2025-05-09"
+impact: "medio"
+sectors: ["tecnología", "finanzas", "energía", "consumo", "economía", "automotriz"]
+source: "Fuente desconocida"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["EUR", "F", "C"]
 ---
 
 Iberdrola ha anunciado que ha firmado un acuerdo con Macquarie, un grupo global de servicios financieros con sede en Australia, para vender el 100% de la sociedad propietaria de los contadores inteligentes de Reino Unido, SP Smart Meters Assets Limited (SPSMAL). De acuerdo con el acuerdo, Iberdrola recibirá una cantidad de 1.060 millones de euros.

@@ -1,7 +1,13 @@
 ---
 title: "Sun Life supera las expectativas de análisis con buenos resultados en gestión de activos y EE.UU."
 description: "La compañía de seguros y servicios financieros canadiense reporta un buen rendimiento en el primer trimestre."
-pubDate: 2025-05-09
+pubDate: "2025-05-09"
+impact: "medio"
+sectors: ["finanzas", "economía", "automotriz"]
+source: "Bloomberg"
+sentiment: "positivo"
+relevanceScore: "10"
+tickers: ["F", "GM", "C"]
 ---
 
 Sun Life Financial Inc. superó las expectativas de análisis en el primer trimestre, impulsada por su segmento de gestión de activos.

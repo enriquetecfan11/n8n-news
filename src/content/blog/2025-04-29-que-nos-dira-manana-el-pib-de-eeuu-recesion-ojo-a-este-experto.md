@@ -1,7 +1,13 @@
 ---
 title: "¿Qué nos dirá mañana el PIB de EE.UU.? ¿Recesión? Ojo a este experto"
 description: "El próximo informe del PIB de Estados Unidos puede revelar la verdad sobre la salud de la economía estadounidense. ¿Recesión o crecimiento?"
-pubDate: 2025-04-29
+pubDate: "2025-04-29"
+impact: "alto"
+sectors: ["salud", "economía", "automotriz", "comercio"]
+source: "Investing.com"
+sentiment: "neutral"
+relevanceScore: "10"
+tickers: ["F", "C"]
 ---
 
 ¿Qué nos dirá mañana el PIB de EE.UU.? ¿Recesión? Ojo a este experto
