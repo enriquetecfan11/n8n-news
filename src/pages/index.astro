@@ -3,9 +3,10 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import StockTicker from "../components/finance/StockTicker.astro";
-import NewsList from "../components/news/NewsList.astro";
+import ProfessionalNewsList from "../components/news/ProfessionalNewsList.astro";
+import QuickAnalysisSidebar from "../components/finance/QuickAnalysisSidebar.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 
 // Obtener las noticias ordenadas por fecha (las más recientes primero)
 const posts = (await getCollection("blog")).sort((a, b) => {
@@ -30,7 +31,7 @@ const posts = (await getCollection("blog")).sort((a, b) => {
 });
 
 // Agrupar noticias por fecha
-const groupedPosts = posts.reduce((groups, post) => {
+const groupedPosts = posts.reduce((groups: Record<string, CollectionEntry<"blog">[]>, post) => {
 	const date = post.data.pubDate.toLocaleDateString("es-ES", {
 		year: "numeric",
 		month: "long",
@@ -43,7 +44,7 @@ const groupedPosts = posts.reduce((groups, post) => {
 
 	groups[date].push(post);
 	return groups;
-}, {});
+}, {} as Record<string, CollectionEntry<"blog">[]>);
 ---
 
 <!doctype html>
@@ -62,7 +63,7 @@ const groupedPosts = posts.reduce((groups, post) => {
 	<body>
 		<Header />
 
-		<!-- Ticker financiero mejorado -->
+		<!-- Ticker financiero minimalista -->
 		<section class="ticker-section">
 			<div class="wrapper ticker-container">
 				<StockTicker
@@ -74,10 +75,20 @@ const groupedPosts = posts.reduce((groups, post) => {
 			</div>
 		</section>
 
-		<!-- Últimas noticias agrupadas por fecha -->
+		<!-- Layout principal con 2 columnas -->
 		<main class="main-content">
 			<div class="wrapper">
-				<NewsList groupedPosts={groupedPosts} />
+				<div class="dashboard-layout">
+					<!-- Columna 1: Noticias principales -->
+					<section class="news-column">
+						<ProfessionalNewsList groupedPosts={groupedPosts} />
+					</section>
+
+					<!-- Columna 2: Análisis rápido -->
+					<aside class="analysis-column">
+						<QuickAnalysisSidebar />
+					</aside>
+				</div>
 			</div>
 		</main>
 
@@ -88,29 +99,93 @@ const groupedPosts = posts.reduce((groups, post) => {
 <style>
 	/* Ticker financiero */
 	.ticker-section {
-		padding: 0.8rem 0;
-		background-color: var(--background-alt);
-		border-bottom: 1px solid var(--border);
-		box-shadow: var(--shadow-sm);
+		padding: 1.5rem 0;
+		background: #f8fafc;
+		border-bottom: 1px solid #e5e7eb;
 	}
 
 	.ticker-container {
-		max-width: 1280px;
+		max-width: 1400px;
 	}
 
-	/* Últimas noticias */
+
+	/* Layout principal */
 	.main-content {
-		padding: 3.5rem 0;
-		background-color: var(--background);
-		background-image: radial-gradient(
-				circle at 25% 5%,
-				rgba(52, 152, 219, 0.03) 0%,
-				transparent 25%
-			),
-			radial-gradient(
-				circle at 85% 90%,
-				rgba(231, 76, 60, 0.03) 0%,
-				transparent 25%
-			);
+		padding: 2rem 0;
+		background: #ffffff;
+		min-height: 60vh;
+	}
+
+	.wrapper {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 0 2rem;
+	}
+
+	/* Dashboard de 2 columnas */
+	.dashboard-layout {
+		display: grid;
+		grid-template-columns: 1fr 320px;
+		gap: 2rem;
+		align-items: start;
+	}
+
+	/* Columna de noticias */
+	.news-column {
+		min-width: 0; /* Permite que el contenido se ajuste */
+	}
+
+	/* Columna de análisis */
+	.analysis-column {
+		position: sticky;
+		top: 100px;
+		height: fit-content;
+	}
+
+	/* Responsive */
+	@media (max-width: 1200px) {
+		.dashboard-layout {
+			grid-template-columns: 1fr 300px;
+			gap: 1.5rem;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		.dashboard-layout {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+
+		.analysis-column {
+			position: static;
+		}
+
+		.wrapper {
+			padding: 0 1.5rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.main-content {
+			padding: 1.5rem 0;
+		}
+
+		.wrapper {
+			padding: 0 1rem;
+		}
+
+		.dashboard-layout {
+			gap: 1.5rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.wrapper {
+			padding: 0 0.75rem;
+		}
+
+		.dashboard-layout {
+			gap: 1rem;
+		}
 	}
 </style>

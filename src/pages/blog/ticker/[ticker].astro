@@ -1,0 +1,592 @@
+---
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import { SITE_TITLE } from '../../../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import NewsFilters from '../../../components/news/NewsFilters.astro';
+import QuickAnalysisSidebar from '../../../components/finance/QuickAnalysisSidebar.astro';
+import ProfessionalNewsList from '../../../components/news/ProfessionalNewsList.astro';
+import { NewsFilter, createDefaultFilters } from '../../../utils/newsFilter';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const tickers = new Set<string>();
+  
+  posts.forEach(post => {
+    if (post.data.tickers) {
+      post.data.tickers.forEach(ticker => tickers.add(ticker));
+    }
+  });
+  
+  return Array.from(tickers).map(ticker => ({
+    params: { ticker },
+    props: { ticker }
+  }));
+}
+
+const { ticker } = Astro.params;
+
+// Obtener posts del ticker
+const allPosts = await getCollection('blog');
+const tickerPosts = allPosts.filter(post => 
+  post.data.tickers && post.data.tickers.includes(ticker!)
+);
+
+// Crear filtros específicos para el ticker
+const filters = createDefaultFilters();
+filters.tickers = [ticker!];
+
+// Aplicar filtros
+const newsFilter = new NewsFilter(allPosts);
+const filteredResults = newsFilter.filter(filters);
+const filteredPosts = filteredResults.map(result => result.post);
+
+// Agrupar posts por fecha
+const groupedPosts = filteredPosts.reduce((acc, post) => {
+  const dateKey = post.data.pubDate.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  if (!acc[dateKey]) {
+    acc[dateKey] = [];
+  }
+  acc[dateKey].push(post);
+  return acc;
+}, {} as Record<string, typeof filteredPosts>);
+
+// Estadísticas del ticker
+const tickerStats = {
+  totalPosts: tickerPosts.length,
+  avgRelevance: tickerPosts.reduce((sum, post) => sum + (post.data.relevanceScore || 5), 0) / tickerPosts.length,
+  impactDistribution: tickerPosts.reduce((acc, post) => {
+    const impact = post.data.impact || 'bajo';
+    acc[impact] = (acc[impact] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>),
+  sentimentDistribution: tickerPosts.reduce((acc, post) => {
+    const sentiment = post.data.sentiment || 'neutral';
+    acc[sentiment] = (acc[sentiment] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>),
+  sectorsDistribution: tickerPosts.reduce((acc, post) => {
+    if (post.data.sectors) {
+      post.data.sectors.forEach(sector => {
+        acc[sector] = (acc[sector] || 0) + 1;
+      });
+    }
+    return acc;
+  }, {} as Record<string, number>),
+  sourcesDistribution: tickerPosts.reduce((acc, post) => {
+    const source = post.data.source || 'Fuente desconocida';
+    acc[source] = (acc[source] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>)
+};
+
+// Funciones de utilidad
+function getTickerColor(ticker: string) {
+  // Colores basados en el tipo de ticker
+  if (ticker.startsWith('$') || ticker.includes('USD')) return '#28a745'; // Forex
+  if (ticker.includes('BTC') || ticker.includes('ETH')) return '#f7931a'; // Crypto
+  if (ticker.length <= 4) return '#007bff'; // Stocks
+  return '#6c757d'; // Default
+}
+
+function getTickerIcon(ticker: string) {
+  if (ticker.includes('BTC') || ticker.includes('ETH')) return '₿';
+  if (ticker.includes('USD') || ticker.includes('EUR')) return '💱';
+  if (ticker.length <= 4) return '📈';
+  return '📊';
+}
+
+const availableFilters = newsFilter.getAvailableFilters();
+const filterStats = newsFilter.getFilterStats(filters);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <BaseHead title={`${ticker} - ${SITE_TITLE}`} description={`Noticias y análisis de ${ticker} con filtros avanzados y metadatos de impacto`} />
+    <style>
+      .ticker-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 3rem 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ticker-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .ticker-header-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .ticker-symbol {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .ticker-icon {
+        font-size: 3rem;
+        opacity: 0.8;
+      }
+
+      .ticker-name {
+        font-size: 1.5rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .ticker-description {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .ticker-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .ticker-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .ticker-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .ticker-stats {
+        background: white;
+        padding: 2rem 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .stats-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+      }
+
+      .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .main-content {
+        background: #f8f9fa;
+        min-height: calc(100vh - 200px);
+      }
+
+      .wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr 350px;
+        gap: 2rem;
+        align-items: start;
+      }
+
+      .filters-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 2rem;
+      }
+
+      .news-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .analysis-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 2rem;
+      }
+
+      .ticker-analysis {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .analysis-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .analysis-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid var(--ticker-color);
+      }
+
+      .analysis-item h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .analysis-item p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        color: #333;
+      }
+
+      .distribution-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .distribution-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+
+      .distribution-label {
+        font-weight: 500;
+        color: #495057;
+      }
+
+      .distribution-count {
+        font-weight: 700;
+        color: #007bff;
+      }
+
+      .tradingview-widget {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .widget-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      @media (max-width: 1200px) {
+        .dashboard-layout {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .filters-column,
+        .analysis-column {
+          position: static;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .ticker-symbol {
+          font-size: 3rem;
+        }
+
+        .ticker-name {
+          font-size: 1.2rem;
+        }
+
+        .ticker-description {
+          font-size: 1rem;
+        }
+
+        .ticker-actions {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 1rem;
+        }
+
+        .wrapper {
+          padding: 1rem;
+        }
+
+        .filters-column,
+        .news-column,
+        .analysis-column {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    
+    <div class="ticker-header" style={`--ticker-color: ${getTickerColor(ticker!)};`}>
+      <div class="ticker-header-content">
+        <div class="ticker-symbol">
+          <span class="ticker-icon">{getTickerIcon(ticker!)}</span>
+          {ticker}
+        </div>
+        <div class="ticker-name">Análisis de Noticias</div>
+        <p class="ticker-description">
+          Seguimiento completo de noticias y análisis relacionados con {ticker}
+        </p>
+        <div class="ticker-actions">
+          <a href={`https://www.tradingview.com/symbols/${ticker}/`} 
+             class="ticker-btn" target="_blank" rel="noopener">
+            📈 Ver Gráfico
+          </a>
+          <a href={`https://finance.yahoo.com/quote/${ticker}`} 
+             class="ticker-btn" target="_blank" rel="noopener">
+            💰 Yahoo Finance
+          </a>
+          <a href={`https://www.google.com/finance/quote/${ticker}`} 
+             class="ticker-btn" target="_blank" rel="noopener">
+            🔍 Google Finance
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticker-stats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">{tickerStats.totalPosts}</div>
+          <div class="stat-label">Noticias Totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{tickerStats.avgRelevance.toFixed(1)}</div>
+          <div class="stat-label">Relevancia Promedio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{Object.keys(tickerStats.sectorsDistribution).length}</div>
+          <div class="stat-label">Sectores Relacionados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{Object.keys(tickerStats.sourcesDistribution).length}</div>
+          <div class="stat-label">Fuentes Diferentes</div>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <div class="wrapper">
+        <!-- Widget de TradingView -->
+        <div class="tradingview-widget">
+          <h3 class="widget-title">
+            📊 Gráfico de {ticker}
+          </h3>
+          <div id="tradingview-widget" style="height: 400px;"></div>
+        </div>
+
+        <!-- Análisis del ticker -->
+        <div class="ticker-analysis">
+          <h2 class="analysis-title">
+            📈 Análisis de {ticker}
+          </h2>
+          <div class="analysis-grid">
+            <div class="analysis-item">
+              <h4>Distribución por Impacto</h4>
+              <div class="distribution-list">
+                {Object.entries(tickerStats.impactDistribution)
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([impact, count]) => (
+                    <div class="distribution-item">
+                      <span class="distribution-label">{impact}</span>
+                      <span class="distribution-count">{count}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <h4>Distribución por Sentimiento</h4>
+              <div class="distribution-list">
+                {Object.entries(tickerStats.sentimentDistribution)
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([sentiment, count]) => (
+                    <div class="distribution-item">
+                      <span class="distribution-label">{sentiment}</span>
+                      <span class="distribution-count">{count}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <h4>Sectores Relacionados</h4>
+              <div class="distribution-list">
+                {Object.entries(tickerStats.sectorsDistribution)
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([sector, count]) => (
+                    <div class="distribution-item">
+                      <span class="distribution-label">{sector}</span>
+                      <span class="distribution-count">{count}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div class="analysis-item">
+              <h4>Fuentes Principales</h4>
+              <div class="distribution-list">
+                {Object.entries(tickerStats.sourcesDistribution)
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([source, count]) => (
+                    <div class="distribution-item">
+                      <span class="distribution-label">{source}</span>
+                      <span class="distribution-count">{count}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-layout">
+          <!-- Columna 1: Filtros -->
+          <aside class="filters-column">
+            <NewsFilters 
+              availableFilters={availableFilters}
+              currentFilters={filters}
+              filterStats={filterStats}
+            />
+          </aside>
+
+          <!-- Columna 2: Noticias del ticker -->
+          <section class="news-column">
+            {filteredPosts.length > 0 ? (
+              <ProfessionalNewsList groupedPosts={groupedPosts} />
+            ) : (
+              <div style="text-align: center; padding: 3rem 1rem; color: #6c757d;">
+                <h3>🔍 No se encontraron noticias para {ticker}</h3>
+                <p>Intenta ajustar los filtros o explorar otros tickers.</p>
+              </div>
+            )}
+          </section>
+
+          <!-- Columna 3: Análisis rápido -->
+          <aside class="analysis-column">
+            <QuickAnalysisSidebar />
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+
+    <!-- TradingView Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+      new TradingView.widget({
+        "autosize": true,
+        "symbol": "{ticker}",
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "es",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "save_image": false,
+        "container_id": "tradingview-widget"
+      });
+    </script>
+  </body>
+</html>

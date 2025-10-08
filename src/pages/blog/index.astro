@@ -5,102 +5,336 @@ import Footer from '../../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
+import NewsFilters from '../../components/news/NewsFilters.astro';
+import QuickAnalysisSidebar from '../../components/finance/QuickAnalysisSidebar.astro';
+import ProfessionalNewsList from '../../components/news/ProfessionalNewsList.astro';
+import { NewsFilter, createDefaultFilters, urlParamsToFilters } from '../../utils/newsFilter';
 
-const posts = (await getCollection('blog')).sort((a, b) => {
-	// Get dates without time
-	const dateA = new Date(a.data.pubDate.getFullYear(), a.data.pubDate.getMonth(), a.data.pubDate.getDate());
-	const dateB = new Date(b.data.pubDate.getFullYear(), b.data.pubDate.getMonth(), b.data.pubDate.getDate());
+// Obtener posts y crear instancia del filtro
+const allPosts = await getCollection('blog');
+const newsFilter = new NewsFilter(allPosts);
+
+// Obtener filtros de la URL
+const url = new URL(Astro.request.url);
+const urlParams = new URLSearchParams(url.search);
+const filters = urlParamsToFilters(urlParams);
+
+// Aplicar filtros
+const filteredResults = newsFilter.filter(filters);
+const filteredPosts = filteredResults.map(result => result.post);
+
+// Agrupar posts por fecha
+const groupedPosts = filteredPosts.reduce((acc, post) => {
+	const dateKey = post.data.pubDate.toLocaleDateString('es-ES', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
 	
-	// Compare dates first (newest day first)
-	const dateCompare = dateB.getTime() - dateA.getTime();
-	if (dateCompare !== 0) return dateCompare;
-	
-	// If same date, sort by complete timestamp (newest first)
-	return b.data.pubDate.getTime() - a.data.pubDate.getTime();
-});
+	if (!acc[dateKey]) {
+		acc[dateKey] = [];
+	}
+	acc[dateKey].push(post);
+	return acc;
+}, {} as Record<string, typeof filteredPosts>);
+
+// Obtener estadísticas de filtros
+const filterStats = newsFilter.getFilterStats(filters);
+const availableFilters = newsFilter.getAvailableFilters();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} - Blog de Noticias Financieras`} description="Análisis profesional de noticias financieras con filtros avanzados y metadatos de impacto" />
 		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
+			.blog-header {
+				background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+				color: white;
+				padding: 3rem 0;
 				text-align: center;
 			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
+
+			.blog-header h1 {
+				font-size: 3rem;
+				font-weight: 800;
+				margin: 0 0 1rem 0;
+				background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
 			}
-			.title {
-				margin: 0;
-				color: #601229;
-				line-height: 1;
+
+			.blog-header p {
+				font-size: 1.2rem;
+				opacity: 0.9;
+				max-width: 600px;
+				margin: 0 auto;
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
+
+			.filter-stats {
+				background: #f8f9fa;
+				padding: 1rem 0;
+				border-bottom: 1px solid #e9ecef;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
+
+			.stats-container {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 0 1rem;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 1rem;
 			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
+
+			.stats-item {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				font-size: 0.9rem;
+				color: #6c757d;
+			}
+
+			.stats-number {
+				font-weight: 700;
+				color: #495057;
+				font-size: 1.1rem;
+			}
+
+			.main-content {
+				background: #f8f9fa;
+				min-height: calc(100vh - 200px);
+			}
+
+			.wrapper {
+				max-width: 1400px;
+				margin: 0 auto;
+				padding: 2rem 1rem;
+			}
+
+			.dashboard-layout {
+				display: grid;
+				grid-template-columns: 300px 1fr 350px;
+				gap: 2rem;
+				align-items: start;
+			}
+
+			.filters-column {
+				background: white;
+				border-radius: 12px;
+				padding: 1.5rem;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+				position: sticky;
+				top: 2rem;
+			}
+
+			.news-column {
+				background: white;
+				border-radius: 12px;
+				padding: 1.5rem;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			}
+
+			.analysis-column {
+				background: white;
+				border-radius: 12px;
+				padding: 1.5rem;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+				position: sticky;
+				top: 2rem;
+			}
+
+			.no-results {
+				text-align: center;
+				padding: 3rem 1rem;
+				color: #6c757d;
+			}
+
+			.no-results h3 {
+				font-size: 1.5rem;
+				margin-bottom: 1rem;
+				color: #495057;
+			}
+
+			.no-results p {
+				font-size: 1rem;
+				margin-bottom: 1.5rem;
+			}
+
+			.clear-filters-btn {
+				background: #007bff;
+				color: white;
+				border: none;
+				padding: 0.75rem 1.5rem;
+				border-radius: 8px;
+				font-size: 0.9rem;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+
+			.clear-filters-btn:hover {
+				background: #0056b3;
+			}
+
+			@media (max-width: 1200px) {
+				.dashboard-layout {
+					grid-template-columns: 1fr;
+					gap: 1.5rem;
 				}
-				ul li {
-					width: 100%;
-					text-align: center;
+
+				.filters-column,
+				.analysis-column {
+					position: static;
 				}
-				ul li:first-child {
-					margin-bottom: 0;
+			}
+
+			@media (max-width: 768px) {
+				.blog-header h1 {
+					font-size: 2rem;
 				}
-				ul li:first-child .title {
-					font-size: 1.563em;
+
+				.blog-header p {
+					font-size: 1rem;
+				}
+
+				.stats-container {
+					flex-direction: column;
+					align-items: flex-start;
+				}
+
+				.wrapper {
+					padding: 1rem;
+				}
+
+				.filters-column,
+				.news-column,
+				.analysis-column {
+					padding: 1rem;
 				}
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
+		
+		<div class="blog-header">
+			<div class="wrapper">
+				<h1>📈 Blog de Noticias Financieras</h1>
+				<p>Análisis profesional con filtros avanzados, metadatos de impacto y herramientas para inversores</p>
+			</div>
+		</div>
+
+		<div class="filter-stats">
+			<div class="stats-container">
+				<div class="stats-item">
+					<span>📊 Total de noticias:</span>
+					<span class="stats-number">{filterStats.total}</span>
+				</div>
+				<div class="stats-item">
+					<span>🔍 Resultados filtrados:</span>
+					<span class="stats-number">{filterStats.filtered}</span>
+				</div>
+				<div class="stats-item">
+					<span>📅 Última actualización:</span>
+					<span class="stats-number">{new Date().toLocaleDateString('es-ES')}</span>
+				</div>
+			</div>
+		</div>
+
+		<main class="main-content">
+			<div class="wrapper">
+				<div class="dashboard-layout">
+					<!-- Columna 1: Filtros -->
+					<aside class="filters-column">
+						<NewsFilters />
+					</aside>
+
+					<!-- Columna 2: Noticias principales -->
+					<section class="news-column">
+						{filteredPosts.length > 0 ? (
+							<ProfessionalNewsList groupedPosts={groupedPosts} />
+						) : (
+							<div class="no-results">
+								<h3>🔍 No se encontraron resultados</h3>
+								<p>Intenta ajustar los filtros o limpiar la búsqueda para ver más noticias.</p>
+								<button class="clear-filters-btn" onclick="clearAllFilters()">
+									Limpiar Filtros
+								</button>
+							</div>
+						)}
+					</section>
+
+					<!-- Columna 3: Análisis rápido -->
+					<aside class="analysis-column">
+						<QuickAnalysisSidebar />
+					</aside>
+				</div>
+			</div>
 		</main>
+
 		<Footer />
+
+		<script>
+			function clearAllFilters() {
+				window.location.href = '/blog/';
+			}
+
+			// Sincronizar filtros con URL
+			function updateUrlWithFilters() {
+				const form = document.querySelector('.news-filters') as HTMLFormElement;
+				if (!form) return;
+
+				const params = new URLSearchParams();
+
+				// Recopilar todos los filtros activos
+				const checkboxes = form.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
+				const selects = form.querySelectorAll('select') as NodeListOf<HTMLSelectElement>;
+				const inputs = form.querySelectorAll('input[type="text"], input[type="date"]') as NodeListOf<HTMLInputElement>;
+
+				// Agrupar checkboxes por tipo
+				const filterGroups: Record<string, string[]> = {};
+				checkboxes.forEach(checkbox => {
+					const group = checkbox.name;
+					if (!filterGroups[group]) filterGroups[group] = [];
+					filterGroups[group].push(checkbox.value);
+				});
+
+				// Añadir grupos de filtros a params
+				Object.entries(filterGroups).forEach(([group, values]) => {
+					if (values.length > 0) {
+						params.set(group, values.join(','));
+					}
+				});
+
+				// Añadir selects e inputs
+				selects.forEach(select => {
+					if (select.value && select.value !== '') {
+						params.set(select.name, select.value);
+					}
+				});
+
+				inputs.forEach(input => {
+					if (input.value && input.value !== '') {
+						params.set(input.name, input.value);
+					}
+				});
+
+				// Actualizar URL
+				const newUrl = new URL(window.location.href);
+				newUrl.search = params.toString();
+				window.history.pushState({}, '', newUrl.toString());
+			}
+
+			// Añadir event listeners
+			document.addEventListener('DOMContentLoaded', function() {
+				const form = document.querySelector('.news-filters') as HTMLFormElement;
+				if (form) {
+					form.addEventListener('change', updateUrlWithFilters);
+					form.addEventListener('input', updateUrlWithFilters);
+				}
+			});
+		</script>
 	</body>
 </html>

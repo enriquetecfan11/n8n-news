@@ -1,0 +1,463 @@
+---
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import { SITE_TITLE } from '../../../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import NewsFilters from '../../../components/news/NewsFilters.astro';
+import QuickAnalysisSidebar from '../../../components/finance/QuickAnalysisSidebar.astro';
+import ProfessionalNewsList from '../../../components/news/ProfessionalNewsList.astro';
+import { NewsFilter, createDefaultFilters } from '../../../utils/newsFilter';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const sectors = new Set<string>();
+  
+  posts.forEach(post => {
+    if (post.data.sectors) {
+      post.data.sectors.forEach(sector => sectors.add(sector));
+    }
+  });
+  
+  return Array.from(sectors).map(sector => ({
+    params: { sector },
+    props: { sector }
+  }));
+}
+
+const { sector } = Astro.params;
+
+// Obtener posts del sector
+const allPosts = await getCollection('blog');
+const sectorPosts = allPosts.filter(post => 
+  post.data.sectors && post.data.sectors.includes(sector!)
+);
+
+// Crear filtros específicos para el sector
+const filters = createDefaultFilters();
+filters.sectors = [sector!];
+
+// Aplicar filtros
+const newsFilter = new NewsFilter(allPosts);
+const filteredResults = newsFilter.filter(filters);
+const filteredPosts = filteredResults.map(result => result.post);
+
+// Agrupar posts por fecha
+const groupedPosts = filteredPosts.reduce((acc, post) => {
+  const dateKey = post.data.pubDate.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  if (!acc[dateKey]) {
+    acc[dateKey] = [];
+  }
+  acc[dateKey].push(post);
+  return acc;
+}, {} as Record<string, typeof filteredPosts>);
+
+// Estadísticas del sector
+const sectorStats = {
+  totalPosts: sectorPosts.length,
+  avgRelevance: sectorPosts.reduce((sum, post) => sum + (post.data.relevanceScore || 5), 0) / sectorPosts.length,
+  impactDistribution: sectorPosts.reduce((acc, post) => {
+    const impact = post.data.impact || 'bajo';
+    acc[impact] = (acc[impact] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>),
+  sentimentDistribution: sectorPosts.reduce((acc, post) => {
+    const sentiment = post.data.sentiment || 'neutral';
+    acc[sentiment] = (acc[sentiment] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>),
+  topTickers: sectorPosts.reduce((acc, post) => {
+    if (post.data.tickers) {
+      post.data.tickers.forEach(ticker => {
+        acc[ticker] = (acc[ticker] || 0) + 1;
+      });
+    }
+    return acc;
+  }, {} as Record<string, number>)
+};
+
+// Funciones de utilidad
+function getSectorIcon(sector: string) {
+  const icons: Record<string, string> = {
+    'tecnología': '💻',
+    'finanzas': '💰',
+    'energía': '⚡',
+    'salud': '🏥',
+    'consumo': '🛒',
+    'política': '🏛️',
+    'economía': '📊',
+    'automotriz': '🚗',
+    'comercio': '🌍'
+  };
+  return icons[sector] || '📋';
+}
+
+function getSectorColor(sector: string) {
+  const colors: Record<string, string> = {
+    'tecnología': '#007bff',
+    'finanzas': '#28a745',
+    'energía': '#ffc107',
+    'salud': '#dc3545',
+    'consumo': '#6f42c1',
+    'política': '#fd7e14',
+    'economía': '#20c997',
+    'automotriz': '#6c757d',
+    'comercio': '#e83e8c'
+  };
+  return colors[sector] || '#6c757d';
+}
+
+const availableFilters = newsFilter.getAvailableFilters();
+const filterStats = newsFilter.getFilterStats(filters);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <BaseHead title={`${sector} - ${SITE_TITLE}`} description={`Noticias y análisis del sector ${sector} con filtros avanzados y metadatos de impacto`} />
+    <style>
+      .sector-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+        padding: 3rem 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sector-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .sector-header-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .sector-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .sector-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0 0 1rem 0;
+        text-transform: capitalize;
+      }
+
+      .sector-description {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .sector-stats {
+        background: white;
+        padding: 2rem 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .stats-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+      }
+
+      .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .main-content {
+        background: #f8f9fa;
+        min-height: calc(100vh - 200px);
+      }
+
+      .wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr 350px;
+        gap: 2rem;
+        align-items: start;
+      }
+
+      .filters-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 2rem;
+      }
+
+      .news-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .analysis-column {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 2rem;
+      }
+
+      .sector-analysis {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .analysis-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .analysis-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid var(--sector-color);
+      }
+
+      .analysis-item h4 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .analysis-item p {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        color: #333;
+      }
+
+      .ticker-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .ticker-item {
+        background: #007bff;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .ticker-count {
+        background: #6c757d;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-style: italic;
+      }
+
+      @media (max-width: 1200px) {
+        .dashboard-layout {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        .filters-column,
+        .analysis-column {
+          position: static;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sector-title {
+          font-size: 2rem;
+        }
+
+        .sector-description {
+          font-size: 1rem;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 1rem;
+        }
+
+        .wrapper {
+          padding: 1rem;
+        }
+
+        .filters-column,
+        .news-column,
+        .analysis-column {
+          padding: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    
+    <div class="sector-header" style={`--sector-color: ${getSectorColor(sector!)};`}>
+      <div class="sector-header-content">
+        <span class="sector-icon">{getSectorIcon(sector!)}</span>
+        <h1 class="sector-title">{sector}</h1>
+        <p class="sector-description">
+          Análisis profesional de noticias del sector {sector} con filtros avanzados y metadatos de impacto
+        </p>
+      </div>
+    </div>
+
+    <div class="sector-stats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">{sectorStats.totalPosts}</div>
+          <div class="stat-label">Noticias Totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{sectorStats.avgRelevance.toFixed(1)}</div>
+          <div class="stat-label">Relevancia Promedio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{Object.keys(sectorStats.topTickers).length}</div>
+          <div class="stat-label">Tickers Únicos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{Math.max(...Object.values(sectorStats.impactDistribution))}</div>
+          <div class="stat-label">Mayor Impacto</div>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <div class="wrapper">
+        <!-- Análisis del sector -->
+        <div class="sector-analysis">
+          <h2 class="analysis-title">
+            📊 Análisis del Sector {sector}
+          </h2>
+          <div class="analysis-grid">
+            <div class="analysis-item">
+              <h4>Distribución por Impacto</h4>
+              {Object.entries(sectorStats.impactDistribution).map(([impact, count]) => (
+                <p>{impact}: {count} noticias</p>
+              ))}
+            </div>
+            <div class="analysis-item">
+              <h4>Distribución por Sentimiento</h4>
+              {Object.entries(sectorStats.sentimentDistribution).map(([sentiment, count]) => (
+                <p>{sentiment}: {count} noticias</p>
+              ))}
+            </div>
+            <div class="analysis-item">
+              <h4>Top Tickers</h4>
+              <div class="ticker-list">
+                {Object.entries(sectorStats.topTickers)
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 5)
+                  .map(([ticker, count]) => (
+                    <span class="ticker-item">{ticker} ({count})</span>
+                  ))}
+                {Object.keys(sectorStats.topTickers).length > 5 && (
+                  <span class="ticker-count">+{Object.keys(sectorStats.topTickers).length - 5} más</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-layout">
+          <!-- Columna 1: Filtros -->
+          <aside class="filters-column">
+            <NewsFilters 
+              availableFilters={availableFilters}
+              currentFilters={filters}
+              filterStats={filterStats}
+            />
+          </aside>
+
+          <!-- Columna 2: Noticias del sector -->
+          <section class="news-column">
+            {filteredPosts.length > 0 ? (
+              <ProfessionalNewsList groupedPosts={groupedPosts} />
+            ) : (
+              <div style="text-align: center; padding: 3rem 1rem; color: #6c757d;">
+                <h3>🔍 No se encontraron noticias para este sector</h3>
+                <p>Intenta ajustar los filtros o explorar otros sectores.</p>
+              </div>
+            )}
+          </section>
+
+          <!-- Columna 3: Análisis rápido -->
+          <aside class="analysis-column">
+            <QuickAnalysisSidebar />
+          </aside>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+  </body>
+</html>

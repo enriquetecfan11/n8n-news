@@ -11,6 +11,13 @@ const blog = defineCollection({
 		// Transform string to Date object
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
+		// Metadatos financieros
+		impact: z.enum(['alto', 'medio', 'bajo']).optional(),
+		sectors: z.array(z.string()).optional(),
+		source: z.string().optional(),
+		sentiment: z.enum(['positivo', 'neutral', 'negativo']).optional(),
+		relevanceScore: z.number().min(1).max(10).optional(),
+		tickers: z.array(z.string()).optional(),
 	}),
 });
 

@@ -25,6 +25,28 @@
 	--market-down: #F44336;
 	--accent-blue: #0d1b2a;
 
+	/* Códigos de color por sector */
+	--sector-tecnologia: #6366f1;
+	--sector-finanzas: #10b981;
+	--sector-energia: #f59e0b;
+	--sector-salud: #ec4899;
+	--sector-consumo: #8b5cf6;
+	--sector-politica: #3b82f6;
+	--sector-economia: #f59e0b;
+	--sector-automotriz: #ef4444;
+	--sector-comercio: #06b6d4;
+	--sector-default: #6b7280;
+
+	/* Colores de impacto */
+	--impact-alto: #ef4444;
+	--impact-medio: #f59e0b;
+	--impact-bajo: #10b981;
+
+	/* Colores de sentimiento */
+	--sentiment-positivo: #10b981;
+	--sentiment-neutral: #6b7280;
+	--sentiment-negativo: #ef4444;
+
 	/* Tipografía moderna */
 	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--font-fallback: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
@@ -74,26 +96,22 @@ body {
 
 body {
 	font-family: var(--font-body);
-	/* Asegurar uso de font-body */
 	text-align: left;
-	color: var(--text);
-	background-color: var(--background);
+	color: #111827;
+	background: #ffffff;
 	font-size: 16px;
-	/* Mantener tamaño base */
-	line-height: 1.7;
-	/* Ligeramente más espaciado */
+	line-height: 1.6;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	font-weight: 400;
 }
 
 main {
-	width: 1100px;
-	/* Aumentar ancho máximo para aprovechar espacio */
-	max-width: calc(100% - 2em);
+	width: 1400px;
+	max-width: calc(100% - 4rem);
 	margin: 0 auto;
-	padding: 2.5em 1em 4em;
-	/* Ajustar padding */
+	padding: 0 2rem;
 	flex: 1;
 }
 
@@ -103,44 +121,39 @@ h3,
 h4,
 h5,
 h6 {
-	margin: 0 0 0.8rem 0;
-	/* Ajustar margen inferior */
-	color: var(--primary-dark);
-	/* Usar un color oscuro consistente */
-	line-height: 1.4;
-	/* Ajustar interlineado */
-	font-weight: 700;
-	/* Hacer encabezados más bold por defecto */
-	font-family: var(--font-heading);
-	/* Asegurar uso de font-heading */
-	letter-spacing: -0.01em;
-	/* Ajuste sutil */
+	margin: 0 0 0.75rem 0;
+	color: #1a1a1a;
+	line-height: 1.3;
+	font-weight: 600;
+	font-family: var(--font-body);
+	letter-spacing: -0.02em;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
-	font-size: 2.8em;
-	/* Ajustar tamaños */
-	margin-bottom: 1.2rem;
+	font-size: 1.8em;
+	margin-bottom: 0.75rem;
 }
 
 h2 {
-	font-size: 2em;
+	font-size: 1.5em;
 	margin-top: 2em;
 }
 
 h3 {
-	font-size: 1.6em;
+	font-size: 1.25em;
 	font-weight: 600;
-	/* Ligeramente menos bold */
 }
 
 h4 {
-	font-size: 1.3em;
+	font-size: 1.1em;
 	font-weight: 600;
 }
 
 h5 {
-	font-size: 1.1em;
+	font-size: 1em;
 	font-weight: 600;
 }
 
@@ -166,12 +179,13 @@ a:hover {
 }
 
 p {
-	margin-bottom: 1.3em;
-	/* Ajustar margen */
-	line-height: 1.75;
-	/* Mejorar legibilidad */
-	color: var(--text-light);
-	/* Usar color de texto secundario para párrafos */
+	margin-bottom: 1.25em;
+	line-height: 1.7;
+	color: #4a4a4a;
+	font-size: 1rem;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 .prose p {
@@ -631,5 +645,211 @@ li {
 
 	.spotlight-title {
 		font-size: 1.25rem;
+	}
+}
+
+/* Mejoras de jerarquía visual para inversores */
+.financial-highlight {
+	position: relative;
+	border-left: 4px solid var(--impact-alto);
+	background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);
+	padding-left: 1rem;
+}
+
+.financial-highlight::before {
+	content: "⚠️";
+	position: absolute;
+	left: -8px;
+	top: 0.5rem;
+	font-size: 1.2rem;
+}
+
+.sector-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.sector-indicator.tecnologia {
+	background: rgba(99, 102, 241, 0.1);
+	color: var(--sector-tecnologia);
+	border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.sector-indicator.finanzas {
+	background: rgba(16, 185, 129, 0.1);
+	color: var(--sector-finanzas);
+	border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.sector-indicator.energia {
+	background: rgba(245, 158, 11, 0.1);
+	color: var(--sector-energia);
+	border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.sector-indicator.salud {
+	background: rgba(236, 72, 153, 0.1);
+	color: var(--sector-salud);
+	border: 1px solid rgba(236, 72, 153, 0.2);
+}
+
+.sector-indicator.consumo {
+	background: rgba(139, 92, 246, 0.1);
+	color: var(--sector-consumo);
+	border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.sector-indicator.politica {
+	background: rgba(59, 130, 246, 0.1);
+	color: var(--sector-politica);
+	border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.sector-indicator.economia {
+	background: rgba(245, 158, 11, 0.1);
+	color: var(--sector-economia);
+	border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.sector-indicator.automotriz {
+	background: rgba(239, 68, 68, 0.1);
+	color: var(--sector-automotriz);
+	border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.sector-indicator.comercio {
+	background: rgba(6, 182, 212, 0.1);
+	color: var(--sector-comercio);
+	border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+/* Indicadores de impacto visual */
+.impact-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.impact-indicator.alto {
+	background: var(--impact-alto);
+	color: white;
+	box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.impact-indicator.medio {
+	background: var(--impact-medio);
+	color: white;
+	box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.impact-indicator.bajo {
+	background: var(--impact-bajo);
+	color: white;
+	box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Indicadores de sentimiento */
+.sentiment-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.7rem;
+	font-weight: 600;
+}
+
+.sentiment-indicator.positivo {
+	background: rgba(16, 185, 129, 0.1);
+	color: var(--sentiment-positivo);
+	border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.sentiment-indicator.neutral {
+	background: rgba(107, 114, 128, 0.1);
+	color: var(--sentiment-neutral);
+	border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.sentiment-indicator.negativo {
+	background: rgba(239, 68, 68, 0.1);
+	color: var(--sentiment-negativo);
+	border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Mejoras de accesibilidad */
+.focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Mejoras de contraste para accesibilidad */
+.high-contrast {
+	--text: #000000;
+	--text-light: #333333;
+	--text-lighter: #666666;
+	--background: #ffffff;
+	--border: #000000;
+}
+
+/* Animaciones suaves para mejor UX */
+.smooth-transition {
+	transition: all 0.2s ease-in-out;
+}
+
+.smooth-transition:hover {
+	transform: translateY(-1px);
+}
+
+/* Estados de carga */
+.loading-skeleton {
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+/* Mejoras para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+	.smooth-transition:hover {
+		transform: none;
+	}
+	
+	button, .clickable {
+		min-height: 44px;
+		min-width: 44px;
 	}
 }
