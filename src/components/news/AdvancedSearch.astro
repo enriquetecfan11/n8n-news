@@ -1,0 +1,693 @@
+---
+export interface Props {
+  placeholder?: string;
+  showSuggestions?: boolean;
+  maxSuggestions?: number;
+  onSearch?: (query: string) => void;
+}
+
+const { 
+  placeholder = "Buscar noticias, tickers, sectores...",
+  showSuggestions = true,
+  maxSuggestions = 5
+} = Astro.props;
+---
+
+<div class="advanced-search">
+  <div class="search-container">
+    <div class="search-input-wrapper">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder={placeholder}
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Búsqueda avanzada de noticias"
+        role="searchbox"
+      />
+      <button class="search-button" type="button" aria-label="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+      </button>
+    </div>
+    
+    {showSuggestions && (
+      <div class="suggestions-dropdown" style="display: none;">
+        <div class="suggestions-content">
+          <div class="suggestion-category">
+            <h4 class="category-title">Búsquedas populares</h4>
+            <div class="suggestion-items">
+              <button class="suggestion-item" data-query="Microsoft Meta alianza">
+                Microsoft Meta alianza
+              </button>
+              <button class="suggestion-item" data-query="Fed inflación">
+                Fed inflación
+              </button>
+              <button class="suggestion-item" data-query="Trump elección">
+                Trump elección
+              </button>
+              <button class="suggestion-item" data-query="petróleo OPEC">
+                petróleo OPEC
+              </button>
+            </div>
+          </div>
+          
+          <div class="suggestion-category">
+            <h4 class="category-title">Tickers</h4>
+            <div class="suggestion-items">
+              <button class="suggestion-item ticker-suggestion" data-query="MSFT">
+                MSFT - Microsoft
+              </button>
+              <button class="suggestion-item ticker-suggestion" data-query="META">
+                META - Meta Platforms
+              </button>
+              <button class="suggestion-item ticker-suggestion" data-query="AAPL">
+                AAPL - Apple
+              </button>
+              <button class="suggestion-item ticker-suggestion" data-query="TSLA">
+                TSLA - Tesla
+              </button>
+            </div>
+          </div>
+          
+          <div class="suggestion-category">
+            <h4 class="category-title">Sectores</h4>
+            <div class="suggestion-items">
+              <button class="suggestion-item sector-suggestion" data-query="tecnología">
+                Tecnología
+              </button>
+              <button class="suggestion-item sector-suggestion" data-query="finanzas">
+                Finanzas
+              </button>
+              <button class="suggestion-item sector-suggestion" data-query="energía">
+                Energía
+              </button>
+              <button class="suggestion-item sector-suggestion" data-query="política">
+                Política
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <div class="search-filters">
+    <div class="filter-tags">
+      <span class="filter-tag">
+        <span class="tag-label">Filtros activos:</span>
+        <span class="tag-count">0</span>
+      </span>
+    </div>
+    <button class="clear-filters-btn" type="button" style="display: none;">
+      Limpiar filtros
+    </button>
+  </div>
+</div>
+
+<style>
+  .advanced-search {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .search-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .search-input-wrapper:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.15);
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: transparent;
+    color: #333;
+  }
+
+  .search-input::placeholder {
+    color: #6c757d;
+  }
+
+  .search-button {
+    padding: 1rem 1.5rem;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-button:hover {
+    background: #0056b3;
+  }
+
+  .search-button:active {
+    transform: scale(0.95);
+  }
+
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    margin-top: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .suggestions-content {
+    padding: 1rem;
+  }
+
+  .suggestion-category {
+    margin-bottom: 1.5rem;
+  }
+
+  .suggestion-category:last-child {
+    margin-bottom: 0;
+  }
+
+  .category-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .suggestion-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .suggestion-item {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: #495057;
+    border: 1px solid transparent;
+  }
+
+  .suggestion-item:hover {
+    background: #e3f2fd;
+    border-color: #007bff;
+    color: #007bff;
+    transform: translateX(4px);
+  }
+
+  .suggestion-item:active {
+    transform: scale(0.98);
+  }
+
+  .ticker-suggestion {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+  }
+
+  .sector-suggestion {
+    font-weight: 500;
+  }
+
+  .search-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .filter-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .tag-label {
+    font-weight: 500;
+  }
+
+  .tag-count {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .clear-filters-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .clear-filters-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+  }
+
+  /* Estados de búsqueda */
+  .search-input-wrapper.searching {
+    border-color: #ffc107;
+  }
+
+  .search-input-wrapper.searching .search-button {
+    background: #ffc107;
+  }
+
+  .search-input-wrapper.has-results {
+    border-color: #28a745;
+  }
+
+  .search-input-wrapper.has-results .search-button {
+    background: #28a745;
+  }
+
+  /* Animaciones */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .suggestions-dropdown.show {
+    animation: fadeInDown 0.3s ease;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .advanced-search {
+      max-width: 100%;
+    }
+
+    .search-input {
+      padding: 0.875rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .search-button {
+      padding: 0.875rem 1rem;
+    }
+
+    .suggestions-content {
+      padding: 0.75rem;
+    }
+
+    .suggestion-item {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.85rem;
+    }
+
+    .search-filters {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+  }
+
+  /* Accesibilidad */
+  .search-input:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
+  .suggestion-item:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
+  /* Modo oscuro */
+  @media (prefers-color-scheme: dark) {
+    .search-input-wrapper {
+      background: #2d3748;
+      border-color: #4a5568;
+    }
+
+    .search-input {
+      color: #e2e8f0;
+    }
+
+    .search-input::placeholder {
+      color: #a0aec0;
+    }
+
+    .suggestions-dropdown {
+      background: #2d3748;
+      border-color: #4a5568;
+    }
+
+    .suggestion-item {
+      background: #4a5568;
+      color: #e2e8f0;
+    }
+
+    .suggestion-item:hover {
+      background: #2b6cb0;
+      color: white;
+    }
+
+    .category-title {
+      color: #a0aec0;
+    }
+  }
+</style>
+
+<script>
+  class AdvancedSearch {
+    private searchInput: HTMLInputElement;
+    private suggestionsDropdown: HTMLElement;
+    private searchButton: HTMLButtonElement;
+    private clearFiltersBtn: HTMLButtonElement;
+    private tagCount: HTMLElement;
+    private searchWrapper: HTMLElement;
+    private activeFilters: Set<string> = new Set();
+    private searchHistory: string[] = [];
+    private debounceTimer: number | null = null;
+
+    constructor() {
+      this.searchInput = document.querySelector('.search-input') as HTMLInputElement;
+      this.suggestionsDropdown = document.querySelector('.suggestions-dropdown') as HTMLElement;
+      this.searchButton = document.querySelector('.search-button') as HTMLButtonElement;
+      this.clearFiltersBtn = document.querySelector('.clear-filters-btn') as HTMLButtonElement;
+      this.tagCount = document.querySelector('.tag-count') as HTMLElement;
+      this.searchWrapper = document.querySelector('.search-input-wrapper') as HTMLElement;
+
+      this.init();
+    }
+
+    private init() {
+      this.setupEventListeners();
+      this.loadSearchHistory();
+      this.updateFilterDisplay();
+    }
+
+    private setupEventListeners() {
+      // Input events
+      this.searchInput.addEventListener('input', (e) => {
+        this.handleInput(e);
+      });
+
+      this.searchInput.addEventListener('focus', () => {
+        this.showSuggestions();
+      });
+
+      this.searchInput.addEventListener('blur', (e) => {
+        // Delay hiding to allow clicking on suggestions
+        setTimeout(() => {
+          if (!this.suggestionsDropdown.contains(document.activeElement)) {
+            this.hideSuggestions();
+          }
+        }, 200);
+      });
+
+      // Button events
+      this.searchButton.addEventListener('click', () => {
+        this.performSearch();
+      });
+
+      this.clearFiltersBtn.addEventListener('click', () => {
+        this.clearAllFilters();
+      });
+
+      // Suggestion events
+      this.suggestionsDropdown.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('suggestion-item')) {
+          const query = target.getAttribute('data-query');
+          if (query) {
+            this.searchInput.value = query;
+            this.performSearch();
+            this.hideSuggestions();
+          }
+        }
+      });
+
+      // Keyboard events
+      this.searchInput.addEventListener('keydown', (e) => {
+        this.handleKeydown(e);
+      });
+
+      // Click outside to close
+      document.addEventListener('click', (e) => {
+        if (!this.searchWrapper.contains(e.target as Node)) {
+          this.hideSuggestions();
+        }
+      });
+    }
+
+    private handleInput(e: Event) {
+      const target = e.target as HTMLInputElement;
+      const query = target.value.trim();
+
+      // Clear debounce timer
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+
+      // Update search state
+      this.updateSearchState(query);
+
+      // Debounce search suggestions
+      if (query.length > 0) {
+        this.debounceTimer = window.setTimeout(() => {
+          this.updateSuggestions(query);
+        }, 300);
+      } else {
+        this.showDefaultSuggestions();
+      }
+    }
+
+    private handleKeydown(e: KeyboardEvent) {
+      switch (e.key) {
+        case 'Enter':
+          e.preventDefault();
+          this.performSearch();
+          break;
+        case 'Escape':
+          this.hideSuggestions();
+          this.searchInput.blur();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          this.navigateSuggestions(1);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          this.navigateSuggestions(-1);
+          break;
+      }
+    }
+
+    private updateSearchState(query: string) {
+      this.searchWrapper.classList.remove('searching', 'has-results');
+      
+      if (query.length > 0) {
+        this.searchWrapper.classList.add('searching');
+      }
+    }
+
+    private showSuggestions() {
+      this.suggestionsDropdown.style.display = 'block';
+      this.suggestionsDropdown.classList.add('show');
+      
+      if (this.searchInput.value.trim() === '') {
+        this.showDefaultSuggestions();
+      }
+    }
+
+    private hideSuggestions() {
+      this.suggestionsDropdown.style.display = 'none';
+      this.suggestionsDropdown.classList.remove('show');
+    }
+
+    private showDefaultSuggestions() {
+      // Show default suggestions (already in HTML)
+    }
+
+    private updateSuggestions(query: string) {
+      // In a real implementation, this would fetch suggestions from an API
+      // For now, we'll filter the existing suggestions
+      const suggestions = this.suggestionsDropdown.querySelectorAll('.suggestion-item');
+      
+      suggestions.forEach(suggestion => {
+        const text = suggestion.textContent?.toLowerCase() || '';
+        const matches = text.includes(query.toLowerCase());
+        (suggestion as HTMLElement).style.display = matches ? 'block' : 'none';
+      });
+    }
+
+    private navigateSuggestions(direction: number) {
+      const suggestions = Array.from(
+        this.suggestionsDropdown.querySelectorAll('.suggestion-item:not([style*="display: none"])')
+      ) as HTMLElement[];
+
+      if (suggestions.length === 0) return;
+
+      const currentIndex = suggestions.findIndex(s => s.classList.contains('focused'));
+      let newIndex = currentIndex + direction;
+
+      // Remove current focus
+      suggestions.forEach(s => s.classList.remove('focused'));
+
+      // Wrap around
+      if (newIndex < 0) newIndex = suggestions.length - 1;
+      if (newIndex >= suggestions.length) newIndex = 0;
+
+      // Add new focus
+      suggestions[newIndex].classList.add('focused');
+      suggestions[newIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    private performSearch() {
+      const query = this.searchInput.value.trim();
+      
+      if (query === '') return;
+
+      // Add to search history
+      this.addToSearchHistory(query);
+
+      // Update search state
+      this.searchWrapper.classList.remove('searching');
+      this.searchWrapper.classList.add('has-results');
+
+      // Emit search event
+      this.emitSearchEvent(query);
+
+      // Hide suggestions
+      this.hideSuggestions();
+    }
+
+    private addToSearchHistory(query: string) {
+      // Remove if already exists
+      this.searchHistory = this.searchHistory.filter(item => item !== query);
+      
+      // Add to beginning
+      this.searchHistory.unshift(query);
+      
+      // Keep only last 10
+      this.searchHistory = this.searchHistory.slice(0, 10);
+      
+      // Save to localStorage
+      localStorage.setItem('searchHistory', JSON.stringify(this.searchHistory));
+    }
+
+    private loadSearchHistory() {
+      try {
+        const saved = localStorage.getItem('searchHistory');
+        if (saved) {
+          this.searchHistory = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.warn('Could not load search history:', e);
+      }
+    }
+
+    private emitSearchEvent(query: string) {
+      // Create custom event
+      const event = new CustomEvent('advancedSearch', {
+        detail: { query, filters: Array.from(this.activeFilters) }
+      });
+      
+      document.dispatchEvent(event);
+    }
+
+    private updateFilterDisplay() {
+      const count = this.activeFilters.size;
+      this.tagCount.textContent = count.toString();
+      this.clearFiltersBtn.style.display = count > 0 ? 'block' : 'none';
+    }
+
+    private clearAllFilters() {
+      this.activeFilters.clear();
+      this.searchInput.value = '';
+      this.updateFilterDisplay();
+      this.updateSearchState('');
+      
+      // Emit clear event
+      const event = new CustomEvent('clearFilters');
+      document.dispatchEvent(event);
+    }
+
+    // Public methods
+    public setQuery(query: string) {
+      this.searchInput.value = query;
+      this.updateSearchState(query);
+    }
+
+    public addFilter(filter: string) {
+      this.activeFilters.add(filter);
+      this.updateFilterDisplay();
+    }
+
+    public removeFilter(filter: string) {
+      this.activeFilters.delete(filter);
+      this.updateFilterDisplay();
+    }
+
+    public getActiveFilters(): string[] {
+      return Array.from(this.activeFilters);
+    }
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new AdvancedSearch();
+  });
+</script>

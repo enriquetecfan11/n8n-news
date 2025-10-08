@@ -1,0 +1,264 @@
+---
+// Componente de barra de búsqueda
+---
+
+<div class="search-container">
+    <div class="search-wrapper">
+        <div class="search-input-container">
+            <input 
+                type="text" 
+                id="search-input" 
+                class="search-input" 
+                placeholder="Buscar noticias..."
+                aria-label="Buscar noticias"
+                autocomplete="off"
+            />
+            <button class="search-button" aria-label="Buscar">
+                <span class="search-icon">🔍</span>
+            </button>
+        </div>
+        <div class="search-suggestions" id="search-suggestions" style="display: none;">
+            <!-- Las sugerencias se cargarán dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .search-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-input-container {
+        display: flex;
+        align-items: center;
+        background: var(--background);
+        border: 2px solid var(--border);
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .search-input-container:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 1rem;
+        color: var(--text);
+        padding: 0.5rem 0;
+    }
+
+    .search-input::placeholder {
+        color: var(--text-lighter);
+    }
+
+    .search-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-button:hover {
+        background: var(--background-alt);
+        transform: scale(1.1);
+    }
+
+    .search-icon {
+        font-size: 1.2rem;
+        filter: grayscale(1);
+        transition: filter 0.2s ease;
+    }
+
+    .search-button:hover .search-icon {
+        filter: grayscale(0);
+    }
+
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 0.5rem;
+    }
+
+    .suggestion-item {
+        padding: 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background: var(--background-alt);
+    }
+
+    .suggestion-title {
+        font-weight: 600;
+        color: var(--text);
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .suggestion-category {
+        font-size: 0.8rem;
+        color: var(--text-lighter);
+        background: var(--background-alt);
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        white-space: nowrap;
+    }
+
+    .no-results {
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--text-lighter);
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .search-container {
+            max-width: 100%;
+        }
+        
+        .search-input-container {
+            padding: 0.4rem 0.8rem;
+        }
+        
+        .search-input {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<script>
+    // Función para buscar noticias
+    function initSearch() {
+        const searchInput = document.getElementById('search-input');
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        let searchTimeout: number;
+
+        if (!searchInput || !suggestionsContainer) return;
+
+        // Obtener todas las noticias del DOM
+        function getNewsData() {
+            const newsCards = document.querySelectorAll('.news-card');
+            return Array.from(newsCards).map(card => {
+                const title = card.querySelector('.news-title')?.textContent || '';
+                const category = card.querySelector('.news-category')?.textContent || '';
+                const link = card.querySelector('.card-link')?.getAttribute('href') || '';
+                return { title, category, link };
+            });
+        }
+
+        // Filtrar noticias basado en la búsqueda
+        function filterNews(query: string) {
+            if (!query.trim()) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            const newsData = getNewsData();
+            const filteredNews = newsData.filter(news => 
+                news.title.toLowerCase().includes(query.toLowerCase()) ||
+                news.category.toLowerCase().includes(query.toLowerCase())
+            );
+
+            displaySuggestions(filteredNews, query);
+        }
+
+        // Mostrar sugerencias
+        function displaySuggestions(news: any[], query: string) {
+            if (news.length === 0) {
+                suggestionsContainer.innerHTML = '<div class="no-results">No se encontraron noticias</div>';
+            } else {
+                suggestionsContainer.innerHTML = news.slice(0, 5).map(news => `
+                    <div class="suggestion-item" onclick="window.location.href='${news.link}'">
+                        <div>
+                            <div class="suggestion-title">${highlightText(news.title, query)}</div>
+                            <div class="suggestion-category">${news.category}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            suggestionsContainer.style.display = 'block';
+        }
+
+        // Resaltar texto de búsqueda
+        function highlightText(text: string, query: string) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<mark style="background: var(--accent); color: white; padding: 0.1rem 0.2rem; border-radius: 3px;">$1</mark>');
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', (e) => {
+            const query = (e.target as HTMLInputElement).value;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => filterNews(query), 300);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            const query = searchInput.value;
+            if (query.trim()) {
+                filterNews(query);
+            }
+        });
+
+        // Ocultar sugerencias al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target as Node) && !suggestionsContainer.contains(e.target as Node)) {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        // Navegación por teclado
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                suggestionsContainer.style.display = 'none';
+                searchInput.blur();
+            }
+        });
+    }
+
+    // Inicializar búsqueda cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSearch);
+    } else {
+        initSearch();
+    }
+</script>

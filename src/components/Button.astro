@@ -1,0 +1,307 @@
+---
+// Componente de botón mejorado con diferentes variantes
+interface Props {
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    size?: 'sm' | 'md' | 'lg';
+    disabled?: boolean;
+    loading?: boolean;
+    icon?: string;
+    iconPosition?: 'left' | 'right';
+    href?: string;
+    target?: string;
+    class?: string;
+    type?: 'button' | 'submit' | 'reset';
+    onClick?: string;
+}
+
+const {
+    variant = 'primary',
+    size = 'md',
+    disabled = false,
+    loading = false,
+    icon,
+    iconPosition = 'left',
+    href,
+    target,
+    class: className = '',
+    type = 'button',
+    onClick
+} = Astro.props;
+
+const baseClasses = 'btn';
+const variantClasses = {
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    outline: 'btn-outline',
+    ghost: 'btn-ghost',
+    danger: 'btn-danger'
+};
+const sizeClasses = {
+    sm: 'btn-sm',
+    md: 'btn-md',
+    lg: 'btn-lg'
+};
+
+const buttonClasses = [
+    baseClasses,
+    variantClasses[variant],
+    sizeClasses[size],
+    disabled ? 'btn-disabled' : '',
+    loading ? 'btn-loading' : '',
+    className
+].filter(Boolean).join(' ');
+
+const Tag = href ? 'a' : 'button';
+const tagProps = href ? { href, target } : { type, disabled: disabled || loading };
+---
+
+<Tag 
+    class={buttonClasses}
+    {...tagProps}
+    onclick={onClick}
+    aria-disabled={disabled || loading}
+>
+    {loading && (
+        <span class="btn-spinner" aria-hidden="true">
+            <svg class="spinner" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </span>
+    )}
+    
+    {icon && iconPosition === 'left' && !loading && (
+        <span class="btn-icon btn-icon-left" aria-hidden="true">{icon}</span>
+    )}
+    
+    <span class="btn-content">
+        <slot />
+    </span>
+    
+    {icon && iconPosition === 'right' && !loading && (
+        <span class="btn-icon btn-icon-right" aria-hidden="true">{icon}</span>
+    )}
+</Tag>
+
+<style>
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-family: var(--font-body);
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+        user-select: none;
+        outline: none;
+    }
+
+    .btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .btn:disabled,
+    .btn-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Sizes */
+    .btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        min-height: 2rem;
+    }
+
+    .btn-md {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        min-height: 2.5rem;
+    }
+
+    .btn-lg {
+        padding: 1rem 1.5rem;
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        min-height: 3rem;
+    }
+
+    /* Variants */
+    .btn-primary {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 2px 4px rgba(13, 71, 161, 0.2);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: var(--accent-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 71, 161, 0.3);
+    }
+
+    .btn-primary:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(13, 71, 161, 0.2);
+    }
+
+    .btn-secondary {
+        background: var(--background-alt);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+        background: var(--border);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--accent);
+        border: 2px solid var(--accent);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+        background: var(--accent);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(13, 71, 161, 0.3);
+    }
+
+    .btn-ghost {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid transparent;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+        background: var(--background-alt);
+        transform: translateY(-1px);
+    }
+
+    .btn-danger {
+        background: var(--accent, #e74c3c);
+        color: white;
+        box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+        background: #c0392b;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Loading state */
+    .btn-loading {
+        cursor: wait;
+    }
+
+    .btn-loading .btn-content {
+        opacity: 0.7;
+    }
+
+    .btn-spinner {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .spinner {
+        width: 1rem;
+        height: 1rem;
+        animation: spin 1s linear infinite;
+    }
+
+    .btn-icon {
+        font-size: 1.125em;
+        line-height: 1;
+    }
+
+    .btn-icon-left {
+        margin-right: 0.25rem;
+    }
+
+    .btn-icon-right {
+        margin-left: 0.25rem;
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Ripple effect */
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:active::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    /* Dark mode adjustments */
+    :global(body.dark-theme) .btn-secondary {
+        background: var(--background-main);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    :global(body.dark-theme) .btn-secondary:hover:not(:disabled) {
+        background: var(--background-alt);
+    }
+
+    :global(body.dark-theme) .btn-ghost:hover:not(:disabled) {
+        background: var(--background-alt);
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .btn {
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .btn-sm {
+            min-height: 36px;
+            padding: 0.5rem;
+        }
+        
+        .btn-lg {
+            min-height: 48px;
+        }
+    }
+</style>

@@ -2,155 +2,419 @@
 import HeaderLink from "./HeaderLink.astro";
 import { SITE_TITLE } from "../consts";
 import Analytics from "@vercel/analytics/astro";
-// import ThemeToggle from "./ThemeToggle.astro"; // Comentado o eliminado si no se usa
 ---
 
-<header>
-	<div class="container">
-		<nav>
-			<!-- <div class="logo-section">
-				<a href="/" class="logo">
-					<img
-						src="/nundu_logo_sin_margen.svg"
-						alt="Nundu Logo"
-						class="logo-img"
-					/>
-					</a>
-					</div> -->
-			<div class="nav-links">
-				<span class="site-name">{SITE_TITLE}</span>
-				<HeaderLink href="/" class="nav-link">Inicio</HeaderLink>
-				<HeaderLink href="/market-overview" class="nav-link"
-					>Vista Mercados</HeaderLink
-				>
-				<HeaderLink href="/mini-chart" class="nav-link"
-					>Mapa de Calor</HeaderLink
-				>
-				<HeaderLink href="/economic-calendar" class="nav-link"
-					>Calendario</HeaderLink
-				>
-				<!-- <HeaderLink href="/about" class="nav-link"
-					>Sobre Nosotros</HeaderLink
-				> -->
-				<!-- <ThemeToggle /> -->
-			</div>
-		</nav>
+<header role="banner" class="main-header">
+	<div class="header-container">
+		<div class="brand-section">
+			<a href="/" class="brand-link">
+				<div class="brand-logo">
+					<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<rect width="32" height="32" rx="8" fill="#1e40af"/>
+						<path d="M8 12h16v2H8v-2zm0 4h16v2H8v-2zm0 4h12v2H8v-2z" fill="white"/>
+						<circle cx="24" cy="8" r="3" fill="#10b981"/>
+					</svg>
+				</div>
+				<div class="brand-text">
+					<span class="brand-name">{SITE_TITLE}</span>
+					<span class="brand-tagline">Financial Intelligence</span>
+				</div>
+			</a>
+		</div>
+		
+		<div class="header-center">
+			<nav role="navigation" aria-label="Navegación principal" class="main-nav">
+				<HeaderLink href="/" class="nav-link">
+					<span class="nav-text">Inicio</span>
+				</HeaderLink>
+				<HeaderLink href="/market-overview" class="nav-link">
+					<span class="nav-text">Mercados</span>
+				</HeaderLink>
+				<HeaderLink href="/mini-chart" class="nav-link">
+					<span class="nav-text">Mapa de Calor</span>
+				</HeaderLink>
+				<HeaderLink href="/economic-calendar" class="nav-link">
+					<span class="nav-text">Calendario</span>
+				</HeaderLink>
+			</nav>
+			
+			<!-- <div class="header-search">
+				<AdvancedSearch placeholder="Buscar noticias, tickers..." />
+			</div> -->
+		</div>
+		
+		<div class="header-actions">
+			<button class="action-btn" id="theme-toggle" aria-label="Cambiar tema">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+				</svg>
+			</button>
+		</div>
 	</div>
 </header>
 <Analytics />
 
 <style>
-	header {
-		background-color: var(--background); /* Usar variable */
+	.main-header {
+		background: #ffffff;
 		position: sticky;
 		top: 0;
-		z-index: 100;
-		padding: 0.5rem 0; /* Reducir padding vertical */
-		box-shadow: var(--shadow-sm); /* Usar sombra refinada */
-		border-bottom: 1px solid var(--border); /* Añadir borde inferior sutil */
-		font-family: var(--font-body);
+		z-index: 1000;
+		border-bottom: 1px solid #e5e7eb;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	}
 
-	.container {
-		width: 100%;
-		max-width: 1200px; /* Coherente con otros contenedores */
-		margin: 0 auto;
-		padding: 0 1rem;
-	}
-
-	nav {
+	.header-container {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		min-height: 65px; /* Altura mínima */
-		gap: 1.5rem; /* Ajustar gap */
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 0 2rem;
+		height: 80px;
+		gap: 2rem;
 	}
 
-	.logo-section {
-		/* ... existing styles ... */
-	}
-
-	.logo {
-		/* ... existing styles ... */
-	}
-
-	.logo-img {
-		height: 38px; /* Ajustar tamaño logo */
-		width: auto;
-		max-height: 38px;
-		margin-right: 10px; /* Ajustar margen */
-		/* Quitar box-shadow y border si los tuviera */
-		box-shadow: none;
-		border: none;
-		border-radius: 0;
-		margin-top: 0;
-		margin-bottom: 0;
-	}
-
-	.site-name {
-		font-weight: 700;
-		font-size: 1.5rem; /* Ajustar tamaño */
-		color: var(--primary-dark); /* Usar color primario oscuro */
-		letter-spacing: -0.2px;
-		white-space: nowrap;
-	}
-
-	.nav-links {
+	/* Brand Section */
+	.brand-section {
 		display: flex;
 		align-items: center;
-		gap: 1.8rem; /* Aumentar separación entre links */
-		flex-wrap: wrap;
-		justify-content: flex-end;
 	}
 
-	/* Estilo específico para HeaderLink aplicado externamente */
+	.brand-link {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		text-decoration: none;
+		transition: opacity 0.2s ease;
+	}
+
+	.brand-link:hover {
+		opacity: 0.8;
+	}
+
+	.brand-logo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
+	}
+
+	.brand-text {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.brand-name {
+		font-size: 1.25rem;
+		font-weight: 700;
+		color: #111827;
+		letter-spacing: -0.025em;
+		line-height: 1.2;
+	}
+
+	.brand-tagline {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: #6b7280;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		line-height: 1;
+		margin-top: 2px;
+	}
+
+	/* Header Center */
+	.header-center {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		flex: 1;
+		justify-content: center;
+	}
+
+	/* Navigation */
+	.main-nav {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+	}
+
+	/* Header Search */
+	.header-search {
+		width: 300px;
+		max-width: 100%;
+	}
+
+	.nav-icon {
+		display: none;
+	}
+
 	:global(.nav-link) {
-		/* Usar :global para aplicar a componente hijo */
-		color: var(--text-light); /* Color de texto secundario */
-		font-weight: 600;
-		font-size: 0.95rem; /* Ligeramente más grande */
-		text-decoration: none; /* Asegurar que no hay subrayado */
-		padding: 0.5rem 0; /* Padding vertical para área de click */
-		border-bottom: 2px solid transparent; /* Espacio para borde en hover/active */
-		transition:
-			color 0.2s ease,
-			border-color 0.2s ease;
+		position: relative;
+		color: #6b7280;
+		font-weight: 500;
+		font-size: 0.95rem;
+		text-decoration: none;
+		padding: 0.75rem 0;
+		transition: color 0.2s ease;
+		letter-spacing: -0.01em;
+	}
+
+	:global(.nav-link::after) {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 0;
+		height: 2px;
+		background: #1e40af;
+		transition: width 0.3s ease;
 	}
 
 	:global(.nav-link:hover) {
-		color: var(--accent); /* Color de acento en hover */
-		border-bottom-color: var(--accent); /* Mostrar borde en hover */
-		text-decoration: none; /* No subrayar texto */
+		color: #111827;
 	}
 
-	/* Estilo para el enlace activo (requiere JS o lógica Astro para añadir clase 'active') */
+	:global(.nav-link:hover::after) {
+		width: 100%;
+	}
+
 	:global(.nav-link.active) {
-		color: var(--accent);
-		font-weight: 700;
-		border-bottom-color: var(--accent);
+		color: #1e40af;
 	}
 
-	@media (max-width: 860px) {
-		/* Ajustar breakpoint */
-		nav {
-			min-height: auto; /* Altura automática */
-			padding: 0.8rem 0;
-			flex-direction: column;
-			align-items: flex-start;
+	:global(.nav-link.active::after) {
+		width: 100%;
+	}
+
+	.nav-text {
+		font-weight: 500;
+	}
+
+	/* Header Actions */
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.action-btn {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border: 1px solid #e5e7eb;
+		background: #ffffff;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		color: #6b7280;
+		font-size: 1.1rem;
+	}
+
+	.action-btn:hover {
+		background: #f9fafb;
+		border-color: #d1d5db;
+		color: #374151;
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+
+	.action-btn svg {
+		transition: all 0.2s ease;
+	}
+
+	.action-btn:hover svg {
+		transform: scale(1.1);
+	}
+
+	/* Responsive Design */
+	@media (max-width: 1200px) {
+		.header-search {
+			width: 250px;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		.header-container {
+			padding: 0 1.5rem;
 			gap: 1rem;
 		}
-
-		.nav-links {
-			width: 100%;
-			gap: 1rem; /* Reducir gap */
-			justify-content: flex-start; /* Alinear a la izquierda */
-			padding-top: 0.5rem;
+		
+		.header-center {
+			gap: 1rem;
 		}
-		:global(.nav-link) {
-			padding: 0.4rem 0;
+		
+		.main-nav {
+			gap: 1rem;
+		}
+		
+		.header-search {
+			width: 200px;
+		}
+		
+		.nav-text {
+			display: none;
+		}
+		
+		.nav-icon {
+			display: block;
+			font-size: 1.2rem;
 		}
 	}
-	@media (max-width: 720px) {
-		/* Mantener ajustes previos si son necesarios */
+
+	@media (max-width: 768px) {
+		.header-container {
+			padding: 0 1rem;
+			height: 70px;
+			gap: 0.5rem;
+		}
+		
+		.header-center {
+			flex-direction: column;
+			gap: 0.5rem;
+			align-items: stretch;
+		}
+		
+		.main-nav {
+			justify-content: center;
+			gap: 0.75rem;
+		}
+		
+		.header-search {
+			width: 100%;
+			max-width: 300px;
+			margin: 0 auto;
+		}
+		
+		.brand-name {
+			font-size: 1.1rem;
+		}
+		
+		.brand-tagline {
+			font-size: 0.7rem;
+		}
+		
+		.action-btn {
+			width: 36px;
+			height: 36px;
+			font-size: 1rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.header-actions {
+			gap: 0.25rem;
+		}
+		
+		.action-btn {
+			width: 32px;
+			height: 32px;
+			font-size: 0.9rem;
+		}
+		
+		.notification-badge {
+			font-size: 0.6rem;
+			padding: 0.1rem 0.3rem;
+			min-width: 16px;
+		}
+		
+		.main-nav {
+			gap: 0.5rem;
+		}
+		
+		.nav-icon {
+			font-size: 1.1rem;
+		}
 	}
 </style>
+
+<script>
+  class ThemeManager {
+    private themeToggle: HTMLElement;
+
+    constructor() {
+      this.themeToggle = document.getElementById('theme-toggle') as HTMLElement;
+      this.init();
+    }
+
+    private init() {
+      this.setupThemeToggle();
+      this.loadTheme();
+    }
+
+    private setupThemeToggle() {
+      if (!this.themeToggle) return;
+
+      this.themeToggle.addEventListener('click', () => {
+        this.toggleTheme();
+      });
+    }
+
+    private toggleTheme() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark-theme');
+      
+      if (isDark) {
+        body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+        this.updateThemeIcon('light');
+      } else {
+        body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        this.updateThemeIcon('dark');
+      }
+    }
+
+    private updateThemeIcon(theme: string) {
+      if (this.themeToggle) {
+        if (theme === 'dark') {
+          this.themeToggle.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          `;
+        } else {
+          this.themeToggle.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          `;
+        }
+      }
+    }
+
+    private loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const body = document.body;
+      
+      if (savedTheme === 'dark') {
+        body.classList.add('dark-theme');
+      } else {
+        body.classList.remove('dark-theme');
+      }
+      
+      this.updateThemeIcon(savedTheme);
+    }
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new ThemeManager();
+  });
+</script>

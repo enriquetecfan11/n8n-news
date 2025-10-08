@@ -1,0 +1,276 @@
+---
+// Componente de notificación toast
+interface Props {
+    message: string;
+    type?: 'success' | 'error' | 'warning' | 'info';
+    duration?: number;
+    position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center';
+}
+
+const { 
+    message, 
+    type = 'info', 
+    duration = 5000, 
+    position = 'top-right' 
+} = Astro.props;
+
+const icons = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️'
+};
+
+const colors = {
+    success: 'var(--accent-tertiary, #2ecc71)',
+    error: 'var(--accent, #e74c3c)',
+    warning: 'var(--accent-yellow, #f59e0b)',
+    info: 'var(--accent-secondary, #3498db)'
+};
+---
+
+<div 
+    class={`toast toast-${type} toast-${position}`}
+    style={`--toast-color: ${colors[type]};`}
+    role="alert"
+    aria-live="polite"
+>
+    <div class="toast-content">
+        <span class="toast-icon">{icons[type]}</span>
+        <span class="toast-message">{message}</span>
+        <button class="toast-close" aria-label="Cerrar notificación">
+            <span>×</span>
+        </button>
+    </div>
+    <div class="toast-progress" style={`animation-duration: ${duration}ms;`}></div>
+</div>
+
+<style>
+    .toast {
+        position: fixed;
+        z-index: 9999;
+        max-width: 400px;
+        min-width: 300px;
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--toast-color);
+        border-radius: 8px;
+        box-shadow: var(--shadow-lg);
+        animation: slideInFromTop 0.3s ease-out;
+        transition: all 0.3s ease;
+    }
+
+    .toast-top-right {
+        top: 20px;
+        right: 20px;
+    }
+
+    .toast-top-left {
+        top: 20px;
+        left: 20px;
+    }
+
+    .toast-bottom-right {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .toast-bottom-left {
+        bottom: 20px;
+        left: 20px;
+    }
+
+    .toast-top-center {
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .toast-bottom-center {
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .toast-content {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .toast-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .toast-message {
+        flex: 1;
+        color: var(--text);
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        color: var(--text-lighter);
+        cursor: pointer;
+        font-size: 1.5rem;
+        line-height: 1;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .toast-close:hover {
+        background: var(--background-alt);
+        color: var(--text);
+        transform: scale(1.1);
+    }
+
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: var(--toast-color);
+        border-radius: 0 0 8px 8px;
+        animation: progressBar linear;
+    }
+
+    .toast:hover .toast-progress {
+        animation-play-state: paused;
+    }
+
+    .toast.hide {
+        animation: slideOutToTop 0.3s ease-in forwards;
+    }
+
+    @keyframes progressBar {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .toast {
+            max-width: calc(100vw - 40px);
+            min-width: 280px;
+        }
+        
+        .toast-top-right,
+        .toast-top-left {
+            top: 10px;
+        }
+        
+        .toast-bottom-right,
+        .toast-bottom-left {
+            bottom: 10px;
+        }
+    }
+</style>
+
+<script>
+    // Función para mostrar toast
+    function showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration: number = 5000) {
+        const toastContainer = document.getElementById('toast-container') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type} toast-top-right`;
+        toast.style.cssText = `--toast-color: ${getToastColor(type)};`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'polite');
+        
+        toast.innerHTML = `
+            <div class="toast-content">
+                <span class="toast-icon">${getToastIcon(type)}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" aria-label="Cerrar notificación">
+                    <span>×</span>
+                </button>
+            </div>
+            <div class="toast-progress" style="animation-duration: ${duration}ms;"></div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto-remove after duration
+        const timeout = setTimeout(() => {
+            removeToast(toast);
+        }, duration);
+        
+        // Close button functionality
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn?.addEventListener('click', () => {
+            clearTimeout(timeout);
+            removeToast(toast);
+        });
+        
+        // Pause progress on hover
+        toast.addEventListener('mouseenter', () => {
+            const progress = toast.querySelector('.toast-progress') as HTMLElement;
+            if (progress) progress.style.animationPlayState = 'paused';
+        });
+        
+        toast.addEventListener('mouseleave', () => {
+            const progress = toast.querySelector('.toast-progress') as HTMLElement;
+            if (progress) progress.style.animationPlayState = 'running';
+        });
+    }
+    
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        document.body.appendChild(container);
+        return container;
+    }
+    
+    function removeToast(toast: HTMLElement) {
+        toast.classList.add('hide');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }
+    
+    function getToastIcon(type: string) {
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        return icons[type as keyof typeof icons] || icons.info;
+    }
+    
+    function getToastColor(type: string) {
+        const colors = {
+            success: 'var(--accent-tertiary, #2ecc71)',
+            error: 'var(--accent, #e74c3c)',
+            warning: 'var(--accent-yellow, #f59e0b)',
+            info: 'var(--accent-secondary, #3498db)'
+        };
+        return colors[type as keyof typeof colors] || colors.info;
+    }
+    
+    // Hacer la función global
+    (window as any).showToast = showToast;
+</script>

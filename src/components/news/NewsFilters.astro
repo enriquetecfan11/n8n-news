@@ -1,0 +1,647 @@
+---
+// Componente de filtros avanzados para noticias financieras
+import { getNewsByImpact, getNewsBySector } from '../../data/mockImpact';
+import { urlParamsToFilters, filtersToUrlParams } from '../../utils/newsFilter';
+
+interface Props {
+  onFilterChange?: (filters: FilterState) => void;
+}
+
+export interface FilterState {
+  impact: string[];
+  sectors: string[];
+  sentiment: string[];
+  sources: string[];
+  tickers: string[];
+  dateRange: {
+    start: string;
+    end: string;
+  } | null;
+  searchQuery: string;
+  sortBy: 'relevance' | 'date' | 'impact';
+  sortOrder: 'asc' | 'desc';
+}
+
+const { onFilterChange } = Astro.props;
+
+// Obtener filtros de la URL
+const url = new URL(Astro.request.url);
+const urlParams = new URLSearchParams(url.search);
+const currentFilters = urlParamsToFilters(urlParams);
+
+// Opciones disponibles para los filtros
+const impactOptions = ['alto', 'medio', 'bajo'];
+const sectorOptions = ['tecnología', 'finanzas', 'energía', 'salud', 'consumo', 'política', 'economía', 'automotriz', 'comercio'];
+const sentimentOptions = ['positivo', 'neutral', 'negativo'];
+const sourceOptions = ['Investing.com', 'Bloomberg', 'Reuters', 'CNBC', 'Financial Times', 'Wall Street Journal'];
+const tickerOptions = ['MSFT', 'META', 'AAPL', 'TSLA', 'SPY', 'QQQ', 'DIA', 'VIX', 'BTC', 'ETH'];
+---
+
+<div class="filters-container">
+  <div class="filters-header">
+    <h3 class="filters-title">Filtros Avanzados</h3>
+    <button class="clear-filters-btn" id="clear-filters">
+      Limpiar todo
+    </button>
+  </div>
+
+  <div class="filters-content">
+    <!-- Filtro por Impacto -->
+    <div class="filter-group">
+      <label class="filter-label">Nivel de Impacto</label>
+      <div class="filter-options">
+        {impactOptions.map(impact => (
+          <label class="filter-option">
+            <input 
+              type="checkbox" 
+              name="impact" 
+              value={impact}
+              class="filter-checkbox"
+              data-filter="impact"
+              checked={currentFilters.impacts?.includes(impact) || false}
+            />
+            <span class={`impact-badge impact-${impact}`}>
+              {impact.toUpperCase()}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Filtro por Sectores -->
+    <div class="filter-group">
+      <label class="filter-label">Sectores</label>
+      <div class="filter-options sectors-grid">
+        {sectorOptions.map(sector => (
+          <label class="filter-option">
+            <input 
+              type="checkbox" 
+              name="sectors" 
+              value={sector}
+              class="filter-checkbox"
+              data-filter="sectors"
+              checked={currentFilters.sectors?.includes(sector) || false}
+            />
+            <span class="sector-option">
+              {sector}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Filtro por Sentimiento -->
+    <div class="filter-group">
+      <label class="filter-label">Sentimiento del Mercado</label>
+      <div class="filter-options">
+        {sentimentOptions.map(sentiment => (
+          <label class="filter-option">
+            <input 
+              type="checkbox" 
+              name="sentiment" 
+              value={sentiment}
+              class="filter-checkbox"
+              data-filter="sentiment"
+              checked={currentFilters.sentiments?.includes(sentiment) || false}
+            />
+            <span class={`sentiment-badge sentiment-${sentiment}`}>
+              {sentiment === 'positivo' ? '📈' : sentiment === 'negativo' ? '📉' : '➡️'} {sentiment}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Filtro por Fuente -->
+    <div class="filter-group">
+      <label class="filter-label">Fuente de Noticias</label>
+      <div class="filter-options">
+        {sourceOptions.map(source => (
+          <label class="filter-option">
+            <input 
+              type="checkbox" 
+              name="sources" 
+              value={source}
+              class="filter-checkbox"
+              data-filter="sources"
+              checked={currentFilters.sources?.includes(source) || false}
+            />
+            <span class="source-option">
+              {source}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Filtro por Tickers -->
+    <div class="filter-group">
+      <label class="filter-label">Tickers</label>
+      <div class="filter-options tickers-grid">
+        {tickerOptions.map(ticker => (
+          <label class="filter-option">
+            <input 
+              type="checkbox" 
+              name="tickers" 
+              value={ticker}
+              class="filter-checkbox"
+              data-filter="tickers"
+              checked={currentFilters.tickers?.includes(ticker) || false}
+            />
+            <span class="ticker-option">
+              {ticker}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+
+    <!-- Filtro por Rango de Fechas -->
+    <div class="filter-group">
+      <label class="filter-label">Rango de Fechas</label>
+      <div class="date-range">
+        <div class="date-input-group">
+          <label class="date-label">Desde:</label>
+          <input 
+            type="date" 
+            name="startDate"
+            class="date-input"
+            data-filter="date-start"
+            value={currentFilters.dateRange?.start || ''}
+          />
+        </div>
+        <div class="date-input-group">
+          <label class="date-label">Hasta:</label>
+          <input 
+            type="date" 
+            name="endDate"
+            class="date-input"
+            data-filter="date-end"
+            value={currentFilters.dateRange?.end || ''}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contador de resultados -->
+  <div class="results-counter">
+    <span class="counter-text">Mostrando <span id="filtered-count">0</span> noticias</span>
+  </div>
+</div>
+
+<script>
+  // Script para manejar los filtros
+  class NewsFilters {
+    private filters: any;
+    private onFilterChange?: (filters: any) => void;
+
+    constructor(onFilterChange?: (filters: any) => void) {
+      this.filters = {
+        impacts: [],
+        sectors: [],
+        sentiments: [],
+        sources: [],
+        tickers: [],
+        dateRange: {
+          start: '',
+          end: ''
+        },
+        search: ''
+      };
+      this.onFilterChange = onFilterChange;
+      this.init();
+    }
+
+    private init() {
+      this.loadFiltersFromURL();
+      this.bindEvents();
+      this.updateResultsCounter();
+    }
+
+    private bindEvents() {
+      // Checkboxes
+      document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+          const target = e.target as HTMLInputElement;
+          const filterType = target.dataset.filter;
+          const value = target.value;
+
+          if (filterType && filterType !== 'date-start' && filterType !== 'date-end') {
+            this.updateArrayFilter(filterType, value, target.checked);
+          }
+        });
+      });
+
+      // Date inputs
+      document.querySelectorAll('.date-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const target = e.target as HTMLInputElement;
+          const filterType = target.dataset.filter;
+          const value = target.value;
+
+          if (filterType === 'date-start') {
+            this.filters.dateRange.start = value;
+          } else if (filterType === 'date-end') {
+            this.filters.dateRange.end = value;
+          }
+
+          this.updateURL();
+          this.notifyChange();
+        });
+      });
+
+      // Clear filters button
+      document.getElementById('clear-filters')?.addEventListener('click', () => {
+        this.clearAllFilters();
+      });
+    }
+
+    private updateArrayFilter(key: string, value: string, checked: boolean) {
+      const currentArray = this.filters[key] as string[];
+      
+      if (checked) {
+        if (!currentArray.includes(value)) {
+          currentArray.push(value);
+        }
+      } else {
+        const index = currentArray.indexOf(value);
+        if (index > -1) {
+          currentArray.splice(index, 1);
+        }
+      }
+
+      this.updateURL();
+      this.notifyChange();
+    }
+
+    private clearAllFilters() {
+      this.filters = {
+        impacts: [],
+        sectors: [],
+        sentiments: [],
+        sources: [],
+        tickers: [],
+        dateRange: {
+          start: '',
+          end: ''
+        },
+        search: ''
+      };
+
+      // Clear all checkboxes
+      document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        (checkbox as HTMLInputElement).checked = false;
+      });
+
+      // Clear date inputs
+      document.querySelectorAll('.date-input').forEach(input => {
+        (input as HTMLInputElement).value = '';
+      });
+
+      this.updateURL();
+      this.notifyChange();
+    }
+
+    private updateURL() {
+      const params = new URLSearchParams();
+      
+      if (this.filters.impacts.length > 0) {
+        params.set('impacts', this.filters.impacts.join(','));
+      }
+      if (this.filters.sectors.length > 0) {
+        params.set('sectors', this.filters.sectors.join(','));
+      }
+      if (this.filters.sentiments.length > 0) {
+        params.set('sentiments', this.filters.sentiments.join(','));
+      }
+      if (this.filters.sources.length > 0) {
+        params.set('sources', this.filters.sources.join(','));
+      }
+      if (this.filters.tickers.length > 0) {
+        params.set('tickers', this.filters.tickers.join(','));
+      }
+      if (this.filters.dateRange.start) {
+        params.set('dateStart', this.filters.dateRange.start);
+      }
+      if (this.filters.dateRange.end) {
+        params.set('dateEnd', this.filters.dateRange.end);
+      }
+      if (this.filters.search) {
+        params.set('search', this.filters.search);
+      }
+
+      const newUrl = new URL(window.location.href);
+      newUrl.search = params.toString();
+      window.history.pushState({}, '', newUrl.toString());
+    }
+
+    private loadFiltersFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      this.filters.impacts = urlParams.get('impacts')?.split(',') || [];
+      this.filters.sectors = urlParams.get('sectors')?.split(',') || [];
+      this.filters.sentiments = urlParams.get('sentiments')?.split(',') || [];
+      this.filters.sources = urlParams.get('sources')?.split(',') || [];
+      this.filters.tickers = urlParams.get('tickers')?.split(',') || [];
+      this.filters.dateRange.start = urlParams.get('dateStart') || '';
+      this.filters.dateRange.end = urlParams.get('dateEnd') || '';
+      this.filters.search = urlParams.get('search') || '';
+    }
+
+    private applyFiltersToUI() {
+      // Apply checkboxes
+      Object.entries(this.filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(item => {
+            const checkbox = document.querySelector(`input[data-filter="${key}"][value="${item}"]`) as HTMLInputElement;
+            if (checkbox) {
+              checkbox.checked = true;
+            }
+          });
+        }
+      });
+
+      // Apply date inputs
+      if (this.filters.dateRange.start) {
+        const startInput = document.querySelector('input[data-filter="date-start"]') as HTMLInputElement;
+        if (startInput) startInput.value = this.filters.dateRange.start;
+      }
+      if (this.filters.dateRange.end) {
+        const endInput = document.querySelector('input[data-filter="date-end"]') as HTMLInputElement;
+        if (endInput) endInput.value = this.filters.dateRange.end;
+      }
+    }
+
+    private notifyChange() {
+      this.updateResultsCounter();
+      if (this.onFilterChange) {
+        this.onFilterChange(this.filters);
+      }
+    }
+
+    private updateResultsCounter() {
+      // This would be implemented based on actual news data
+      const totalFilters = Object.values(this.filters).reduce((acc: number, val: any) => {
+        if (Array.isArray(val)) {
+          return acc + val.length;
+        }
+        return acc;
+      }, 0);
+
+      const countElement = document.getElementById('filtered-count');
+      if (countElement) {
+        countElement.textContent = totalFilters > 0 ? 'filtradas' : 'todas';
+      }
+    }
+
+    public getFilters(): any {
+      return this.filters;
+    }
+  }
+
+  // Initialize filters when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new NewsFilters();
+  });
+</script>
+
+<style>
+  .filters-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .filters-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .clear-filters-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .clear-filters-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+  }
+
+  .filters-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+  }
+
+  .filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sectors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .tickers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .filter-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-checkbox {
+    display: none;
+  }
+
+  .impact-badge, .sentiment-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  .impact-badge.impact-alto {
+    background: #ef4444;
+  }
+
+  .impact-badge.impact-medio {
+    background: #f59e0b;
+  }
+
+  .impact-badge.impact-bajo {
+    background: #10b981;
+  }
+
+  .sentiment-badge.sentiment-positivo {
+    background: #10b981;
+  }
+
+  .sentiment-badge.sentiment-negativo {
+    background: #ef4444;
+  }
+
+  .sentiment-badge.sentiment-neutral {
+    background: #6b7280;
+  }
+
+  .filter-option:hover .impact-badge,
+  .filter-option:hover .sentiment-badge {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
+
+  .filter-checkbox:checked + .impact-badge,
+  .filter-checkbox:checked + .sentiment-badge {
+    border-color: #1e40af;
+    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
+  }
+
+  .sector-option, .source-option, .ticker-option {
+    padding: 0.4rem 0.8rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    transition: all 0.2s ease;
+  }
+
+  .ticker-option {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .filter-option:hover .sector-option,
+  .filter-option:hover .source-option,
+  .filter-option:hover .ticker-option {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
+
+  .filter-checkbox:checked + .sector-option,
+  .filter-checkbox:checked + .source-option,
+  .filter-checkbox:checked + .ticker-option {
+    background: #1e40af;
+    color: white;
+    border-color: #1e40af;
+  }
+
+  .date-range {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+  }
+
+  .date-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .date-input {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #374151;
+    background: #ffffff;
+  }
+
+  .date-input:focus {
+    outline: none;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
+  }
+
+  .results-counter {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .counter-text {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .filters-container {
+      padding: 1rem;
+    }
+
+    .filters-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .date-range {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .sectors-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

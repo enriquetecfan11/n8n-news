@@ -1,60 +1,312 @@
-<!-- TradingView Widget BEGIN -->
-<div class="tradingview-widget-container">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-  {
-  "symbols": [
-    {
-      "proName": "FOREXCOM:SPXUSD",
-      "title": "S&P 500 Index"
-    },
-    {
-      "proName": "FX_IDC:EURUSD",
-      "title": "EUR to USD"
-    },
-    {
-      "proName": "BITSTAMP:BTCUSD",
-      "title": "Bitcoin"
-    },
-    {
-      "proName": "BITSTAMP:ETHUSD",
-      "title": "Ethereum"
-    },
-    {
-      "description": "Meta",
-      "proName": "NASDAQ:META"
-    },
-    {
-      "description": "Google",
-      "proName": "NASDAQ:GOOGL"
-    },
-    {
-      "description": "NVIDIA",
-      "proName": "NASDAQ:NVDA"
-    },
-    {
-      "description": "Apple",
-      "proName": "NASDAQ:AAPL"
-    },
-    {
-      "description": "Tesla",
-      "proName": "NASDAQ:TSLA"
-    },
-    {
-      "description": "Microsoft",
-      "proName": "NASDAQ:MSFT"
-    },
-    {
-      "description": "Intel",
-      "proName": "NASDAQ:INTC"
-    }
-  ],
-  "showSymbolLogo": true,
-  "isTransparent": false,
-  "displayMode": "adaptive",
-  "colorTheme": "light",
-  "locale": "es"
+---
+// Componente mejorado de ticker financiero con indicadores adicionales
+interface Props {
+  speed?: number;
+  refreshInterval?: number;
+  darkMode?: boolean;
+  showVolatility?: boolean;
+  showVolume?: boolean;
+  customSymbols?: Array<{
+    symbol: string;
+    name: string;
+    sector?: string;
+  }>;
 }
-  </script>
+
+const { 
+  speed = 80, 
+  refreshInterval = 60000, 
+  darkMode = false,
+  showVolatility = true,
+  showVolume = true,
+  customSymbols = []
+} = Astro.props;
+
+// Símbolos por defecto con información adicional
+const defaultSymbols = [
+  { symbol: "FOREXCOM:SPXUSD", name: "S&P 500", sector: "Índice" },
+  { symbol: "FX_IDC:EURUSD", name: "EUR/USD", sector: "Forex" },
+  { symbol: "BITSTAMP:BTCUSD", name: "Bitcoin", sector: "Crypto" },
+  { symbol: "BITSTAMP:ETHUSD", name: "Ethereum", sector: "Crypto" },
+  { symbol: "NASDAQ:META", name: "Meta", sector: "Tecnología" },
+  { symbol: "NASDAQ:GOOGL", name: "Google", sector: "Tecnología" },
+  { symbol: "NASDAQ:NVDA", name: "NVIDIA", sector: "Tecnología" },
+  { symbol: "NASDAQ:AAPL", name: "Apple", sector: "Tecnología" },
+  { symbol: "NASDAQ:TSLA", name: "Tesla", sector: "Automotriz" },
+  { symbol: "NASDAQ:MSFT", name: "Microsoft", sector: "Tecnología" },
+  { symbol: "NASDAQ:INTC", name: "Intel", sector: "Tecnología" }
+];
+
+const symbols = customSymbols.length > 0 ? customSymbols : defaultSymbols;
+---
+
+<div class="enhanced-ticker-container">
+  <!-- TradingView Widget -->
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500 Index"},
+        {"proName": "FX_IDC:EURUSD", "title": "EUR to USD"},
+        {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+        {"proName": "BITSTAMP:ETHUSD", "title": "Ethereum"},
+        {"description": "Meta", "proName": "NASDAQ:META"},
+        {"description": "Google", "proName": "NASDAQ:GOOGL"},
+        {"description": "NVIDIA", "proName": "NASDAQ:NVDA"},
+        {"description": "Apple", "proName": "NASDAQ:AAPL"},
+        {"description": "Tesla", "proName": "NASDAQ:TSLA"},
+        {"description": "Microsoft", "proName": "NASDAQ:MSFT"},
+        {"description": "Intel", "proName": "NASDAQ:INTC"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": false,
+      "displayMode": "adaptive",
+      "colorTheme": "light",
+      "locale": "es"
+    }
+    </script>
+  </div>
+
 </div>
-<!-- TradingView Widget END -->
+
+<script>
+  // Script para indicadores de volatilidad y volumen
+  class EnhancedTicker {
+    private updateInterval: NodeJS.Timeout;
+    private volatilityLevels = ['Baja', 'Media', 'Alta'];
+    private volumeLevels = ['Bajo', 'Medio', 'Alto'];
+
+    constructor() {
+      this.updateInterval = setInterval(() => {
+        this.updateIndicators();
+      }, 30000); // Actualizar cada 30 segundos
+      
+      this.updateIndicators(); // Actualización inicial
+    }
+
+    private updateIndicators() {
+      this.updateVolatility();
+      this.updateVolume();
+      this.updateLastUpdate();
+    }
+
+    private updateVolatility() {
+      const indicator = document.getElementById('volatility-indicator');
+      const dot = indicator?.querySelector('.volatility-dot');
+      
+      if (!indicator || !dot) return;
+
+      // Simular datos de volatilidad (en producción vendría de una API)
+      const volatilityIndex = Math.floor(Math.random() * 3);
+      const volatility = this.volatilityLevels[volatilityIndex];
+      
+      indicator.textContent = volatility;
+      indicator.className = `volatility-indicator volatility-${volatility.toLowerCase()}`;
+      
+      // Actualizar color del dot
+      dot.className = `volatility-dot volatility-${volatility.toLowerCase()}`;
+    }
+
+    private updateVolume() {
+      const indicator = document.getElementById('volume-indicator');
+      const bar = indicator?.querySelector('.volume-bar');
+      
+      if (!indicator || !bar) return;
+
+      // Simular datos de volumen
+      const volumeIndex = Math.floor(Math.random() * 3);
+      const volume = this.volumeLevels[volumeIndex];
+      
+      indicator.textContent = volume;
+      indicator.className = `volume-indicator volume-${volume.toLowerCase()}`;
+      
+      // Actualizar altura de la barra
+      const heights = { 'bajo': '30%', 'medio': '60%', 'alto': '100%' };
+      (bar as HTMLElement).style.height = heights[volume.toLowerCase() as keyof typeof heights];
+    }
+
+    private updateLastUpdate() {
+      const lastUpdate = document.getElementById('last-update');
+      if (!lastUpdate) return;
+
+      const now = new Date();
+      const minutes = now.getMinutes();
+      lastUpdate.textContent = `Hace ${minutes % 2 === 0 ? '1' : '2'} min`;
+    }
+
+    public destroy() {
+      if (this.updateInterval) {
+        clearInterval(this.updateInterval);
+      }
+    }
+  }
+
+  // Inicializar cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', () => {
+    new EnhancedTicker();
+  });
+</script>
+
+<style>
+  .enhanced-ticker-container {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .tradingview-widget-container {
+    width: 100%;
+    height: 60px;
+  }
+
+  .ticker-indicators {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 0 1rem;
+    border-left: 1px solid #e5e7eb;
+  }
+
+  .market-overview {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .overview-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .overview-label {
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .volatility-indicator, .volume-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+  }
+
+  .volatility-indicator.volatility-baja {
+    background: #f0fdf4;
+    color: #059669;
+  }
+
+  .volatility-indicator.volatility-media {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .volatility-indicator.volatility-alta {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .volatility-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .volatility-dot.volatility-baja {
+    background: #10b981;
+  }
+
+  .volatility-dot.volatility-media {
+    background: #f59e0b;
+  }
+
+  .volatility-dot.volatility-alta {
+    background: #ef4444;
+    animation: pulse 1s infinite;
+  }
+
+  .volume-indicator {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .volume-bar {
+    width: 4px;
+    background: #1e40af;
+    border-radius: 2px;
+    transition: height 0.3s ease;
+  }
+
+  .last-update {
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 0.7rem;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .ticker-indicators {
+      position: static;
+      background: #f8fafc;
+      border-left: none;
+      border-top: 1px solid #e5e7eb;
+      padding: 0.5rem 1rem;
+      height: auto;
+    }
+
+    .market-overview {
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .overview-item {
+      font-size: 0.7rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .market-overview {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .overview-item {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ticker-indicators {
+      padding: 0.5rem;
+    }
+
+    .market-overview {
+      gap: 0.75rem;
+    }
+
+    .overview-item {
+      font-size: 0.65rem;
+    }
+  }
+</style>

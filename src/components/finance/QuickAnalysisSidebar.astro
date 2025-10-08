@@ -1,0 +1,684 @@
+---
+// Panel de análisis rápido para inversores
+import { getOverallSentiment } from "../../data/mockSentiment";
+import { getTopNewsByRelevance, getNewsImpact } from "../../data/mockImpact";
+import { getCollection } from "astro:content";
+
+interface Props {
+  className?: string;
+}
+
+const { className = "" } = Astro.props;
+
+// Obtener datos de sentimiento y noticias top
+const marketSentiment = getOverallSentiment();
+const topNews = getTopNewsByRelevance(5);
+
+// Obtener posts reales para análisis
+const allPosts = await getCollection("blog");
+const recentPosts = allPosts
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 10);
+
+// Calcular estadísticas reales
+const sectorStats = recentPosts.reduce(
+  (acc, post) => {
+    if (post.data.sectors) {
+      post.data.sectors.forEach((sector) => {
+        acc[sector] = (acc[sector] || 0) + 1;
+      });
+    }
+    return acc;
+  },
+  {} as Record<string, number>,
+);
+
+const impactStats = recentPosts.reduce(
+  (acc, post) => {
+    if (post.data.impact) {
+      acc[post.data.impact] = (acc[post.data.impact] || 0) + 1;
+    }
+    return acc;
+  },
+  {} as Record<string, number>,
+);
+
+const sentimentStats = recentPosts.reduce(
+  (acc, post) => {
+    if (post.data.sentiment) {
+      acc[post.data.sentiment] = (acc[post.data.sentiment] || 0) + 1;
+    }
+    return acc;
+  },
+  {} as Record<string, number>,
+);
+
+// Función para obtener el color del sentimiento
+function getSentimentColor(sentiment: string): string {
+  switch (sentiment) {
+    case "positivo":
+      return "#10b981";
+    case "negativo":
+      return "#ef4444";
+    case "neutral":
+      return "#6b7280";
+    default:
+      return "#6b7280";
+  }
+}
+
+// Función para obtener el icono del sentimiento
+function getSentimentIcon(sentiment: string): string {
+  switch (sentiment) {
+    case "positivo":
+      return "📈";
+    case "negativo":
+      return "📉";
+    case "neutral":
+      return "➡️";
+    default:
+      return "➡️";
+  }
+}
+
+// Función para obtener el color de volatilidad
+function getVolatilityColor(volatility: string): string {
+  switch (volatility) {
+    case "alta":
+      return "#ef4444";
+    case "media":
+      return "#f59e0b";
+    case "baja":
+      return "#10b981";
+    default:
+      return "#6b7280";
+  }
+}
+---
+
+<div class={`analysis-sidebar ${className}`}></div>
+
+<!-- Alertas de Volatilidad -->
+
+<script>
+  // Script para actualizar datos en tiempo real
+  class QuickAnalysis {
+    private updateInterval: NodeJS.Timeout;
+    private sectorUpdateInterval: NodeJS.Timeout;
+
+    constructor() {
+      this.updateInterval = setInterval(() => {
+        this.updateMarketData();
+      }, 30000); // Actualizar cada 30 segundos
+
+      this.sectorUpdateInterval = setInterval(() => {
+        this.updateSectorData();
+      }, 45000); // Actualizar sectores cada 45 segundos
+
+      this.initInteractiveElements();
+    }
+
+    private initInteractiveElements() {
+      // Hacer clickeables los sectores
+      document.querySelectorAll(".sector-item").forEach((item) => {
+        item.addEventListener("click", (e) => {
+          const sectorName = item
+            .querySelector(".sector-name")
+            ?.textContent?.trim();
+          if (sectorName) {
+            this.filterBySector(sectorName);
+          }
+        });
+        item.style.cursor = "pointer";
+      });
+
+      // Hacer clickeables los tickers
+      document.querySelectorAll(".ticker-badge").forEach((badge) => {
+        badge.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const ticker = badge.textContent?.trim();
+          if (ticker) {
+            this.filterByTicker(ticker);
+          }
+        });
+        badge.style.cursor = "pointer";
+      });
+
+      // Hacer clickeables las noticias top
+      document.querySelectorAll(".top-news-item").forEach((item) => {
+        item.addEventListener("click", (e) => {
+          const rank = item.querySelector(".news-rank")?.textContent;
+          if (rank) {
+            this.showNewsDetails(rank);
+          }
+        });
+        item.style.cursor = "pointer";
+      });
+    }
+
+    private updateMarketData() {
+      // Simular actualización de datos
+      const sentimentScore = document.querySelector(".sentiment-score");
+      if (sentimentScore) {
+        const currentScore = parseInt(
+          sentimentScore.textContent?.replace(/[^\d-]/g, "") || "0",
+        );
+        const variation = (Math.random() - 0.5) * 4; // Variación de -2 a +2
+        const newScore = Math.max(
+          -100,
+          Math.min(100, currentScore + variation),
+        );
+        sentimentScore.textContent = `${newScore > 0 ? "+" : ""}${Math.round(newScore)}`;
+
+        // Actualizar color del sentimiento
+        const sentimentElement = sentimentScore.closest(".sentiment-overview");
+        if (sentimentElement) {
+          sentimentElement.className = `sentiment-overview sentiment-${newScore > 0 ? "positive" : newScore < 0 ? "negative" : "neutral"}`;
+        }
+      }
+
+      // Actualizar indicador de live
+      const liveIndicator = document.querySelector(
+        ".live-indicator",
+      ) as HTMLElement;
+      if (liveIndicator) {
+        liveIndicator.style.animation = "none";
+        setTimeout(() => {
+          liveIndicator.style.animation = "pulse 2s infinite";
+        }, 10);
+      }
+
+      // Actualizar timestamp
+      const timestamp = document.querySelector(".last-update");
+      if (timestamp) {
+        timestamp.textContent = new Date().toLocaleTimeString("es-ES");
+      }
+    }
+
+    private updateSectorData() {
+      // Actualizar cambios de sectores
+      document.querySelectorAll(".sector-change").forEach((change) => {
+        const isPositive = Math.random() > 0.3;
+        const newChange = isPositive
+          ? `+${(Math.random() * 3).toFixed(1)}%`
+          : `-${(Math.random() * 2).toFixed(1)}%`;
+
+        change.textContent = newChange;
+        change.style.color = isPositive ? "#10b981" : "#ef4444";
+      });
+
+      // Actualizar barras de progreso
+      document.querySelectorAll(".sector-progress").forEach((progress) => {
+        const newWidth = Math.random() * 100;
+        (progress as HTMLElement).style.width = `${newWidth}%`;
+      });
+    }
+
+    private filterBySector(sectorName: string) {
+      // Navegar a la página de filtros con el sector seleccionado
+      const sector = sectorName.toLowerCase().replace(/[^\w]/g, "");
+      window.location.href = `/blog/?sectors=${sector}`;
+    }
+
+    private filterByTicker(ticker: string) {
+      // Navegar a la página de filtros con el ticker seleccionado
+      window.location.href = `/blog/?tickers=${ticker}`;
+    }
+
+    private showNewsDetails(rank: string) {
+      // Mostrar detalles de la noticia
+      const newsItem = document
+        .querySelector(`.news-rank:contains("${rank}")`)
+        ?.closest(".top-news-item");
+      if (newsItem) {
+        // Crear modal o tooltip con detalles
+        this.createNewsModal(newsItem);
+      }
+    }
+
+    private createNewsModal(newsItem: Element) {
+      // Crear modal simple para mostrar detalles
+      const modal = document.createElement("div");
+      modal.className = "news-modal";
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Detalles de la Noticia</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Información detallada de la noticia seleccionada...</p>
+          </div>
+        </div>
+      `;
+
+      // Estilos del modal
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+
+      document.body.appendChild(modal);
+
+      // Cerrar modal
+      modal.querySelector(".modal-close")?.addEventListener("click", () => {
+        modal.remove();
+      });
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    public destroy() {
+      if (this.updateInterval) {
+        clearInterval(this.updateInterval);
+      }
+      if (this.sectorUpdateInterval) {
+        clearInterval(this.sectorUpdateInterval);
+      }
+    }
+  }
+
+  // Inicializar cuando el DOM esté listo
+  document.addEventListener("DOMContentLoaded", () => {
+    new QuickAnalysis();
+  });
+</script>
+
+<style>
+  .analysis-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 300px;
+  }
+
+  .analysis-widget {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .live-indicator {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* Sentimiento del Mercado */
+  .sentiment-overview {
+    padding: 1.5rem;
+  }
+
+  .sentiment-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .sentiment-icon {
+    font-size: 2rem;
+  }
+
+  .sentiment-info {
+    flex: 1;
+  }
+
+  .sentiment-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .sentiment-score {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .sentiment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .detail-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  /* Top Noticias */
+  .top-news-list {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .top-news-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .news-rank {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e40af;
+    min-width: 30px;
+  }
+
+  .news-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .news-impact {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .impact-badge {
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+  }
+
+  .impact-badge.impact-alto {
+    background: #ef4444;
+  }
+
+  .impact-badge.impact-medio {
+    background: #f59e0b;
+  }
+
+  .impact-badge.impact-bajo {
+    background: #10b981;
+  }
+
+  .relevance-score {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .news-sectors {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .sector-tag {
+    padding: 0.15rem 0.4rem;
+    background: #e5e7eb;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .news-tickers {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .ticker-badge {
+    padding: 0.15rem 0.4rem;
+    background: #1e40af;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: monospace;
+  }
+
+  /* Sectores Activos */
+  .sectors-list {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sector-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sector-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sector-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    text-transform: capitalize;
+  }
+
+  .sector-change {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .sector-sentiment {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sentiment-indicator {
+    font-size: 0.8rem;
+  }
+
+  .sentiment-bar {
+    flex: 1;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .sentiment-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  /* Alertas */
+  .alerts-list {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .alert-item.alert-high {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+
+  .alert-item.alert-fear {
+    background: #fef3c7;
+    border: 1px solid #fed7aa;
+    color: #d97706;
+  }
+
+  .alert-item.alert-greed {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #059669;
+  }
+
+  .alert-item.alert-negative {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+
+  .alert-icon {
+    font-size: 1rem;
+  }
+
+  .alert-text {
+    flex: 1;
+  }
+
+  /* Elementos interactivos */
+  .sector-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .sector-item:hover {
+    background: #f9fafb;
+    transform: translateX(4px);
+  }
+
+  .ticker-badge {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ticker-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .top-news-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .top-news-item:hover {
+    background: #f9fafb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sector-count {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    text-align: center;
+  }
+
+  .sector-bar {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+  }
+
+  .sector-progress {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .analysis-sidebar {
+      min-width: 250px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .analysis-sidebar {
+      min-width: 100%;
+    }
+
+    .sentiment-main {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .top-news-item {
+      flex-direction: column;
+    }
+
+    .news-rank {
+      align-self: flex-start;
+    }
+  }
+</style>

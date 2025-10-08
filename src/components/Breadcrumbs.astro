@@ -1,0 +1,332 @@
+---
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  icon?: string;
+  active?: boolean;
+}
+
+export interface Props {
+  items: BreadcrumbItem[];
+  showHome?: boolean;
+  separator?: string;
+  maxItems?: number;
+}
+
+const { 
+  items, 
+  showHome = true, 
+  separator = "›",
+  maxItems = 5
+} = Astro.props;
+
+// Añadir home si está habilitado
+const breadcrumbItems = showHome 
+  ? [{ label: "Inicio", href: "/", icon: "🏠" }, ...items]
+  : items;
+
+// Truncar si hay demasiados elementos
+const displayItems = breadcrumbItems.length > maxItems 
+  ? [
+      breadcrumbItems[0],
+      { label: "...", href: undefined, icon: "⋯" },
+      ...breadcrumbItems.slice(-(maxItems - 2))
+    ]
+  : breadcrumbItems;
+---
+
+<nav class="breadcrumbs" aria-label="Navegación de migas de pan">
+  <ol class="breadcrumb-list">
+    {displayItems.map((item, index) => (
+      <li class="breadcrumb-item" key={index}>
+        {item.href && !item.active ? (
+          <a href={item.href} class="breadcrumb-link">
+            {item.icon && <span class="breadcrumb-icon" aria-hidden="true">{item.icon}</span>}
+            <span class="breadcrumb-label">{item.label}</span>
+          </a>
+        ) : (
+          <span class={`breadcrumb-current ${item.active ? 'active' : ''}`}>
+            {item.icon && <span class="breadcrumb-icon" aria-hidden="true">{item.icon}</span>}
+            <span class="breadcrumb-label">{item.label}</span>
+          </span>
+        )}
+        {index < displayItems.length - 1 && (
+          <span class="breadcrumb-separator" aria-hidden="true">{separator}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumbs {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
+  }
+
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #007bff;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .breadcrumb-link:hover {
+    background: #e3f2fd;
+    color: #0056b3;
+    text-decoration: none;
+  }
+
+  .breadcrumb-link:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+  }
+
+  .breadcrumb-current {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #6c757d;
+    padding: 0.25rem 0.5rem;
+    font-weight: 500;
+  }
+
+  .breadcrumb-current.active {
+    color: #495057;
+    font-weight: 600;
+  }
+
+  .breadcrumb-icon {
+    font-size: 0.875rem;
+    opacity: 0.8;
+  }
+
+  .breadcrumb-label {
+    white-space: nowrap;
+  }
+
+  .breadcrumb-separator {
+    color: #adb5bd;
+    font-weight: 300;
+    margin: 0 0.25rem;
+    user-select: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .breadcrumbs {
+      padding: 0.5rem 0;
+      font-size: 0.8rem;
+    }
+
+    .breadcrumb-list {
+      padding: 0 0.75rem;
+      gap: 0.25rem;
+    }
+
+    .breadcrumb-item {
+      gap: 0.25rem;
+    }
+
+    .breadcrumb-link,
+    .breadcrumb-current {
+      padding: 0.125rem 0.375rem;
+      gap: 0.25rem;
+    }
+
+    .breadcrumb-icon {
+      font-size: 0.75rem;
+    }
+
+    .breadcrumb-separator {
+      margin: 0 0.125rem;
+    }
+
+    /* Hide some labels on very small screens */
+    .breadcrumb-label {
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* Accesibilidad */
+  @media (prefers-reduced-motion: reduce) {
+    .breadcrumb-link {
+      transition: none;
+    }
+  }
+
+  /* Modo oscuro */
+  @media (prefers-color-scheme: dark) {
+    .breadcrumbs {
+      background: #2d3748;
+      border-bottom-color: #4a5568;
+    }
+
+    .breadcrumb-link {
+      color: #63b3ed;
+    }
+
+    .breadcrumb-link:hover {
+      background: #2b6cb0;
+      color: #bee3f8;
+    }
+
+    .breadcrumb-current {
+      color: #a0aec0;
+    }
+
+    .breadcrumb-current.active {
+      color: #e2e8f0;
+    }
+
+    .breadcrumb-separator {
+      color: #718096;
+    }
+  }
+</style>
+
+<script>
+  class BreadcrumbManager {
+    private breadcrumbList: HTMLElement;
+
+    constructor() {
+      this.breadcrumbList = document.querySelector('.breadcrumb-list') as HTMLElement;
+      this.init();
+    }
+
+    private init() {
+      this.setupKeyboardNavigation();
+      this.setupClickTracking();
+    }
+
+    private setupKeyboardNavigation() {
+      const links = this.breadcrumbList.querySelectorAll('.breadcrumb-link');
+      
+      links.forEach((link, index) => {
+        link.addEventListener('keydown', (e) => {
+          const key = e.key;
+          const currentIndex = Array.from(links).indexOf(e.target as HTMLElement);
+          
+          switch (key) {
+            case 'ArrowRight':
+              e.preventDefault();
+              const nextLink = links[currentIndex + 1] as HTMLElement;
+              if (nextLink) nextLink.focus();
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              const prevLink = links[currentIndex - 1] as HTMLElement;
+              if (prevLink) prevLink.focus();
+              break;
+            case 'Home':
+              e.preventDefault();
+              (links[0] as HTMLElement).focus();
+              break;
+            case 'End':
+              e.preventDefault();
+              (links[links.length - 1] as HTMLElement).focus();
+              break;
+          }
+        });
+      });
+    }
+
+    private setupClickTracking() {
+      const links = this.breadcrumbList.querySelectorAll('.breadcrumb-link');
+      
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          const target = e.target as HTMLElement;
+          const label = target.querySelector('.breadcrumb-label')?.textContent || '';
+          
+          // Track breadcrumb navigation
+          this.trackBreadcrumbClick(label);
+        });
+      });
+    }
+
+    private trackBreadcrumbClick(label: string) {
+      // Analytics tracking
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'breadcrumb_click', {
+          'event_category': 'navigation',
+          'event_label': label
+        });
+      }
+
+      // Custom event for other tracking systems
+      const event = new CustomEvent('breadcrumbClick', {
+        detail: { label }
+      });
+      document.dispatchEvent(event);
+    }
+
+    // Public methods
+    public addItem(item: { label: string; href?: string; icon?: string }) {
+      const listItem = document.createElement('li');
+      listItem.className = 'breadcrumb-item';
+      
+      if (item.href) {
+        listItem.innerHTML = `
+          <a href="${item.href}" class="breadcrumb-link">
+            ${item.icon ? `<span class="breadcrumb-icon" aria-hidden="true">${item.icon}</span>` : ''}
+            <span class="breadcrumb-label">${item.label}</span>
+          </a>
+        `;
+      } else {
+        listItem.innerHTML = `
+          <span class="breadcrumb-current">
+            ${item.icon ? `<span class="breadcrumb-icon" aria-hidden="true">${item.icon}</span>` : ''}
+            <span class="breadcrumb-label">${item.label}</span>
+          </span>
+        `;
+      }
+      
+      this.breadcrumbList.appendChild(listItem);
+    }
+
+    public updateLastItem(label: string, icon?: string) {
+      const lastItem = this.breadcrumbList.lastElementChild;
+      if (lastItem) {
+        const labelElement = lastItem.querySelector('.breadcrumb-label');
+        const iconElement = lastItem.querySelector('.breadcrumb-icon');
+        
+        if (labelElement) labelElement.textContent = label;
+        if (iconElement && icon) iconElement.textContent = icon;
+      }
+    }
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    new BreadcrumbManager();
+  });
+</script>

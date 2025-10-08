@@ -3,7 +3,7 @@ const today = new Date();
 import { SITE_TITLE } from "../consts";
 ---
 
-<footer>
+<!-- <footer>
 	<div class="container">
 		<div class="footer-bottom">
 			<p class="copyright-desktop">
@@ -20,17 +20,17 @@ import { SITE_TITLE } from "../consts";
 			</p>
 		</div>
 	</div>
-</footer>
+</footer> -->
 
 <style>
 	footer {
-		background-color: var(--background-alt); /* Fondo alternativo */
-		border-top: 1px solid var(--border); /* Usar variable de borde */
-		padding: 3.5rem 0 2rem; /* Ajustar padding */
+		background: #f9fafb;
+		border-top: 1px solid #e5e7eb;
+		padding: 3rem 0 2rem;
 		width: 100%;
-		margin-top: auto; /* Empujar al fondo */
-		color: var(--text-light); /* Color de texto secundario por defecto */
-		font-size: 0.9rem; /* Tamaño de fuente base para el footer */
+		margin-top: auto;
+		color: #6b7280;
+		font-size: 0.9rem;
 	}
 
 	.container {
@@ -122,9 +122,12 @@ import { SITE_TITLE } from "../consts";
 	}
 
 	.footer-bottom {
-		padding-top: 2rem; /* Más espacio arriba */
-		border-top: 1px solid var(--border); /* Usar variable */
+		padding-top: 2rem;
+		border-top: 1px solid #e5e7eb;
 		text-align: center;
+		background: #ffffff;
+		border-radius: 12px 12px 0 0;
+		padding: 2rem 1.5rem;
 	}
 
 	.footer-bottom p {

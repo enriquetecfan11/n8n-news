@@ -1,49 +1,113 @@
 ---
 // Componente para mostrar una tarjeta de noticia individual
+import { getNewsImpact } from '../../data/mockImpact';
+
 interface Props {
     title: string;
     url: string;
     isHighlight?: boolean;
     category?: string;
     pubDate?: Date;
+    imageUrl?: string;
+    excerpt?: string;
+    priority?: boolean;
+    newsId?: string;
+    impact?: 'alto' | 'medio' | 'bajo';
+    sectors?: string[];
+    source?: string;
+    sentiment?: 'positivo' | 'neutral' | 'negativo';
+    relevanceScore?: number;
+    tickers?: string[];
 }
 
-const { title, url, isHighlight = false, category, pubDate } = Astro.props;
+const { 
+    title, 
+    url, 
+    isHighlight = false, 
+    category, 
+    pubDate, 
+    imageUrl, 
+    excerpt, 
+    priority = false,
+    newsId,
+    impact,
+    sectors = [],
+    source,
+    sentiment,
+    relevanceScore,
+    tickers = []
+} = Astro.props;
 
-// Función para obtener el icono según la categoría
-function getCategoryIcon(category?: string): string {
-    if (!category) return "📰"; // Icono por defecto
+// Obtener datos de impacto desde mock data si no se proporcionan
+const impactData = newsId ? getNewsImpact(newsId) : null;
+const finalImpact = impact || impactData?.impact || 'medio';
+const finalSectors = sectors.length > 0 ? sectors : impactData?.sectors || [];
+const finalSource = source || impactData?.source || 'Fuente desconocida';
+const finalSentiment = sentiment || impactData?.sentiment || 'neutral';
+const finalRelevanceScore = relevanceScore || impactData?.relevanceScore || 5;
+const finalTickers = tickers.length > 0 ? tickers : impactData?.tickers || [];
 
-    const categoryLower = category.toLowerCase();
-    if (categoryLower.includes("mercado") || categoryLower.includes("bolsa"))
-        return "📈";
-    if (categoryLower.includes("cripto") || categoryLower.includes("bitcoin"))
-        return "🪙";
-    if (categoryLower.includes("politic")) return "🏛️";
-    if (categoryLower.includes("econom")) return "💹";
-    if (categoryLower.includes("tecnolog")) return "💻";
-    if (categoryLower.includes("finanz")) return "💰";
-
-    return "📰"; // Icono por defecto
+// Función para obtener el icono según el sector
+function getSectorIcon(sector: string): string {
+    const sectorLower = sector.toLowerCase();
+    if (sectorLower.includes("tecnolog") || sectorLower.includes("tech")) return "💻";
+    if (sectorLower.includes("finanz") || sectorLower.includes("banc")) return "💰";
+    if (sectorLower.includes("energ") || sectorLower.includes("petrol")) return "⚡";
+    if (sectorLower.includes("salud") || sectorLower.includes("medic")) return "🏥";
+    if (sectorLower.includes("consumo") || sectorLower.includes("retail")) return "🛒";
+    if (sectorLower.includes("politic") || sectorLower.includes("gobierno")) return "🏛️";
+    if (sectorLower.includes("econom") || sectorLower.includes("macro")) return "💹";
+    if (sectorLower.includes("automotriz") || sectorLower.includes("auto")) return "🚗";
+    if (sectorLower.includes("comercio") || sectorLower.includes("trade")) return "📦";
+    return "📊";
 }
 
-// Función para obtener el color de borde según la categoría
-function getCategoryBorderColor(category?: string): string {
-    if (!category) return "var(--accent-blue)"; // Color por defecto
+// Función para obtener el color según el nivel de impacto
+function getImpactColor(impact: string): string {
+    switch (impact) {
+        case 'alto': return '#ef4444'; // Rojo
+        case 'medio': return '#f59e0b'; // Amarillo
+        case 'bajo': return '#10b981'; // Verde
+        default: return '#6b7280'; // Gris
+    }
+}
 
-    const categoryLower = category.toLowerCase();
-    if (categoryLower.includes("mercado") || categoryLower.includes("bolsa"))
-        return "var(--accent-green, #10b981)";
-    if (categoryLower.includes("cripto") || categoryLower.includes("bitcoin"))
-        return "var(--accent-purple, #8b5cf6)";
-    if (categoryLower.includes("politic")) return "var(--accent-blue, #3b82f6)";
-    if (categoryLower.includes("econom"))
-        return "var(--accent-yellow, #f59e0b)";
-    if (categoryLower.includes("tecnolog"))
-        return "var(--accent-indigo, #6366f1)";
-    if (categoryLower.includes("finanz")) return "var(--accent-green, #10b981)";
+// Función para obtener el color según el sentimiento
+function getSentimentColor(sentiment: string): string {
+    switch (sentiment) {
+        case 'positivo': return '#10b981'; // Verde
+        case 'negativo': return '#ef4444'; // Rojo
+        case 'neutral': return '#6b7280'; // Gris
+        default: return '#6b7280';
+    }
+}
 
-    return "var(--accent-blue)"; // Color por defecto
+// Función para obtener el icono según el sentimiento
+function getSentimentIcon(sentiment: string): string {
+    switch (sentiment) {
+        case 'positivo': return '📈';
+        case 'negativo': return '📉';
+        case 'neutral': return '➡️';
+        default: return '➡️';
+    }
+}
+
+// Función para obtener el color de borde según el sector principal
+function getSectorBorderColor(sectors: string[]): string {
+    if (sectors.length === 0) return "var(--accent-blue)";
+    
+    const primarySector = sectors[0].toLowerCase();
+    if (primarySector.includes("tecnolog")) return "#6366f1"; // Indigo
+    if (primarySector.includes("finanz")) return "#10b981"; // Verde
+    if (primarySector.includes("energ")) return "#f59e0b"; // Amarillo
+    if (primarySector.includes("salud")) return "#ec4899"; // Rosa
+    if (primarySector.includes("consumo")) return "#8b5cf6"; // Púrpura
+    if (primarySector.includes("politic")) return "#3b82f6"; // Azul
+    if (primarySector.includes("econom")) return "#f59e0b"; // Amarillo
+    if (primarySector.includes("automotriz")) return "#ef4444"; // Rojo
+    if (primarySector.includes("comercio")) return "#06b6d4"; // Cian
+    
+    return "var(--accent-blue)";
 }
 
 // Formatear tiempo relativo
@@ -67,201 +131,298 @@ function getRelativeTime(date?: Date): string {
     return `Hace ${diffDays} ${diffDays === 1 ? "día" : "días"}`;
 }
 
-const categoryIcon = getCategoryIcon(category);
-const categoryBorderColor = getCategoryBorderColor(category);
 const timeAgo = getRelativeTime(pubDate);
+const sectorBorderColor = getSectorBorderColor(finalSectors);
+const impactColor = getImpactColor(finalImpact);
+const sentimentColor = getSentimentColor(finalSentiment);
+const sentimentIcon = getSentimentIcon(finalSentiment);
 ---
 
-<div
-    class={`news-card ${isHighlight ? "highlight" : ""}`}
-    style={`--category-color: ${categoryBorderColor};`}
+<article
+    class={`news-card ${isHighlight ? "highlight" : ""} impact-${finalImpact}`}
+    style={`--sector-color: ${sectorBorderColor}; --impact-color: ${impactColor}; --sentiment-color: ${sentimentColor};`}
+    role="article"
+    aria-labelledby={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
 >
-    <a href={url} class="card-link">
-        {
-            category && (
-                <span class="news-category">
-                    {categoryIcon} {category}
+    <a href={url} class="card-link" aria-describedby={`news-excerpt-${title.replace(/\s+/g, '-').toLowerCase()}`}>
+        {/* Header con badges de impacto y sentimiento */}
+        <div class="card-header">
+            <div class="impact-badges">
+                <span class="impact-badge" style={`background-color: ${impactColor};`}>
+                    {finalImpact.toUpperCase()}
                 </span>
-            )
-        }
-        <h3 class="news-title">
+                <span class="sentiment-badge" style={`background-color: ${sentimentColor};`}>
+                    {sentimentIcon} {finalSentiment}
+                </span>
+            </div>
+            <div class="relevance-score">
+                <span class="score-label">Relevancia:</span>
+                <div class="score-bar">
+                    <div class="score-fill" style={`width: ${(finalRelevanceScore / 10) * 100}%; background-color: ${impactColor};`}></div>
+                </div>
+                <span class="score-value">{finalRelevanceScore}/10</span>
+            </div>
+        </div>
+
+        {/* Sectores afectados */}
+        {finalSectors.length > 0 && (
+            <div class="sectors-container">
+                {finalSectors.slice(0, 3).map(sector => (
+                    <span class="sector-tag">
+                        {getSectorIcon(sector)} {sector}
+                    </span>
+                ))}
+                {finalSectors.length > 3 && (
+                    <span class="sector-tag more-sectors">
+                        +{finalSectors.length - 3} más
+                    </span>
+                )}
+            </div>
+        )}
+
+        {/* Título de la noticia */}
+        <h3 class="news-title" id={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}>
             {title}
         </h3>
-        <div class="news-excerpt"></div>
+
+        {/* Tickers relacionados */}
+        {finalTickers.length > 0 && (
+            <div class="tickers-container">
+                <span class="tickers-label">Acciones:</span>
+                <div class="tickers-list">
+                    {finalTickers.map(ticker => (
+                        <span class="ticker-badge">{ticker}</span>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Footer con fuente y tiempo */}
         <div class="card-footer">
-            <div class="actions">
-                <span class="read-more">Ver detalles</span>
+            <div class="source-info">
+                <span class="source">{finalSource}</span>
                 {timeAgo && <span class="publish-time">{timeAgo}</span>}
+            </div>
+            <div class="read-more">
+                Ver detalles →
             </div>
         </div>
     </a>
-</div>
+</article>
 
 <style>
     .news-card {
-        background-color: var(--background-main);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease-in-out;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
         position: relative;
         overflow: hidden;
-        border: 1px solid var(--border);
+        border: 2px solid var(--sector-color, #e5e7eb);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .news-card:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-color: var(--sector-color, #d1d5db);
     }
 
-    .news-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--category-color, var(--accent-blue));
-        opacity: 0.8;
+    .news-card.impact-alto {
+        border-left: 4px solid var(--impact-color);
     }
 
-    .news-card.highlight::before {
-        width: 6px;
-        background: var(--accent);
+    .news-card.impact-medio {
+        border-left: 3px solid var(--impact-color);
+    }
+
+    .news-card.impact-bajo {
+        border-left: 2px solid var(--impact-color);
     }
 
     .card-link {
         display: block;
-        padding: 1.5rem 1.5rem 1.5rem 2rem;
+        padding: 0;
         color: inherit;
         text-decoration: none;
     }
 
-    .news-category {
-        display: inline-flex;
-        align-items: center;
-        background-color: var(--category-color, var(--accent-blue));
-        color: white;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Header con badges */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        gap: 1rem;
     }
 
-    .category-icon {
-        margin-right: 0.5rem;
-        font-size: 1.1em;
+    .impact-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
-    .news-title {
-        font-size: 1.4rem;
+    .impact-badge, .sentiment-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
         font-weight: 700;
-        color: var(--text-main);
-        margin: 0 0 0.8rem;
-        line-height: 1.3;
-        letter-spacing: -0.3px;
-        font-family: var(--font-heading);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .news-excerpt {
-        margin-top: 0.7rem;
+    .relevance-score {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 120px;
     }
 
-    .news-excerpt blockquote {
-        margin: 0;
-        padding: 0.5rem 0 0.5rem 1rem;
-        border-left: 3px solid var(--category-color, #e5e7eb);
-        font-style: italic;
-        color: var(--text-light);
+    .score-label {
+        font-size: 0.7rem;
+        color: #6b7280;
+        font-weight: 500;
     }
 
-    .news-excerpt p {
-        margin: 0;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        letter-spacing: 0.01em;
-        color: var(--text-light);
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
+    .score-bar {
+        flex: 1;
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
         overflow: hidden;
     }
 
+    .score-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .score-value {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    /* Sectores */
+    .sectors-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .sector-tag {
+        padding: 0.25rem 0.5rem;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .sector-tag.more-sectors {
+        background: #e5e7eb;
+        color: #6b7280;
+    }
+
+    /* Título */
+    .news-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 1rem;
+        line-height: 1.5;
+        letter-spacing: -0.025em;
+        font-family: var(--font-body);
+    }
+
+    /* Tickers */
+    .tickers-container {
+        margin-bottom: 1rem;
+    }
+
+    .tickers-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+        margin-right: 0.5rem;
+    }
+
+    .tickers-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+    }
+
+    .ticker-badge {
+        padding: 0.2rem 0.4rem;
+        background: #1e40af;
+        color: white;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        font-family: monospace;
+    }
+
+    /* Footer */
     .card-footer {
-        margin-top: 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .source-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .source {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
     }
 
     .publish-time {
-        font-size: 0.8rem;
-        color: var(--text-lighter);
-        margin-left: 1rem;
-    }
-
-    .actions {
-        display: flex;
-        align-items: center;
+        font-size: 0.7rem;
+        color: #9ca3af;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .read-more {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
+        color: var(--sector-color, #1e40af);
         font-weight: 600;
-        color: var(--accent);
-        transition: color 0.2s;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .read-more::after {
-        content: "→";
-        margin-left: 0.3rem;
         transition: transform 0.2s ease;
     }
 
-    .news-card:hover .read-more::after {
-        transform: translateX(3px);
-    }
-
     .news-card:hover .read-more {
-        color: var(--accent-dark);
+        transform: translateX(2px);
     }
 
-    .share-buttons {
-        display: flex;
-        gap: 0.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .news-card:hover .share-buttons {
-        opacity: 1;
-    }
-
-    .share-btn {
-        background: none;
-        border: none;
-        color: var(--text-lighter);
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-
-    .share-btn:hover {
-        transform: translateY(-2px);
-    }
-
+    /* Responsive */
     @media (max-width: 768px) {
-        .card-link {
-            padding: 1.5rem 1.5rem 1.5rem 1.8rem;
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .relevance-score {
+            min-width: auto;
+            width: 100%;
         }
 
         .news-title {
@@ -272,18 +433,25 @@ const timeAgo = getRelativeTime(pubDate);
             overflow: hidden;
         }
 
-        .share-buttons {
-            opacity: 1;
+        .card-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
         }
     }
 
     @media (max-width: 480px) {
-        .card-link {
-            padding: 1.8rem 1.5rem 1.8rem 1.8rem;
+        .news-card {
+            padding: 1rem;
         }
 
-        .news-excerpt p {
-            -webkit-line-clamp: 2;
+        .impact-badges {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .impact-badge, .sentiment-badge {
+            text-align: center;
         }
     }
 </style>
