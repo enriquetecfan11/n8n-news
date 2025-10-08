@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["finanzas", "política", "comercio"]
 source: "Fuente desconocida"
 sentiment: "negativo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

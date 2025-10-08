@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["política", "economía", "comercio"]
 source: "Bloomberg"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

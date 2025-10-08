@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["tecnología", "economía"]
 source: "Investing.com"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["META", "F", "C"]
 ---
 La alianza entre Microsoft y Meta ha suscitado un gran interés en el mercado de las tecnologías de la información. En este sentido, se puede aprovechar al máximo esta estrategia para obtener beneficios.

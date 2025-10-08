@@ -6,7 +6,7 @@ impact: "bajo"
 sectors: ["tecnología"]
 source: "Bloomberg"
 sentiment: "neutral"
-relevanceScore: "8"
+relevanceScore: 8
 tickers: ["EUR", "F", "BAC", "C"]
 ---
 

@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["política"]
 source: "Bloomberg"
 sentiment: "negativo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["EUR", "F", "C"]
 ---
 

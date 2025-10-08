@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["finanzas"]
 source: "Fuente desconocida"
 sentiment: "neutral"
-relevanceScore: "9"
+relevanceScore: 9
 tickers: ["EUR", "F", "C"]
 ---
 

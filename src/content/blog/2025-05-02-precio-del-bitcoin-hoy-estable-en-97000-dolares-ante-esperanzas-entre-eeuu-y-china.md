@@ -6,7 +6,7 @@ impact: "medio"
 sectors: []
 source: "Investing.com"
 sentiment: "positivo"
-relevanceScore: "8"
+relevanceScore: 8
 tickers: ["C"]
 ---
 

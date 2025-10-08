@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["finanzas", "política", "economía", "automotriz", "comercio"]
 source: "Financial Times"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["DIA", "EUR", "F", "C"]
 ---
 Los mercados financieros reaccionaron con inquietud después de que Friedrich Merz, el líder de la Unión Cristiana Democrática (CDU) y principal contendiente para la cancillería alemana, sufriera un duro revés en el voto inicial.

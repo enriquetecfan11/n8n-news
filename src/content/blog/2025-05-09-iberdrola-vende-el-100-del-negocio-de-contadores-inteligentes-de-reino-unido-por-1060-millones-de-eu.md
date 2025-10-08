@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["tecnología", "finanzas", "energía", "consumo", "economía", "automotriz"]
 source: "Fuente desconocida"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["EUR", "F", "C"]
 ---
 

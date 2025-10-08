@@ -6,7 +6,7 @@ impact: "bajo"
 sectors: ["energía"]
 source: "Bloomberg"
 sentiment: "positivo"
-relevanceScore: "9"
+relevanceScore: 9
 tickers: ["F", "C"]
 ---
 

@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["finanzas", "economía", "automotriz"]
 source: "Bloomberg"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "GM", "C"]
 ---
 

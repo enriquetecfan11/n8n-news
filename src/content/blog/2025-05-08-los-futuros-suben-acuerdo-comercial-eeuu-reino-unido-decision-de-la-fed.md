@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["finanzas", "economía", "comercio"]
 source: "Investing.com"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

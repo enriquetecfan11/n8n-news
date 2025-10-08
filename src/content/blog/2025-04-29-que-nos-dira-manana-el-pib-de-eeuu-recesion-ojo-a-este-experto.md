@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["salud", "economía", "automotriz", "comercio"]
 source: "Investing.com"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

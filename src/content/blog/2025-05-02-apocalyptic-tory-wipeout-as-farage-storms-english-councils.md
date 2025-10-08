@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["política", "comercio"]
 source: "Financial Times"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["EUR", "F", "C"]
 ---
 

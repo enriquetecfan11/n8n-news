@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["energía", "consumo", "economía", "comercio"]
 source: "Financial Times"
 sentiment: "negativo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

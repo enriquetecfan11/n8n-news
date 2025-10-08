@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["tecnología", "política", "automotriz", "comercio"]
 source: "Financial Times"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["DIA", "F", "C"]
 ---
 

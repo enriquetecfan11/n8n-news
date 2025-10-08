@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["tecnología", "consumo"]
 source: "Bloomberg"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C", "GS"]
 ---
 

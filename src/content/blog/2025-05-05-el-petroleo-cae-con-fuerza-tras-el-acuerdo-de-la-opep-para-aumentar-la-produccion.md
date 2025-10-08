@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["energía", "comercio"]
 source: "Fuente desconocida"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["F", "C"]
 ---
 

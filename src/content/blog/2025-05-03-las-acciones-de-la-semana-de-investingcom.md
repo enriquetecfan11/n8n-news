@@ -6,7 +6,7 @@ impact: "bajo"
 sectors: []
 source: "Investing.com"
 sentiment: "neutral"
-relevanceScore: "7"
+relevanceScore: 7
 tickers: ["F", "C"]
 ---
 

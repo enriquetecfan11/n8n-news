@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["tecnología", "comercio"]
 source: "Bloomberg"
 sentiment: "neutral"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["DIA", "F", "C"]
 ---
 

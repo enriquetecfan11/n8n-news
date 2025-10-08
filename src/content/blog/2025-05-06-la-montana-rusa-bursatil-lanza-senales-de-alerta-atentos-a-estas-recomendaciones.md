@@ -6,7 +6,7 @@ impact: "bajo"
 sectors: ["finanzas", "economía", "automotriz", "comercio"]
 source: "Investing.com"
 sentiment: "neutral"
-relevanceScore: "9"
+relevanceScore: 9
 tickers: ["F", "C"]
 ---
 

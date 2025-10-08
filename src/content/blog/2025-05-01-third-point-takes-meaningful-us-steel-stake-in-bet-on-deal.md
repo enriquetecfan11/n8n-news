@@ -6,7 +6,7 @@ impact: "medio"
 sectors: ["automotriz"]
 source: "Bloomberg"
 sentiment: "neutral"
-relevanceScore: "9"
+relevanceScore: 9
 tickers: ["F", "C"]
 ---
 

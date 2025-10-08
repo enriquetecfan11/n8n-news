@@ -6,7 +6,7 @@ impact: "bajo"
 sectors: ["tecnología"]
 source: "Fuente desconocida"
 sentiment: "positivo"
-relevanceScore: "9"
+relevanceScore: 9
 tickers: ["EUR", "F", "C"]
 ---
 
