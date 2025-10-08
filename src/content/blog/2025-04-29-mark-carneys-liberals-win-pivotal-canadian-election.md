@@ -6,7 +6,7 @@ impact: "alto"
 sectors: ["finanzas", "política", "economía", "automotriz"]
 source: "Financial Times"
 sentiment: "positivo"
-relevanceScore: "10"
+relevanceScore: 10
 tickers: ["DIA", "F", "C"]
 ---
 El exgobernador del Banco de Inglaterra Mark Carney ha capitalizado el sentimiento anti-Trump para liderar a los liberales canadienses a una victoria decisiva en las elecciones federales.
