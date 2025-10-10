@@ -16,7 +16,7 @@ const blog = defineCollection({
 		sectors: z.array(z.string()).optional(),
 		source: z.string().optional(),
 		sentiment: z.enum(['positivo', 'neutral', 'negativo']).optional(),
-		relevanceScore: z.number().min(1).max(10).optional(),
+		relevanceScore: z.number().min(1).max(10).nullable().optional(),
 		tickers: z.array(z.string()).optional(),
 	}),
 });

@@ -131,7 +131,7 @@ export class NewsFilter {
   }
 
   private calculateRelevanceScore(post: CollectionEntry<'blog'>): number {
-    let score = post.data.relevanceScore || 5;
+	let score = post.data.relevanceScore ?? 5;
 
     // Bonus por impacto alto
     if (post.data.impact === 'alto') {

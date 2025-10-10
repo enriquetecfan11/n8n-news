@@ -44,7 +44,7 @@ const finalImpact = impact || impactData?.impact || 'medio';
 const finalSectors = sectors.length > 0 ? sectors : impactData?.sectors || [];
 const finalSource = source || impactData?.source || 'Fuente desconocida';
 const finalSentiment = sentiment || impactData?.sentiment || 'neutral';
-const finalRelevanceScore = relevanceScore || impactData?.relevanceScore || 5;
+const finalRelevanceScore = relevanceScore ?? impactData?.relevanceScore ?? 5;
 const finalTickers = tickers.length > 0 ? tickers : impactData?.tickers || [];
 
 // Función para obtener el icono según el sector

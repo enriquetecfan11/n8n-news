@@ -61,7 +61,7 @@ const groupedPosts = filteredPosts.reduce((acc, post) => {
 // Estadísticas del ticker
 const tickerStats = {
   totalPosts: tickerPosts.length,
-  avgRelevance: tickerPosts.reduce((sum, post) => sum + (post.data.relevanceScore || 5), 0) / tickerPosts.length,
+  avgRelevance: tickerPosts.reduce((sum, post) => sum + (post.data.relevanceScore ?? 5), 0) / tickerPosts.length,
   impactDistribution: tickerPosts.reduce((acc, post) => {
     const impact = post.data.impact || 'bajo';
     acc[impact] = (acc[impact] || 0) + 1;

@@ -2,7 +2,7 @@
 export interface NewsImpact {
   [newsId: string]: {
     impact: 'alto' | 'medio' | 'bajo';
-    relevanceScore: number; // 1-10
+    relevanceScore: number | null; // 1-10
     sectors: string[];
     sentiment: 'positivo' | 'neutral' | 'negativo';
     source: string;
@@ -99,6 +99,10 @@ export function getNewsBySector(sector: string): string[] {
 // Función para obtener top noticias por relevancia
 export function getTopNewsByRelevance(limit: number = 5): string[] {
   return Object.keys(mockNewsImpact)
-    .sort((a, b) => mockNewsImpact[b].relevanceScore - mockNewsImpact[a].relevanceScore)
+    .sort((a, b) => {
+      const scoreA = mockNewsImpact[a].relevanceScore ?? 0;
+      const scoreB = mockNewsImpact[b].relevanceScore ?? 0;
+      return scoreB - scoreA;
+    })
     .slice(0, limit);
 }
