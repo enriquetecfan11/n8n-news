@@ -1,6 +1,5 @@
 ---
 // Componente para mostrar una tarjeta de noticia individual
-import { getNewsImpact } from '../../data/mockImpact';
 
 interface Props {
     title: string;
@@ -30,22 +29,13 @@ const {
     excerpt, 
     priority = false,
     newsId,
-    impact,
+    impact = 'medio',
     sectors = [],
-    source,
-    sentiment,
-    relevanceScore,
+    source = 'Fuente desconocida',
+    sentiment = 'neutral',
+    relevanceScore = 5,
     tickers = []
 } = Astro.props;
-
-// Obtener datos de impacto desde mock data si no se proporcionan
-const impactData = newsId ? getNewsImpact(newsId) : null;
-const finalImpact = impact || impactData?.impact || 'medio';
-const finalSectors = sectors.length > 0 ? sectors : impactData?.sectors || [];
-const finalSource = source || impactData?.source || 'Fuente desconocida';
-const finalSentiment = sentiment || impactData?.sentiment || 'neutral';
-const finalRelevanceScore = relevanceScore ?? impactData?.relevanceScore ?? 5;
-const finalTickers = tickers.length > 0 ? tickers : impactData?.tickers || [];
 
 // Función para obtener el icono según el sector
 function getSectorIcon(sector: string): string {
@@ -132,14 +122,14 @@ function getRelativeTime(date?: Date): string {
 }
 
 const timeAgo = getRelativeTime(pubDate);
-const sectorBorderColor = getSectorBorderColor(finalSectors);
-const impactColor = getImpactColor(finalImpact);
-const sentimentColor = getSentimentColor(finalSentiment);
-const sentimentIcon = getSentimentIcon(finalSentiment);
+const sectorBorderColor = getSectorBorderColor(sectors);
+const impactColor = getImpactColor(impact);
+const sentimentColor = getSentimentColor(sentiment);
+const sentimentIcon = getSentimentIcon(sentiment);
 ---
 
 <article
-    class={`news-card ${isHighlight ? "highlight" : ""} impact-${finalImpact}`}
+    class={`news-card ${isHighlight ? "highlight" : ""} impact-${impact}`}
     style={`--sector-color: ${sectorBorderColor}; --impact-color: ${impactColor}; --sentiment-color: ${sentimentColor};`}
     role="article"
     aria-labelledby={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
@@ -149,32 +139,32 @@ const sentimentIcon = getSentimentIcon(finalSentiment);
         <div class="card-header">
             <div class="impact-badges">
                 <span class="impact-badge" style={`background-color: ${impactColor};`}>
-                    {finalImpact.toUpperCase()}
+                    {impact.toUpperCase()}
                 </span>
                 <span class="sentiment-badge" style={`background-color: ${sentimentColor};`}>
-                    {sentimentIcon} {finalSentiment}
+                    {sentimentIcon} {sentiment}
                 </span>
             </div>
             <div class="relevance-score">
                 <span class="score-label">Relevancia:</span>
                 <div class="score-bar">
-                    <div class="score-fill" style={`width: ${(finalRelevanceScore / 10) * 100}%; background-color: ${impactColor};`}></div>
+                    <div class="score-fill" style={`width: ${(relevanceScore / 10) * 100}%; background-color: ${impactColor};`}></div>
                 </div>
-                <span class="score-value">{finalRelevanceScore}/10</span>
+                <span class="score-value">{relevanceScore}/10</span>
             </div>
         </div>
 
         {/* Sectores afectados */}
-        {finalSectors.length > 0 && (
+        {sectors.length > 0 && (
             <div class="sectors-container">
-                {finalSectors.slice(0, 3).map(sector => (
+                {sectors.slice(0, 3).map(sector => (
                     <span class="sector-tag">
                         {getSectorIcon(sector)} {sector}
                     </span>
                 ))}
-                {finalSectors.length > 3 && (
+                {sectors.length > 3 && (
                     <span class="sector-tag more-sectors">
-                        +{finalSectors.length - 3} más
+                        +{sectors.length - 3} más
                     </span>
                 )}
             </div>
@@ -186,11 +176,11 @@ const sentimentIcon = getSentimentIcon(finalSentiment);
         </h3>
 
         {/* Tickers relacionados */}
-        {finalTickers.length > 0 && (
+        {tickers.length > 0 && (
             <div class="tickers-container">
                 <span class="tickers-label">Acciones:</span>
                 <div class="tickers-list">
-                    {finalTickers.map(ticker => (
+                    {tickers.map(ticker => (
                         <span class="ticker-badge">{ticker}</span>
                     ))}
                 </div>
@@ -200,7 +190,7 @@ const sentimentIcon = getSentimentIcon(finalSentiment);
         {/* Footer con fuente y tiempo */}
         <div class="card-footer">
             <div class="source-info">
-                <span class="source">{finalSource}</span>
+                <span class="source">{source}</span>
                 {timeAgo && <span class="publish-time">{timeAgo}</span>}
             </div>
             <div class="read-more">

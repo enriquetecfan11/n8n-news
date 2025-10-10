@@ -1,7 +1,5 @@
 ---
 // Panel de análisis rápido para inversores
-import { getOverallSentiment } from "../../data/mockSentiment";
-import { getTopNewsByRelevance, getNewsImpact } from "../../data/mockImpact";
 import { getCollection } from "astro:content";
 
 interface Props {
@@ -10,9 +8,7 @@ interface Props {
 
 const { className = "" } = Astro.props;
 
-// Obtener datos de sentimiento y noticias top
-const marketSentiment = getOverallSentiment();
-const topNews = getTopNewsByRelevance(5);
+// Obtener datos de sentimiento y noticias top desde posts reales
 
 // Obtener posts reales para análisis
 const allPosts = await getCollection("blog");
@@ -129,7 +125,7 @@ function getVolatilityColor(volatility: string): string {
             this.filterBySector(sectorName);
           }
         });
-        item.style.cursor = "pointer";
+        (item as HTMLElement).style.cursor = "pointer";
       });
 
       // Hacer clickeables los tickers
@@ -141,7 +137,7 @@ function getVolatilityColor(volatility: string): string {
             this.filterByTicker(ticker);
           }
         });
-        badge.style.cursor = "pointer";
+        (badge as HTMLElement).style.cursor = "pointer";
       });
 
       // Hacer clickeables las noticias top
@@ -152,7 +148,7 @@ function getVolatilityColor(volatility: string): string {
             this.showNewsDetails(rank);
           }
         });
-        item.style.cursor = "pointer";
+        (item as HTMLElement).style.cursor = "pointer";
       });
     }
 
@@ -204,7 +200,7 @@ function getVolatilityColor(volatility: string): string {
           : `-${(Math.random() * 2).toFixed(1)}%`;
 
         change.textContent = newChange;
-        change.style.color = isPositive ? "#10b981" : "#ef4444";
+        (change as HTMLElement).style.color = isPositive ? "#10b981" : "#ef4444";
       });
 
       // Actualizar barras de progreso
