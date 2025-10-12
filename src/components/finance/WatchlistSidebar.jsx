@@ -70,15 +70,6 @@ const WatchlistSidebar = ({ isExpanded, onToggle, isMobile = false }) => {
     <div className={`watchlist-sidebar ${!isExpanded ? 'collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
       <div className="sidebar-header">
         <h3 className="sidebar-title">Lista de Seguimiento</h3>
-        {!isMobile && (
-          <button
-            className="sidebar-toggle"
-            onClick={onToggle}
-            title={isExpanded ? 'Colapsar sidebar' : 'Expandir sidebar'}
-          >
-            {isExpanded ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
-        )}
       </div>
 
       {isExpanded ? (
