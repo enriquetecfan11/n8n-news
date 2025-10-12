@@ -1,0 +1,375 @@
+/* Dashboard TradingView Profesional - Estilos */
+
+.trading-dashboard {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: var(--font-body);
+}
+
+/* Grid Principal */
+.main-grid {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Contenedor del gráfico principal */
+.chart-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  min-height: 600px;
+}
+
+/* Sidebar */
+.sidebar-container {
+  transition: all 0.3s ease;
+}
+
+.sidebar-container.collapsed {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+}
+
+/* Watchlist Sidebar */
+.watchlist-sidebar {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: fit-content;
+}
+
+.watchlist-sidebar.collapsed {
+  width: 60px;
+  min-width: 60px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #E0E0E0;
+  background: #F5F5F5;
+}
+
+.sidebar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #424242;
+  margin: 0;
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  color: #757575;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  color: #1976D2;
+  background: rgba(25, 118, 210, 0.1);
+}
+
+.sidebar-content {
+  padding: 1rem;
+}
+
+.symbols-list {
+  margin-bottom: 1rem;
+}
+
+.symbol-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #F0F0F0;
+  font-size: 0.85rem;
+}
+
+.symbol-item:last-child {
+  border-bottom: none;
+}
+
+.symbol-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.symbol-name {
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.symbol-full-name {
+  font-size: 0.75rem;
+  color: #757575;
+}
+
+.symbol-change {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.symbol-change.positive {
+  color: #10b981;
+}
+
+.symbol-change.negative {
+  color: #ef4444;
+}
+
+/* Sidebar colapsado */
+.sidebar-collapsed {
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+
+.collapsed-symbols {
+  margin-bottom: 1rem;
+}
+
+.collapsed-symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.7rem;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.collapsed-symbol:last-child {
+  border-bottom: none;
+}
+
+.symbol-short {
+  font-weight: 600;
+  color: #1e1e1e;
+  margin-bottom: 2px;
+}
+
+.symbol-change-mini {
+  font-weight: 600;
+  font-size: 0.65rem;
+}
+
+.symbol-change-mini.positive {
+  color: #10b981;
+}
+
+.symbol-change-mini.negative {
+  color: #ef4444;
+}
+
+.expand-button {
+  background: #1976D2;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.expand-button:hover {
+  background: #1565C0;
+  transform: scale(1.05);
+}
+
+/* TradingView Widget */
+.tradingview-widget {
+  margin-top: 1rem;
+}
+
+.tradingview-widget-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Separador entre secciones */
+.section-separator {
+  border-top: 1px solid #E0E0E0;
+  margin: 24px 0;
+}
+
+/* Grid Secundario */
+.secondary-grid {
+  display: grid;
+  grid-template-columns: 6fr 4fr;
+  gap: 1.5rem;
+}
+
+/* Widget Cards */
+.widget-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.widget-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.widget-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #E0E0E0;
+  background: #F5F5F5;
+}
+
+.widget-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #424242;
+  margin: 0;
+}
+
+.widget-toggle {
+  background: none;
+  border: none;
+  color: #757575;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.widget-toggle:hover {
+  color: #1976D2;
+  background: rgba(25, 118, 210, 0.1);
+}
+
+.widget-content {
+  padding: 1rem;
+}
+
+
+/* Responsive Design */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .sidebar-container {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .trading-dashboard.single-column .main-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .trading-dashboard.single-column .secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .trading-dashboard {
+    padding: 0.5rem;
+  }
+  
+  .mobile-content {
+    min-height: 400px;
+  }
+  
+  .mobile-chart-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+  }
+  
+  .watchlist-sidebar.mobile {
+    box-shadow: none;
+    border-radius: 0;
+  }
+  
+  .watchlist-sidebar.mobile .sidebar-header {
+    background: #F5F5F5;
+    border-bottom: 1px solid #E0E0E0;
+  }
+}
+
+/* Estados de widgets minimizados */
+.heatmap-container.minimized,
+.calendar-container.minimized {
+  height: auto;
+}
+
+.heatmap-container.minimized .widget-content,
+.calendar-container.minimized .widget-content {
+  display: none;
+}
+
+/* Animaciones suaves */
+.trading-dashboard * {
+  transition: all 0.3s ease;
+}
+
+/* Scroll personalizado para sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Widget placeholders */
+.widget-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.widget-placeholder p {
+  margin: 0;
+  text-align: center;
+}

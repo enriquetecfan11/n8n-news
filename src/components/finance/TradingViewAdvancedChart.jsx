@@ -1,54 +1,72 @@
-// TradingViewWidget.jsx
-import React, { useEffect, useRef, memo } from 'react';
+// TradingViewAdvancedChart.jsx
+import React, { useEffect, useRef } from 'react';
 
-function TradingViewWidget() {
-    const container = useRef();
+function TradingViewAdvancedChart() {
+    const containerRef = useRef(null);
+    const scriptRef = useRef(null);
 
-    useEffect(
-        () => {
-            const script = document.createElement("script");
-            script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-            script.type = "text/javascript";
-            script.async = true;
-            script.innerHTML = `
-        {
-          "autosize": true,
-          "symbol": "VANTAGE:SP500",
-          "interval": "1",
-          "timezone": "Europe/Madrid",
-          "withdateranges": true,
-          "theme": "light",
-          "style": "1",
-          "locale": "es",
-          "withdateranges": false,
-          "allow_symbol_change": false,
-          "details": false,
-          "hotlist": false,
-          "support_host": "https://www.tradingview.com",
-          "watchlist": [
-            "FOREXCOM:SPXUSD",
-            "FX_IDC:EURUSD",
-            "BITSTAMP:BTCUSD",
-            "BITSTAMP:ETHUSD",
-            "NASDAQ:META",
-            "NASDAQ:GOOGL",
-            "NASDAQ:NVDA",
-            "NASDAQ:AAPL",
-            "NASDAQ:TSLA",
-            "NASDAQ:MSFT",
-            "NASDAQ:INTC"
-          ]
-        }`;
-            container.current.appendChild(script);
-        },
-        []
-    );
+    useEffect(() => {
+        // Verificar que el contenedor existe
+        if (!containerRef.current) return;
+
+        // Crear el script
+        const script = document.createElement("script");
+        script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+        script.type = "text/javascript";
+        script.async = true;
+        script.innerHTML = JSON.stringify({
+            autosize: true,
+            symbol: "VANTAGE:SP500",
+            interval: "1",
+            timezone: "Europe/Madrid",
+            theme: "light",
+            style: "1",
+            locale: "es",
+            allow_symbol_change: true,
+            details: true,
+            hotlist: false,
+            calendar: false,
+            support_host: "https://www.tradingview.com",
+            toolbar_bg: "#F5F5F5",
+            enable_publishing: false,
+            hide_side_toolbar: false,
+            hide_top_toolbar: false,
+            save_image: false,
+            studies: ["Volume@tv-basicstudies"],
+            show_popup_button: true,
+            popup_width: "1000",
+            popup_height: "650",
+            container_id: "tradingview_chart_container"
+        });
+
+        // Guardar referencia al script
+        scriptRef.current = script;
+        
+        // Agregar script al contenedor
+        containerRef.current.appendChild(script);
+
+        // Función de limpieza (cleanup)
+        return () => {
+            // Remover el script cuando el componente se desmonte
+            if (scriptRef.current && containerRef.current) {
+                containerRef.current.removeChild(scriptRef.current);
+            }
+        };
+    }, []); // Array vacío = solo se ejecuta en mount y cleanup en unmount
 
     return (
-        <div className="tradingview-widget-container" ref={container} style={{ height: "700px", width: "100%" }}>
-            <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
+        <div 
+            className="tradingview-widget-container" 
+            style={{ height: "100%", width: "100%" }}
+        >
+            <div 
+                id="tradingview_chart_container"
+                className="tradingview-widget-container__widget" 
+                ref={containerRef}
+                style={{ height: "100%", width: "100%" }}
+            />
         </div>
     );
 }
 
-export default memo(TradingViewWidget);
+export default TradingViewAdvancedChart;

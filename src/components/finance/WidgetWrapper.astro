@@ -1,0 +1,89 @@
+---
+interface Props {
+  type: 'heatmap' | 'calendar';
+  height?: string;
+  dataSource?: string;
+}
+
+const { type, height = "400", dataSource = "SPX500" } = Astro.props;
+---
+
+{type === 'heatmap' && (
+  <div class="widget-wrapper">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+      {
+      "colorTheme": "light",
+      "dateRange": "1D",
+      "exchange": "US",
+      "showChart": true,
+      "locale": "es",
+      "largeChartUrl": "",
+      "isTransparent": false,
+      "plotLineColorGrowing": "rgba(0, 255, 0, 1)",
+      "plotLineColorFalling": "rgba(255, 0, 0, 1)",
+      "gridLineColor": "rgba(42, 46, 57, 1)",
+      "scaleFontColor": "rgba(134, 137, 147, 1)",
+      "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+      "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+      "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+      "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+      "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+      "showToolbar": true,
+      "width": "100%",
+      "height": height,
+      "blockSize": "market_cap_basic",
+      "dataSource": dataSource,
+      "symbols": [
+        { "s": "NASDAQ:META" },
+        { "s": "NASDAQ:GOOGL" },
+        { "s": "NASDAQ:NVDA" },
+        { "s": "NASDAQ:AAPL" },
+        { "s": "NASDAQ:TSLA" },
+        { "s": "NASDAQ:MSFT" },
+        { "s": "NASDAQ:INTC" },
+        { "s": "NASDAQ:AMZN" },
+        { "s": "NYSE:DIS" },
+        { "s": "NYSE:JPM" }
+      ]
+      }
+      </script>
+    </div>
+  </div>
+)}
+
+{type === 'calendar' && (
+  <div class="widget-wrapper">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+      {
+      "colorTheme": "light",
+      "isTransparent": false,
+      "width": "100%",
+      "height": height,
+      "locale": "es",
+      "importanceFilter": "-1,0,1",
+      "countryFilter": "us,eu,es",
+      "currencyFilter": "USD,EUR",
+      "timeFrame": "1W"
+      }
+      </script>
+    </div>
+  </div>
+)}
+
+<style>
+  .widget-wrapper {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .tradingview-widget-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+</style>
