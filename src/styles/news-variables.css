@@ -1,5 +1,39 @@
 /* Variables - Paleta de colores unificada */
 :root {
+    /* Primarios */
+    --primary-blue: #1976D2;
+    --primary-blue-light: #E3F2FD;
+    --primary-blue-dark: #1565C0;
+    
+    /* Secundarios */
+    --secondary-green: #2E7D32;
+    --secondary-green-light: #E8F5E9;
+    
+    --secondary-purple: #6A1B9A;
+    --secondary-purple-light: #F3E5F5;
+    
+    --secondary-orange: #E65100;
+    --secondary-orange-light: #FFF3E0;
+    
+    /* Neutrales */
+    --gray-900: #212121;
+    --gray-700: #424242;
+    --gray-500: #757575;
+    --gray-300: #E0E0E0;
+    --gray-100: #F5F5F5;
+    
+    /* Estados */
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --error: #F44336;
+    --info: #2196F3;
+    
+    /* Sombras */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    /* Variables legacy para compatibilidad */
     --primary: #2c3e50;
     --primary-light: #34495e;
     --primary-dark: #1a252f;
@@ -8,6 +42,7 @@
     --accent-light: #ff6b6b;
     --accent-secondary: #3498db;
     --accent-tertiary: #2ecc71;
+    --accent-blue: #1976D2;
     --black: 15, 18, 25;
     --gray: 96, 115, 159;
     --gray-light: 240, 242, 245;
@@ -19,9 +54,7 @@
     --background: #fff;
     --background-alt: #f9f9f9;
     --background-dark: #2c3e50;
-    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
     --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
     --box-shadow: var(--shadow);
     --gradient-primary: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     --gradient-accent: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);

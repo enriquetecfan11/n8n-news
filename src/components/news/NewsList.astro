@@ -33,6 +33,9 @@ const months = [
 ];
 
 const formattedDate = `${day} de ${months[month]} de ${year}`;
+const capitalizedWeekday =
+    weekday.charAt(0).toUpperCase() + weekday.slice(1);
+const todayFullDate = `${capitalizedWeekday}, ${formattedDate}`;
 ---
 
 <div class="news-container">
@@ -47,13 +50,22 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
                             class={`news-date-group ${dateIndex === 0 ? "today-group" : ""}`}
                         >
                             <div class="date-header">
-                                <h3 class="date-heading">
-                                    {dateIndex === 0 ? (
-                                        <>🔥 Noticias del día: {date}</>
-                                    ) : (
-                                        <>Noticias del día: {date}</>
-                                    )}
-                                </h3>
+                                {dateIndex === 0 ? (
+                                    <>
+                                        <div class="date-header-main">
+                                            <span class="date-badge">Novedades de hoy</span>
+                                            <h3 class="date-heading">{todayFullDate}</h3>
+                                        </div>
+                                        <p class="date-subheading">
+                                            Seguimos monitoreando los mercados y compañías en tiempo real.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <div class="date-header-main">
+                                        <h3 class="date-heading">Noticias del {date}</h3>
+                                        <span class="date-tag">Cobertura anterior</span>
+                                    </div>
+                                )}
                             </div>
                             <div class="news-grid">
                                 {datePosts.map((post, index) => (
@@ -77,7 +89,13 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
 </div>
 
 <style>
-    /* Contenedor principal */
+    :global(:root) {
+        --news-accent: var(--primary-blue);
+        --news-accent-soft: rgba(25, 118, 210, 0.08);
+        --news-muted: var(--gray-500);
+        --news-muted-strong: var(--gray-700);
+    }
+
     .news-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -95,60 +113,79 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
         width: 100%;
     }
 
-    /* Agrupación de noticias por fecha */
-    .news-date-group {
-        margin-bottom: 2rem;
-        position: relative;
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-
-    .news-date-group:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-
-    .today-group {
-        position: relative;
-    }
-
-    .today-group::before {
-        display: none;
-    }
-
-    /* Encabezado de fecha */
     .date-header {
         display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.75rem;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--news-accent-soft), rgba(255, 255, 255, 0.85));
+        border: 1px solid rgba(124, 58, 237, 0.16);
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .date-header-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .date-badge {
+        display: inline-flex;
+        align-self: flex-start;
         align-items: center;
-        margin-bottom: 1rem;
-        position: relative;
-        background-color: transparent;
-        padding: 0;
+        gap: 0.4rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background-color: rgba(124, 58, 237, 0.16);
+        color: var(--news-accent);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .date-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background-color: rgba(148, 163, 184, 0.18);
+        color: var(--news-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }
 
     .date-heading {
-        font-family: var(--font-body);
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #6b7280;
         margin: 0;
-        position: relative;
-        letter-spacing: 0.05em;
-        line-height: 1.2;
-        text-transform: uppercase;
-        background: #f3f4f6;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        display: inline-block;
-        border: 1px solid #e5e7eb;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--news-muted-strong);
     }
 
-    /* Grid de noticias */
+    .date-subheading {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--news-muted);
+        line-height: 1.5;
+    }
+
+    .news-date-group {
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    .news-date-group:last-child {
+        margin-bottom: 0;
+    }
+
     .news-grid {
         display: block;
     }
 
-    /* Responsive styles */
     @media (max-width: 1024px) {
         .news-container {
             max-width: 100%;
@@ -156,38 +193,49 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
     }
 
     @media (max-width: 768px) {
-        .date-header {
-            padding: 0.6rem 0;
-            margin-bottom: 1.5rem;
-        }
-
-        .date-heading {
-            font-size: 1.4rem;
-        }
-
-        .today-group::before {
-            left: -15px;
-            width: 3px;
-        }
-
-        .news-date-group {
-            margin-bottom: 2.5rem;
-            padding-bottom: 1.5rem;
-        }
-
-        .news-grid {
-            grid-template-columns: 1fr;
-            gap: 1.2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
         .news-container {
-            padding: 0 0.8rem;
+            padding: 0 1.25rem;
+        }
+
+        .date-header {
+            padding: 1.25rem 1.5rem;
         }
 
         .date-heading {
             font-size: 1.3rem;
         }
+
+        .date-subheading {
+            font-size: 0.9rem;
+        }
+
+        .news-date-group {
+            margin-bottom: 2rem;
+        }
     }
+
+    @media (max-width: 480px) {
+        .news-container {
+            padding: 0 1rem;
+        }
+
+        .date-header {
+            padding: 1rem 1.25rem;
+            gap: 0.55rem;
+        }
+
+        .date-heading {
+            font-size: 1.1rem;
+        }
+
+        .date-badge,
+        .date-tag {
+            font-size: 0.7rem;
+        }
+
+        .date-subheading {
+            font-size: 0.85rem;
+        }
+    }
+
 </style>

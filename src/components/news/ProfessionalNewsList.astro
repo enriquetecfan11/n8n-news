@@ -49,9 +49,9 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
                             <div class="date-header">
                                 <h3 class="date-heading">
                                     {dateIndex === 0 ? (
-                                        <>🔥 Noticias del día: {date}</>
+                                        <>📈 Últimas noticias - {date}</>
                                     ) : (
-                                        <>Noticias del día: {date}</>
+                                        <>📰 Noticias del {date}</>
                                     )}
                                 </h3>
                             </div>
@@ -66,11 +66,11 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
                                         category={"Noticias"}
                                         pubDate={post.data.pubDate}
                                         newsId={post.id}
-                                        impact={post.data.impact}
+                                        impact={post.data.impact as "alto" | "medio" | "bajo" | undefined}
                                         sectors={post.data.sectors}
                                         source={post.data.source}
-                                        sentiment={post.data.sentiment}
-                                        relevanceScore={post.data.relevanceScore}
+                                        sentiment={post.data.sentiment as "positivo" | "neutral" | "negativo" | undefined}
+                                        relevanceScore={post.data.relevanceScore ?? undefined}
                                         tickers={post.data.tickers}
                                     />
                                 ))}
@@ -84,117 +84,5 @@ const formattedDate = `${day} de ${months[month]} de ${year}`;
 </div>
 
 <style>
-    /* Contenedor principal */
-    .news-container {
-        max-width: 100%;
-        margin: 0 auto;
-        padding: 0;
-    }
-
-    .news-content {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-    }
-
-    .news-column {
-        max-width: 100%;
-        width: 100%;
-    }
-
-    /* Agrupación de noticias por fecha */
-    .news-date-group {
-        margin-bottom: 2rem;
-        position: relative;
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-
-    .news-date-group:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-
-    .today-group {
-        position: relative;
-    }
-
-    .today-group::before {
-        display: none;
-    }
-
-    /* Encabezado de fecha */
-    .date-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-        position: relative;
-        background-color: transparent;
-        padding: 0;
-    }
-
-    .date-heading {
-        font-family: var(--font-body);
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #6b7280;
-        margin: 0;
-        position: relative;
-        letter-spacing: 0.05em;
-        line-height: 1.2;
-        text-transform: uppercase;
-        background: #f3f4f6;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        display: inline-block;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Grid de noticias */
-    .news-grid {
-        display: block;
-    }
-
-    /* Responsive styles */
-    @media (max-width: 1024px) {
-        .news-container {
-            max-width: 100%;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .date-header {
-            padding: 0.6rem 0;
-            margin-bottom: 1.5rem;
-        }
-
-        .date-heading {
-            font-size: 1.4rem;
-        }
-
-        .today-group::before {
-            left: -15px;
-            width: 3px;
-        }
-
-        .news-date-group {
-            margin-bottom: 2.5rem;
-            padding-bottom: 1.5rem;
-        }
-
-        .news-grid {
-            grid-template-columns: 1fr;
-            gap: 1.2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .news-container {
-            padding: 0 0.8rem;
-        }
-
-        .date-heading {
-            font-size: 1.3rem;
-        }
-    }
+    
 </style>

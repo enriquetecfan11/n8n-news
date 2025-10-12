@@ -65,11 +65,51 @@ function getImpactColor(impact: string): string {
 // Función para obtener el color según el sentimiento
 function getSentimentColor(sentiment: string): string {
     switch (sentiment) {
-        case 'positivo': return '#10b981'; // Verde
-        case 'negativo': return '#ef4444'; // Rojo
-        case 'neutral': return '#6b7280'; // Gris
-        default: return '#6b7280';
+        case 'positivo': return '#2E7D32'; // Verde
+        case 'negativo': return '#C62828'; // Rojo
+        case 'neutral': return '#1565C0'; // Azul suave
+        default: return '#1565C0';
     }
+}
+
+// Función para obtener el fondo según el sentimiento
+function getSentimentBackground(sentiment: string): string {
+    switch (sentiment) {
+        case 'positivo': return 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)';
+        case 'negativo': return 'linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%)';
+        case 'neutral': return 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)';
+        default: return 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)';
+    }
+}
+
+// Función para obtener el color de borde según el sentimiento
+function getSentimentBorder(sentiment: string): string {
+    switch (sentiment) {
+        case 'positivo': return '#43A047';
+        case 'negativo': return '#E53935';
+        case 'neutral': return '#1976D2';
+        default: return '#1976D2';
+    }
+}
+
+// Función para obtener el color de relevancia
+function getRelevanceColor(score: number): string {
+    if (score <= 3) return '#F44336'; // Rojo
+    if (score <= 6) return '#FF9800'; // Naranja
+    if (score <= 8) return '#1976D2'; // Azul
+    return '#4CAF50'; // Verde
+}
+
+// Función para obtener la clase CSS del sector
+function getSectorClass(sector: string): string {
+    const sectorLower = sector.toLowerCase();
+    if (sectorLower.includes("retail") || sectorLower.includes("consumo")) return "retail";
+    if (sectorLower.includes("manufactur") || sectorLower.includes("industri")) return "manufacturing";
+    if (sectorLower.includes("tecnolog") || sectorLower.includes("tech")) return "technology";
+    if (sectorLower.includes("finanz") || sectorLower.includes("banc")) return "finance";
+    if (sectorLower.includes("energ") || sectorLower.includes("petrol")) return "energy";
+    if (sectorLower.includes("salud") || sectorLower.includes("medic")) return "healthcare";
+    return "default";
 }
 
 // Función para obtener el icono según el sentimiento
@@ -125,6 +165,8 @@ const timeAgo = getRelativeTime(pubDate);
 const sectorBorderColor = getSectorBorderColor(sectors);
 const impactColor = getImpactColor(impact);
 const sentimentColor = getSentimentColor(sentiment);
+const sentimentBackground = getSentimentBackground(sentiment);
+const sentimentBorder = getSentimentBorder(sentiment);
 const sentimentIcon = getSentimentIcon(sentiment);
 ---
 
@@ -135,119 +177,170 @@ const sentimentIcon = getSentimentIcon(sentiment);
     aria-labelledby={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
 >
     <a href={url} class="card-link" aria-describedby={`news-excerpt-${title.replace(/\s+/g, '-').toLowerCase()}`}>
-        {/* Header con badges de impacto y sentimiento */}
-        <div class="card-header">
-            <div class="impact-badges">
-                <span class="impact-badge" style={`background-color: ${impactColor};`}>
-                    {impact.toUpperCase()}
-                </span>
-                <span class="sentiment-badge" style={`background-color: ${sentimentColor};`}>
-                    {sentimentIcon} {sentiment}
-                </span>
-            </div>
-            <div class="relevance-score">
-                <span class="score-label">Relevancia:</span>
-                <div class="score-bar">
-                    <div class="score-fill" style={`width: ${(relevanceScore / 10) * 100}%; background-color: ${impactColor};`}></div>
-                </div>
-                <span class="score-value">{relevanceScore}/10</span>
-            </div>
+        {/* 1. PRIMERO: TÍTULO PRINCIPAL - Lo más prominente */}
+        <div class="news-title-section">
+            <h2 class="news-title" id={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}>
+                {title}
+            </h2>
         </div>
 
-        {/* Sectores afectados */}
-        {sectors.length > 0 && (
-            <div class="sectors-container">
-                {sectors.slice(0, 3).map(sector => (
-                    <span class="sector-tag">
-                        {getSectorIcon(sector)} {sector}
-                    </span>
-                ))}
-                {sectors.length > 3 && (
-                    <span class="sector-tag more-sectors">
-                        +{sectors.length - 3} más
-                    </span>
-                )}
-            </div>
-        )}
+        {/* 2. SEGUNDO: Separador visual */}
+        <hr class="title-separator">
 
-        {/* Título de la noticia */}
-        <h3 class="news-title" id={`news-title-${title.replace(/\s+/g, '-').toLowerCase()}`}>
-            {title}
-        </h3>
-
-        {/* Tickers relacionados */}
-        {tickers.length > 0 && (
-            <div class="tickers-container">
-                <span class="tickers-label">Acciones:</span>
-                <div class="tickers-list">
-                    {tickers.map(ticker => (
-                        <span class="ticker-badge">{ticker}</span>
-                    ))}
+        {/* 3. TERCERO: Metadata organizada y compacta */}
+        <div class="metadata-section">
+            {/* Fila 1: Badges de sentimiento y relevancia */}
+            <div class="metadata-row">
+                <div class="badges-container">
+                    <span class="impact-badge" style={`background-color: ${impactColor};`}>
+                        {impact.toUpperCase()}
+                    </span>
+                    <span class="sentiment-badge" style={`background: ${sentimentBackground}; color: ${sentimentColor}; border-left: 3px solid ${sentimentBorder};`}>
+                        {sentimentIcon} {sentiment}
+                    </span>
+                </div>
+                <div class="relevance-score">
+                    <span class="score-label" style={`color: ${getRelevanceColor(relevanceScore)};`}>Relevancia: {relevanceScore}/10</span>
                 </div>
             </div>
-        )}
 
-        {/* Footer con fuente y tiempo */}
-        <div class="card-footer">
-            <div class="source-info">
-                <span class="source">{source}</span>
-                {timeAgo && <span class="publish-time">{timeAgo}</span>}
-            </div>
-            <div class="read-more">
-                Ver detalles →
-            </div>
+            {/* Fila 2: Sectores impactados */}
+            {sectors.length > 0 && (
+                <div class="metadata-row">
+                    <span class="label-small">SECTORES IMPACTADOS</span>
+                    <div class="sectors-chips">
+                        {sectors.slice(0, 3).map((sector) => (
+                            <span class={`sector-chip sector-${getSectorClass(sector)}`}>
+                                <span class="sector-icon">{getSectorIcon(sector)}</span>
+                                <span class="sector-name">{sector}</span>
+                            </span>
+                        ))}
+                        {sectors.length > 3 && (
+                            <span class="sector-chip more-sectors">
+                                +{sectors.length - 3} sectores
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Fila 3: Acciones en foco */}
+            {tickers.length > 0 && (
+                <div class="metadata-row">
+                    <span class="label-small">ACCIONES EN FOCO</span>
+                    <div class="tickers-list">
+                        {tickers.map((ticker) => (
+                            <span class="ticker-chip stock-link">
+                                <span class="ticker-symbol">{ticker}</span>
+                                <span class="ticker-trend external-arrow">↗</span>
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
+
+        {/* 4. CUARTO: Botón secundario */}
+        <div class="news-footer">
+            <button class="btn-details">Ver detalles →</button>
+        </div>
+        
     </a>
 </article>
 
 <style>
-    .news-card {
-        background: #ffffff;
+    .news-card{
+        background: #FFFFFF;
+        border: 1px solid #E0E0E0;
         border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-shadow: var(--shadow-sm);
         transition: all 0.2s ease;
-        position: relative;
         overflow: hidden;
-        border: 2px solid var(--sector-color, #e5e7eb);
-        padding: 1.5rem;
+        margin-top: 1rem;
         margin-bottom: 1rem;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
     .news-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        border-color: var(--sector-color, #d1d5db);
+        box-shadow: var(--shadow-md);
+        border-color: #BDBDBD;
     }
 
-    .news-card.impact-alto {
-        border-left: 4px solid var(--impact-color);
+    /* 1. SECCIÓN DEL TÍTULO - Lo más prominente */
+    .news-title-section {
+        padding: 24px 0 16px 0;
+        margin-bottom: 8px;
     }
 
-    .news-card.impact-medio {
-        border-left: 3px solid var(--impact-color);
+    .news-title {
+        font-size: 2rem; /* 32px - Tamaño grande */
+        font-weight: 700; /* Bold fuerte */
+        color: #1A1A1A; /* Negro intenso para máximo contraste */
+        line-height: 1.2;
+        margin: 0;
+        letter-spacing: -0.02em; /* Espaciado negativo para títulos grandes */
+        transition: color 0.2s ease;
     }
 
-    .news-card.impact-bajo {
-        border-left: 2px solid var(--impact-color);
+    .news-title:hover {
+        color: #1565C0; /* Azul al hacer hover */
+        cursor: pointer;
     }
 
-    .card-link {
+    .news-title:hover::after {
+        content: '';
         display: block;
-        padding: 0;
-        color: inherit;
-        text-decoration: none;
+        width: 60px;
+        height: 3px;
+        background: #1976D2;
+        margin-top: 8px;
+        animation: slideIn 0.3s ease;
     }
 
-    /* Header con badges */
-    .card-header {
+    @keyframes slideIn {
+        from { width: 0; }
+        to { width: 60px; }
+    }
+
+    /* 2. SEPARADOR VISUAL */
+    .title-separator {
+        border: none;
+        height: 2px;
+        background: linear-gradient(
+            to right,
+            transparent,
+            #E0E0E0 20%,
+            #E0E0E0 80%,
+            transparent
+        );
+        margin: 0 0 20px 0;
+    }
+
+    /* 3. SECCIÓN DE METADATA - Compacta y discreta */
+    .metadata-section {
+        opacity: 0.7; /* Opacidad reducida para no competir con el título */
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+    .metadata-row {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
+        align-items: center;
+        margin-bottom: 12px;
         gap: 1rem;
     }
 
-    .impact-badges {
+    .metadata-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .badges-container {
         display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
@@ -255,193 +348,273 @@ const sentimentIcon = getSentimentIcon(sentiment);
 
     .impact-badge, .sentiment-badge {
         padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        border-radius: 6px;
         font-size: 0.7rem;
-        font-weight: 700;
-        color: white;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+    }
+
+    .sentiment-badge {
+        border-radius: 6px 0 0 6px;
     }
 
     .relevance-score {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        min-width: 120px;
     }
 
     .score-label {
-        font-size: 0.7rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    .score-bar {
-        flex: 1;
-        height: 4px;
-        background: #e5e7eb;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-
-    .score-fill {
-        height: 100%;
-        transition: width 0.3s ease;
-    }
-
-    .score-value {
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #374151;
-    }
-
-    /* Sectores */
-    .sectors-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .sector-tag {
-        padding: 0.25rem 0.5rem;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
         font-size: 0.75rem;
-        font-weight: 500;
-        color: #374151;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .sector-tag.more-sectors {
-        background: #e5e7eb;
-        color: #6b7280;
-    }
-
-    /* Título */
-    .news-title {
-        font-size: 1.1rem;
         font-weight: 600;
-        color: #111827;
-        margin: 0 0 1rem;
-        line-height: 1.5;
-        letter-spacing: -0.025em;
-        font-family: var(--font-body);
     }
 
-    /* Tickers */
-    .tickers-container {
-        margin-bottom: 1rem;
+    .label-small {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 6px;
+        min-width: 120px;
     }
 
-    .tickers-label {
-        font-size: 0.75rem;
-        color: #6b7280;
-        font-weight: 500;
-        margin-right: 0.5rem;
+    /* Alternativa: Título con Fondo de Color (para casos especiales) */
+    .news-title-bold {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+        padding: 16px 20px;
+        margin: 16px -16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+        line-height: 1.3;
+        letter-spacing: -0.02em;
     }
 
+    .news-title-bold:hover {
+        background: linear-gradient(135deg, #1976D2 0%, #1E88E5 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    }
+
+    .sectors-chips,
     .tickers-list {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.25rem;
-        margin-top: 0.25rem;
+        gap: 0.5rem;
+        flex: 1;
     }
 
-    .ticker-badge {
-        padding: 0.2rem 0.4rem;
-        background: #1e40af;
-        color: white;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        font-family: monospace;
-    }
-
-    /* Footer */
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
+    .sector-chip,
+    .ticker-chip {
+        display: inline-flex;
         align-items: center;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .source-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .source {
-        font-size: 0.75rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    .publish-time {
-        font-size: 0.7rem;
-        color: #9ca3af;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .read-more {
+        gap: 0.45rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.04);
+        color: #111827;
         font-size: 0.8rem;
-        color: var(--sector-color, #1e40af);
-        font-weight: 600;
-        transition: transform 0.2s ease;
+        font-weight: 500;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .news-card:hover .read-more {
-        transform: translateX(2px);
+    .sector-chip:hover,
+    .ticker-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .card-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
+    /* Estilos específicos para sectores */
+    .sector-retail {
+        background: #E3F2FD;
+        color: #1565C0;
+        border: 1px solid #90CAF9;
+    }
 
-        .relevance-score {
-            min-width: auto;
-            width: 100%;
-        }
+    .sector-manufacturing {
+        background: #E8F5E9;
+        color: #2E7D32;
+        border: 1px solid #81C784;
+    }
 
+    .sector-technology {
+        background: #F3E5F5;
+        color: #6A1B9A;
+        border: 1px solid #BA68C8;
+    }
+
+    .sector-finance {
+        background: #FFF3E0;
+        color: #E65100;
+        border: 1px solid #FFB74D;
+    }
+
+    .sector-energy {
+        background: #FFF8E1;
+        color: #F57C00;
+        border: 1px solid #FFCC02;
+    }
+
+    .sector-healthcare {
+        background: #FCE4EC;
+        color: #C2185B;
+        border: 1px solid #F8BBD9;
+    }
+
+    .sector-icon {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .sector-name {
+        text-transform: capitalize;
+    }
+
+    .more-sectors {
+        background: rgba(124, 58, 237, 0.12);
+        color: #7c3aed;
+    }
+
+    .stock-link {
+        background: #E8EAF6;
+        color: #3F51B5;
+        border: 1px solid #C5CAE9;
+        transition: all 0.2s ease;
+    }
+
+    .stock-link:hover {
+        background: #3F51B5;
+        color: #FFFFFF;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(63, 81, 181, 0.3);
+    }
+
+    .ticker-symbol {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .external-arrow {
+        color: #5C6BC0;
+        font-size: 0.9rem;
+    }
+
+    .stock-link:hover .external-arrow {
+        color: #FFFFFF;
+    }
+
+    /* 4. FOOTER - Botón secundario discreto */
+    .news-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #F0F0F0;
+    }
+
+    .btn-details {
+        color: #666666;
+        background: transparent;
+        border: 1px solid #E0E0E0;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-details:hover {
+        background: #F5F5F5;
+        color: #333333;
+        border-color: #CCCCCC;
+        transform: translateY(-1px);
+    }
+
+    /* Tamaños Responsivos para el Título */
+    /* Desktop */
+    @media (min-width: 1024px) {
         .news-title {
-            font-size: 1.2rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            font-size: 2.25rem; /* 36px */
         }
+    }
 
-        .card-footer {
+    /* Tablet */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .news-title {
+            font-size: 1.75rem; /* 28px */
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 767px) {
+        .news-title {
+            font-size: 1.5rem; /* 24px */
+        }
+        
+        .news-title-section {
+            padding: 16px 0 12px 0;
+        }
+        
+        .title-separator {
+            margin: 0 0 16px 0;
+        }
+        
+        .metadata-section {
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+        }
+        
+        .metadata-row {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5rem;
         }
+        
+        .relevance-score {
+            align-self: flex-end;
+        }
     }
 
-    @media (max-width: 480px) {
+    /* Responsive general */
+    @media (max-width: 768px) {
         .news-card {
             padding: 1rem;
         }
-
-        .impact-badges {
-            flex-direction: column;
-            width: 100%;
+        
+        .sector-chip,
+        .ticker-chip {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
         }
-
+        
+        .badges-container {
+            gap: 0.4rem;
+        }
+        
         .impact-badge, .sentiment-badge {
-            text-align: center;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
         }
     }
+
+    /* Animaciones */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+
+    .news-card {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .news-card:nth-child(1) { animation-delay: 0.1s; }
+    .news-card:nth-child(2) { animation-delay: 0.2s; }
 </style>
