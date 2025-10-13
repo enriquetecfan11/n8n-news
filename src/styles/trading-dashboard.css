@@ -22,7 +22,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  min-height: 600px;
+  min-height: 700px;
+  height: 700px;
 }
 
 /* Sidebar */
@@ -42,7 +43,9 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   transition: all 0.3s ease;
-  height: fit-content;
+  height: 700px;
+  display: flex;
+  flex-direction: column;
 }
 
 .watchlist-sidebar.collapsed {
@@ -54,16 +57,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 1.5rem;
   border-bottom: 1px solid #E0E0E0;
   background: #F5F5F5;
+  border-radius: 12px 12px 0 0;
 }
 
 .sidebar-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #424242;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e1e1e;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .sidebar-toggle {
@@ -82,7 +87,11 @@
 }
 
 .sidebar-content {
-  padding: 1rem;
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
 }
 
 .symbols-list {
@@ -192,12 +201,18 @@
 
 /* TradingView Widget */
 .tradingview-widget {
-  margin-top: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.5rem;
 }
 
 .tradingview-widget-container {
   border-radius: 8px;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #E0E0E0;
 }
 
 /* Separador entre secciones */
