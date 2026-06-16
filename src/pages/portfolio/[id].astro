@@ -1,0 +1,392 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import KpiCard from '../../components/portfolio/KpiCard.astro';
+import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
+import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
+import {
+  getPortfolioById,
+  getTransactionsByPortfolio,
+  getAssets,
+} from '../../lib/supabase';
+import {
+  getHoldings,
+  getPortfolioSummary,
+  formatCurrency,
+  formatPercent,
+  getPricesForHoldings,
+} from '../../lib/portfolio';
+import type { Asset, Transaction } from '../../lib/portfolio';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/portfolio');
+}
+
+let portfolio = null;
+let holdings = [];
+let summary = null;
+let recentTransactions: Transaction[] = [];
+let error: string | null = null;
+
+try {
+  portfolio = await getPortfolioById(id);
+
+  if (!portfolio) {
+    return Astro.redirect('/portfolio');
+  }
+
+  const transactions = await getTransactionsByPortfolio(id);
+  const allAssets = await getAssets();
+  const assetMap = new Map(allAssets.map((a: Asset) => [a.id, a]));
+
+  holdings = getHoldings(transactions, assetMap);
+  summary = getPortfolioSummary(holdings);
+
+  // Obtener precios actuales (server-side)
+  const prices = await getPricesForHoldings(holdings);
+  holdings.forEach((h) => {
+    const newPrice = prices.get(h.assetId);
+    if (newPrice) {
+      h.currentPrice = newPrice;
+      h.currentValue = h.quantity * h.currentPrice;
+      h.pnlAbsolute = h.currentValue - h.totalCost;
+      h.pnlPercent = (h.pnlAbsolute / h.totalCost) * 100;
+    }
+  });
+
+  // Recalcular resumen con precios actuales
+  summary = getPortfolioSummary(holdings);
+
+  recentTransactions = transactions.slice(0, 5);
+} catch (err) {
+  console.error('Error loading portfolio:', err);
+  error = 'Error al cargar el portafolio. Por favor, verifica la conexión a Supabase.';
+}
+
+if (error || !portfolio || !summary) {
+  return Astro.redirect('/portfolio');
+}
+---
+
+<BaseLayout title={portfolio.name} description={portfolio.description || 'Detalle del portafolio'}>
+  <main class="main-content">
+    <div class="wrapper">
+      <section class="portfolio-header">
+        <div>
+          <a href="/portfolio" class="breadcrumb">← Portafolios</a>
+          <h1>{portfolio.name}</h1>
+          {portfolio.description && <p class="subtitle">{portfolio.description}</p>}
+        </div>
+        <span class="currency-badge">{portfolio.base_currency}</span>
+      </section>
+
+      {/* KPI Cards */}
+      <section class="kpi-section">
+        <div class="kpi-container">
+          <KpiCard
+            label="Valor Total"
+            value={formatCurrency(summary.totalValue, portfolio.base_currency)}
+            change={summary.pnlPercent}
+          />
+          <KpiCard label="Coste Base" value={formatCurrency(summary.totalCost, portfolio.base_currency)} />
+          <KpiCard
+            label="P&L Absoluto"
+            value={formatCurrency(summary.pnlAbsolute, portfolio.base_currency)}
+            color={summary.pnlAbsolute >= 0 ? 'positive' : 'negative'}
+          />
+          <KpiCard
+            label="P&L %"
+            value={formatPercent(summary.pnlPercent)}
+            color={summary.pnlPercent >= 0 ? 'positive' : 'negative'}
+          />
+        </div>
+      </section>
+
+      {/* Distribution by Type */}
+      {Object.keys(summary.byType).length > 0 && (
+        <section class="distribution-section">
+          <h2>Distribución por Tipo de Activo</h2>
+          <div class="distribution-items">
+            {Object.entries(summary.byType).map(([type, data]) => (
+              <div class="distribution-item">
+                <div class="distribution-item-info">
+                  <span class="distribution-label-type">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                  <div class="distribution-bar">
+                    <div
+                      class="distribution-fill"
+                      style={{
+                        width: `${data.percent}%`,
+                        background:
+                          type === 'stock'
+                            ? '#6366f1'
+                            : type === 'etf'
+                              ? '#10b981'
+                              : type === 'crypto'
+                                ? '#f59e0b'
+                                : '#64748b',
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                <div class="distribution-stats">
+                  <span class="distribution-count">{data.count} activo(s)</span>
+                  <span class="distribution-value">{data.percent.toFixed(1)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Holdings Table */}
+      {holdings.length > 0 && (
+        <section class="holdings-section">
+          <div class="section-header">
+            <h2>Posiciones Actuales</h2>
+            <a href={`/portfolio/${id}/assets`} class="view-link">Ver todos →</a>
+          </div>
+          <HoldingsTable holdings={holdings} />
+        </section>
+      )}
+
+      {/* Recent Transactions */}
+      {recentTransactions.length > 0 && (
+        <section class="transactions-section">
+          <div class="section-header">
+            <h2>Últimas Transacciones</h2>
+            <a href={`/portfolio/${id}/transactions`} class="view-link">Ver todas →</a>
+          </div>
+          <TransactionsTable
+            transactions={recentTransactions}
+            assets={new Map(
+              (
+                await getAssets()
+              ).map((a: Asset) => [a.id, a])
+            )}
+            limit={5}
+          />
+        </section>
+      )}
+
+      {holdings.length === 0 && (
+        <div class="empty-state">
+          <h2>Sin activos</h2>
+          <p>Este portafolio aún no tiene posiciones. Añade transacciones para comenzar.</p>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .main-content {
+    flex: 1;
+    padding: var(--space-2xl) 0;
+  }
+
+  .wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+  }
+
+  .portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--space-3xl);
+    gap: var(--space-2xl);
+  }
+
+  .breadcrumb {
+    display: inline-block;
+    color: var(--text-light);
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb:hover {
+    color: var(--text);
+  }
+
+  .portfolio-header h1 {
+    margin: 0 0 var(--space-md) 0;
+    font-size: clamp(1.875rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-light);
+  }
+
+  .currency-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--text);
+    color: var(--background);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-section {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .distribution-section {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    margin-bottom: var(--space-3xl);
+  }
+
+  .distribution-section h2 {
+    margin: 0 0 var(--space-2xl) 0;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+
+  .distribution-items {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .distribution-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--background-alt);
+    gap: var(--space-lg);
+  }
+
+  .distribution-item-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+  }
+
+  .distribution-label-type {
+    font-weight: 600;
+    min-width: 80px;
+    color: var(--text);
+  }
+
+  .distribution-bar {
+    flex: 1;
+    height: 24px;
+    background: var(--background);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .distribution-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .distribution-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    white-space: nowrap;
+  }
+
+  .distribution-count {
+    font-size: 0.875rem;
+    color: var(--text-light);
+  }
+
+  .distribution-value {
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+    color: var(--text);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text);
+  }
+
+  .view-link {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .view-link:hover {
+    color: var(--text);
+  }
+
+  .holdings-section,
+  .transactions-section {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-2xl);
+    color: var(--text-light);
+  }
+
+  .empty-state h2 {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    .portfolio-header {
+      flex-direction: column;
+    }
+
+    .kpi-container {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .distribution-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .distribution-item-info {
+      width: 100%;
+    }
+
+    .distribution-bar {
+      width: 100%;
+    }
+
+    .distribution-stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>

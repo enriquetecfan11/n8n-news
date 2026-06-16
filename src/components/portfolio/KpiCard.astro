@@ -1,0 +1,70 @@
+---
+interface Props {
+  label: string;
+  value: string | number;
+  change?: number;
+  suffix?: string;
+  color?: 'default' | 'positive' | 'negative';
+}
+
+const { label, value, change, suffix = '', color = 'default' } = Astro.props;
+
+const changeClass =
+  change !== undefined ? (change >= 0 ? 'positive' : 'negative') : null;
+---
+
+<div class="kpi-card">
+  <span class="kpi-label">{label}</span>
+  <span class="kpi-value">
+    {value}{suffix && <span style="font-size: 0.6em; margin-left: 0.25em;">{suffix}</span>}
+  </span>
+  {change !== undefined && (
+    <span class:list={['kpi-change', changeClass]}>
+      {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+    </span>
+  )}
+</div>
+
+<style>
+  .kpi-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kpi-label {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-value {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .kpi-change {
+    font-size: 0.875rem;
+    margin-top: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    width: fit-content;
+  }
+
+  .kpi-change.positive {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+  }
+
+  .kpi-change.negative {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+</style>

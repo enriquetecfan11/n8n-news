@@ -2,6 +2,13 @@
   "name": "n8n-news",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "js-yaml": "^4.2.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -14,16 +21,18 @@
     "vfixa": "node validate-md.js --fix --delete-invalid"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.2.4",
-    "@astrojs/react": "^4.2.5",
-    "@astrojs/rss": "^4.0.11",
-    "@astrojs/sitemap": "^3.3.0",
+    "@astrojs/mdx": "^6.0.3",
+    "@astrojs/react": "^5.0.7",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.3",
+    "@supabase/supabase-js": "^2.108.2",
     "@vercel/analytics": "^1.5.0",
-    "astro": "^5.7.3",
+    "astro": "^6.4.7",
     "chalk": "^4.1.2",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.545.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "supabase": "^2.106.0"
   }
 }

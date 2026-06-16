@@ -1,0 +1,154 @@
+---
+import type { Holding } from '../../lib/portfolio';
+import { formatCurrency, formatPercent } from '../../lib/portfolio';
+
+interface Props {
+  holdings: Holding[];
+}
+
+const { holdings } = Astro.props;
+---
+
+<div class="holdings-container">
+  <table class="holdings-table">
+    <thead>
+      <tr>
+        <th>Activo</th>
+        <th>Cantidad</th>
+        <th>Precio Medio</th>
+        <th>Coste Total</th>
+        <th>Precio Actual</th>
+        <th>Valor Actual</th>
+        <th>P&L Absoluto</th>
+        <th>P&L %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {holdings.map((holding) => (
+        <tr>
+          <td>
+            <div class="holding-name">
+              <span>{holding.assetName}</span>
+              <span class:list={['holding-badge', holding.type]}>
+                {holding.ticker}
+              </span>
+            </div>
+          </td>
+          <td>{holding.quantity.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</td>
+          <td>{formatCurrency(holding.averagePrice, holding.currency)}</td>
+          <td>{formatCurrency(holding.totalCost, holding.currency)}</td>
+          <td>{formatCurrency(holding.currentPrice, holding.currency)}</td>
+          <td>{formatCurrency(holding.currentValue, holding.currency)}</td>
+          <td class:list={[holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+            {formatCurrency(holding.pnlAbsolute, holding.currency)}
+          </td>
+          <td class:list={[holding.pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+            {formatPercent(holding.pnlPercent)}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  {holdings.length === 0 && (
+    <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+      No hay activos en el portafolio
+    </div>
+  )}
+</div>
+
+<style>
+  .holdings-container {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: auto;
+  }
+
+  .holdings-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .holdings-table thead {
+    background: var(--background-alt);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .holdings-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .holdings-table td {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .holdings-table tbody tr:hover {
+    background: var(--background-alt);
+  }
+
+  .holding-name {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .holding-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--background-alt);
+    color: var(--text);
+  }
+
+  .holding-badge.stock {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+  }
+
+  .holding-badge.etf {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+
+  .holding-badge.crypto {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+
+  .holding-badge.cash {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+  }
+
+  .pnl-positive {
+    color: #22c55e;
+    font-weight: 600;
+  }
+
+  .pnl-negative {
+    color: #ef4444;
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .holdings-table {
+      font-size: 0.875rem;
+    }
+
+    .holdings-table th,
+    .holdings-table td {
+      padding: var(--space-sm);
+    }
+  }
+</style>

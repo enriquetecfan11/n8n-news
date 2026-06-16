@@ -1,0 +1,160 @@
+---
+import type { Portfolio } from '../../lib/portfolio';
+import { formatCurrency, formatPercent } from '../../lib/portfolio';
+
+interface Props {
+  portfolio: Portfolio;
+  totalValue?: number;
+  totalCost?: number;
+  pnlAbsolute?: number;
+  pnlPercent?: number;
+}
+
+const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 0 } = Astro.props;
+---
+
+<a href={`/portfolio/${portfolio.id}`} class="portfolio-card">
+  <div class="portfolio-card-header">
+    <div>
+      <h3 class="portfolio-card-title">{portfolio.name}</h3>
+      {portfolio.description && <p class="portfolio-card-subtitle">{portfolio.description}</p>}
+    </div>
+    <span class="currency-badge">{portfolio.base_currency}</span>
+  </div>
+
+  <div class="portfolio-stats">
+    <div class="stat-item">
+      <span class="stat-label">Valor Total</span>
+      <span class="stat-value">{formatCurrency(totalValue, portfolio.base_currency)}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Coste Base</span>
+      <span class="stat-value">{formatCurrency(totalCost, portfolio.base_currency)}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">P&L Absoluto</span>
+      <span class:list={['stat-value', pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+        {formatCurrency(pnlAbsolute, portfolio.base_currency)}
+      </span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">P&L %</span>
+      <span class:list={['stat-value', pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+        {formatPercent(pnlPercent)}
+      </span>
+    </div>
+  </div>
+
+  <span class="card-link-hint">Ver detalle →</span>
+</a>
+
+<style>
+  .portfolio-card {
+    display: block;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .portfolio-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .portfolio-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+    gap: var(--space-md);
+  }
+
+  .portfolio-card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .portfolio-card-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-light);
+  }
+
+  .currency-badge {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-alt);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .portfolio-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin: var(--space-lg) 0;
+  }
+
+  .stat-item {
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--background-alt);
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-lighter);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .pnl-positive {
+    color: #22c55e;
+  }
+
+  .pnl-negative {
+    color: #ef4444;
+  }
+
+  .card-link-hint {
+    display: inline-block;
+    margin-top: var(--space-md);
+    font-size: 0.875rem;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+  }
+
+  .portfolio-card:hover .card-link-hint {
+    color: var(--text);
+  }
+
+  @media (max-width: 480px) {
+    .portfolio-card-header {
+      flex-direction: column;
+    }
+
+    .portfolio-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

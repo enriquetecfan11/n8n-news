@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PortfolioCard from '../../components/portfolio/PortfolioCard.astro';
+import {
+  getPortfolios,
+  getTransactionsByPortfolio,
+  getAssets,
+} from '../../lib/supabase';
+import { getHoldings, getPortfolioSummary } from '../../lib/portfolio';
+import type { Portfolio, Asset, Transaction } from '../../lib/portfolio';
+
+interface PortfolioWithStats extends Portfolio {
+  totalValue: number;
+  totalCost: number;
+  pnlAbsolute: number;
+  pnlPercent: number;
+}
+
+let portfolios: PortfolioWithStats[] = [];
+let error: string | null = null;
+
+try {
+  const allPortfolios = await getPortfolios();
+  const allAssets = await getAssets();
+  const assetMap = new Map(allAssets.map((a: Asset) => [a.id, a]));
+
+  portfolios = await Promise.all(
+    allPortfolios.map(async (portfolio: Portfolio) => {
+      const transactions = await getTransactionsByPortfolio(portfolio.id);
+      const holdings = getHoldings(transactions, assetMap);
+      const summary = getPortfolioSummary(holdings);
+
+      return {
+        ...portfolio,
+        totalValue: summary.totalValue,
+        totalCost: summary.totalCost,
+        pnlAbsolute: summary.pnlAbsolute,
+        pnlPercent: summary.pnlPercent,
+      };
+    })
+  );
+} catch (err) {
+  console.error('Error loading portfolios:', err);
+  error = 'Error al cargar los portafolios. Por favor, configura la conexión a Supabase.';
+}
+---
+
+<BaseLayout title="Portafolios de Inversión" description="Gestiona tus portafolios de inversión">
+  <main class="main-content">
+    <div class="wrapper">
+      <section class="portfolio-header">
+        <div>
+          <h1>Portafolios de Inversión</h1>
+          <p class="subtitle">Monitorea el rendimiento de tus inversiones en tiempo real</p>
+        </div>
+        <a href="#" class="btn btn-primary" style="opacity: 0.5; cursor: default;">
+          + Nuevo Portafolio
+        </a>
+      </section>
+
+      {error ? (
+        <div class="error-message">
+          <p>{error}</p>
+          <p style="margin-top: 1rem; font-size: 0.875rem;">
+            Configura las variables de entorno:
+          </p>
+          <code style="display: block; margin-top: 0.5rem; background: var(--background-alt); padding: 1rem; border-radius: 4px;">
+            PUBLIC_SUPABASE_URL=tu_url<br />
+            PUBLIC_SUPABASE_ANON_KEY=tu_key
+          </code>
+        </div>
+      ) : portfolios.length === 0 ? (
+        <div class="empty-state">
+          <h2>No tienes portafolios aún</h2>
+          <p>Crea tu primer portafolio para comenzar a rastrear tus inversiones.</p>
+        </div>
+      ) : (
+        <div class="portfolio-grid">
+          {portfolios.map((portfolio) => (
+            <PortfolioCard
+              portfolio={portfolio}
+              totalValue={portfolio.totalValue}
+              totalCost={portfolio.totalCost}
+              pnlAbsolute={portfolio.pnlAbsolute}
+              pnlPercent={portfolio.pnlPercent}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .main-content {
+    flex: 1;
+    padding: var(--space-2xl) 0;
+  }
+
+  .wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+  }
+
+  .portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: var(--space-3xl);
+    gap: var(--space-2xl);
+  }
+
+  .portfolio-header h1 {
+    margin: 0 0 var(--space-md) 0;
+    font-size: clamp(1.875rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-light);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--background);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-2xl);
+  }
+
+  .error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    color: #ef4444;
+  }
+
+  .error-message p {
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-2xl);
+    color: var(--text-light);
+  }
+
+  .empty-state h2 {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    .portfolio-header {
+      flex-direction: column;
+    }
+
+    .portfolio-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

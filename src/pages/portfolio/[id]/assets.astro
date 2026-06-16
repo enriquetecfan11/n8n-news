@@ -1,0 +1,217 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import HoldingsTable from '../../../components/portfolio/HoldingsTable.astro';
+import {
+  getPortfolioById,
+  getTransactionsByPortfolio,
+  getAssets,
+} from '../../../lib/supabase';
+import {
+  getHoldings,
+  getPricesForHoldings,
+} from '../../../lib/portfolio';
+import type { Asset, Transaction } from '../../../lib/portfolio';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/portfolio');
+}
+
+let portfolio = null;
+let holdings = [];
+let error: string | null = null;
+
+try {
+  portfolio = await getPortfolioById(id);
+
+  if (!portfolio) {
+    return Astro.redirect('/portfolio');
+  }
+
+  const transactions = await getTransactionsByPortfolio(id);
+  const allAssets = await getAssets();
+  const assetMap = new Map(allAssets.map((a: Asset) => [a.id, a]));
+
+  holdings = getHoldings(transactions, assetMap);
+
+  // Obtener precios actuales
+  const prices = await getPricesForHoldings(holdings);
+  holdings.forEach((h) => {
+    const newPrice = prices.get(h.assetId);
+    if (newPrice) {
+      h.currentPrice = newPrice;
+      h.currentValue = h.quantity * h.currentPrice;
+      h.pnlAbsolute = h.currentValue - h.totalCost;
+      h.pnlPercent = (h.pnlAbsolute / h.totalCost) * 100;
+    }
+  });
+
+  // Ordenar por valor actual descendente
+  holdings.sort((a, b) => b.currentValue - a.currentValue);
+} catch (err) {
+  console.error('Error loading assets:', err);
+  error = 'Error al cargar los activos.';
+}
+
+if (!portfolio) {
+  return Astro.redirect('/portfolio');
+}
+
+const totalValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
+const byType = holdings.reduce(
+  (acc, h) => {
+    acc[h.type] = (acc[h.type] || 0) + 1;
+    return acc;
+  },
+  {} as Record<string, number>
+);
+---
+
+<BaseLayout title={`${portfolio.name} - Activos`} description={`Activos de ${portfolio.name}`}>
+  <main class="main-content">
+    <div class="wrapper">
+      <section class="page-header">
+        <div>
+          <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolio.name}</a>
+          <h1>Posiciones en Activos</h1>
+        </div>
+      </section>
+
+      {/* Asset Statistics */}
+      {holdings.length > 0 && (
+        <section class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Total de Activos</span>
+              <span class="stat-value">{holdings.length}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Valor Total</span>
+              <span class="stat-value">
+                {totalValue.toLocaleString('es-ES', {
+                  style: 'currency',
+                  currency: portfolio.base_currency,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+            {Object.entries(byType).map(([type, count]) => (
+              <div class="stat-card">
+                <span class="stat-label">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                <span class="stat-value">{count}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Holdings Table */}
+      {holdings.length > 0 ? (
+        <section class="assets-section">
+          <HoldingsTable holdings={holdings} />
+        </section>
+      ) : (
+        <div class="empty-state">
+          <h2>Sin activos</h2>
+          <p>Este portafolio aún no tiene posiciones.</p>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .main-content {
+    flex: 1;
+    padding: var(--space-2xl) 0;
+  }
+
+  .wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .breadcrumb {
+    display: inline-block;
+    color: var(--text-light);
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb:hover {
+    color: var(--text);
+  }
+
+  .page-header h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stats-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .stat-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .assets-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-2xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-light);
+  }
+
+  .empty-state h2 {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,379 @@
+/* Portfolio Dashboard Styles */
+
+.portfolio-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.portfolio-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+
+.portfolio-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.portfolio-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.portfolio-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: var(--space-md);
+}
+
+.portfolio-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.portfolio-card-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin-top: 0.25rem;
+}
+
+.portfolio-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.stat-item {
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--background-alt);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-lighter);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* KPI Cards */
+.kpi-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.kpi-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-value {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.kpi-change {
+  font-size: 0.875rem;
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.kpi-change.positive {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.kpi-change.negative {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* P&L Colors */
+.pnl-positive {
+  color: #22c55e;
+}
+
+.pnl-negative {
+  color: #ef4444;
+}
+
+.pnl-neutral {
+  color: var(--text);
+}
+
+/* Holdings Table */
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-lg) 0;
+}
+
+.holdings-table thead {
+  background: var(--background-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.holdings-table th {
+  padding: var(--space-md);
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.holdings-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.holdings-table tbody tr:hover {
+  background: var(--background-alt);
+}
+
+.holding-name {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.holding-ticker {
+  font-size: 0.75rem;
+  color: var(--text-lighter);
+  font-weight: normal;
+}
+
+.holding-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--background-alt);
+  color: var(--text);
+}
+
+.holding-badge.stock {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.holding-badge.etf {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.holding-badge.crypto {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.holding-badge.cash {
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+}
+
+/* Transactions Table */
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transactions-table thead {
+  background: var(--background-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.transactions-table th {
+  padding: var(--space-md);
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transactions-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.transactions-table tbody tr:hover {
+  background: var(--background-alt);
+}
+
+.transaction-type {
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  width: fit-content;
+}
+
+.transaction-type.buy {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.transaction-type.sell {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.transaction-type.dividend {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.transaction-type.fee {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Distribution Chart */
+.distribution-container {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.distribution-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  color: var(--text);
+}
+
+.distribution-items {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.distribution-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--background-alt);
+}
+
+.distribution-item-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.distribution-bar {
+  flex: 1;
+  height: 24px;
+  background: var(--background);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.distribution-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #3b82f6);
+  transition: width 0.3s ease;
+}
+
+.distribution-label {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .portfolio-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-container {
+    grid-template-columns: 1fr;
+  }
+
+  .holdings-table,
+  .transactions-table {
+    font-size: 0.875rem;
+  }
+
+  .holdings-table th,
+  .holdings-table td,
+  .transactions-table th,
+  .transactions-table td {
+    padding: var(--space-sm);
+  }
+
+  .portfolio-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .distribution-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .distribution-item-info {
+    width: 100%;
+    margin-bottom: var(--space-sm);
+  }
+
+  .distribution-bar {
+    width: 100%;
+  }
+
+  .distribution-label {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* Dark mode */
+body.dark-theme {
+  --portfolio-bg-light: #1a1f2e;
+  --portfolio-border: #2d3748;
+}

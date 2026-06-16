@@ -1,0 +1,256 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import TransactionsTable from '../../../components/portfolio/TransactionsTable.astro';
+import {
+  getPortfolioById,
+  getTransactionsByPortfolio,
+  getAssets,
+} from '../../../lib/supabase';
+import type { Asset, Transaction } from '../../../lib/portfolio';
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/portfolio');
+}
+
+let portfolio = null;
+let transactions: Transaction[] = [];
+let assets: Map<string, Asset> = new Map();
+let filteredTransactions: Transaction[] = [];
+let error: string | null = null;
+
+const typeFilter = new URL(Astro.request.url).searchParams.get('type');
+const assetFilter = new URL(Astro.request.url).searchParams.get('asset');
+
+try {
+  portfolio = await getPortfolioById(id);
+
+  if (!portfolio) {
+    return Astro.redirect('/portfolio');
+  }
+
+  const allAssets = await getAssets();
+  assets = new Map(allAssets.map((a: Asset) => [a.id, a]));
+
+  transactions = await getTransactionsByPortfolio(id);
+
+  // Aplicar filtros
+  filteredTransactions = transactions.filter((tx) => {
+    if (typeFilter && tx.type !== typeFilter) return false;
+    if (assetFilter && tx.asset_id !== assetFilter) return false;
+    return true;
+  });
+} catch (err) {
+  console.error('Error loading transactions:', err);
+  error = 'Error al cargar las transacciones.';
+}
+
+if (!portfolio) {
+  return Astro.redirect('/portfolio');
+}
+
+// Get unique types and assets for filters
+const types = Array.from(new Set(transactions.map((t) => t.type)));
+const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
+---
+
+<BaseLayout
+  title={`${portfolio.name} - Transacciones`}
+  description={`Historial de transacciones de ${portfolio.name}`}
+>
+  <main class="main-content">
+    <div class="wrapper">
+      <section class="page-header">
+        <div>
+          <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolio.name}</a>
+          <h1>Historial de Transacciones</h1>
+        </div>
+      </section>
+
+      {/* Filters */}
+      {(types.length > 0 || assetIds.length > 0) && (
+        <section class="filters-section">
+          <div class="filters-grid">
+            {types.length > 0 && (
+              <div class="filter-group">
+                <label htmlFor="type-filter">Tipo de Transacción:</label>
+                <select id="type-filter" onchange="window.location.href = this.value">
+                  <option value={`/portfolio/${id}/transactions`}>Todos</option>
+                  {types.map((type) => (
+                    <option value={`/portfolio/${id}/transactions?type=${type}`} selected={typeFilter === type}>
+                      {type === 'buy' ? 'Compras' : type === 'sell' ? 'Ventas' : type === 'dividend' ? 'Dividendos' : 'Comisiones'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {assetIds.length > 0 && (
+              <div class="filter-group">
+                <label htmlFor="asset-filter">Activo:</label>
+                <select id="asset-filter" onchange="window.location.href = this.value">
+                  <option value={`/portfolio/${id}/transactions`}>Todos</option>
+                  {assetIds.map((assetId) => {
+                    const asset = assets.get(assetId);
+                    if (!asset) return null;
+                    return (
+                      <option value={`/portfolio/${id}/transactions?asset=${assetId}`} selected={assetFilter === assetId}>
+                        {asset.name} ({asset.ticker})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Transactions Table */}
+      {filteredTransactions.length > 0 ? (
+        <section class="transactions-section">
+          <div class="stats-summary">
+            <span class="stat">{filteredTransactions.length} transacciones</span>
+            {filteredTransactions.length !== transactions.length && (
+              <span class="stat">({transactions.length} total)</span>
+            )}
+          </div>
+          <TransactionsTable transactions={filteredTransactions} assets={assets} />
+        </section>
+      ) : (
+        <div class="empty-state">
+          <h2>No hay transacciones</h2>
+          {typeFilter || assetFilter ? (
+            <p>No se encontraron transacciones con los filtros aplicados.</p>
+          ) : (
+            <p>Este portafolio aún no tiene transacciones registradas.</p>
+          )}
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .main-content {
+    flex: 1;
+    padding: var(--space-2xl) 0;
+  }
+
+  .wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-3xl);
+  }
+
+  .breadcrumb {
+    display: inline-block;
+    color: var(--text-light);
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb:hover {
+    color: var(--text);
+  }
+
+  .page-header h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .filters-section {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-group select {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--text);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .filter-group select:hover {
+    border-color: var(--text-light);
+  }
+
+  .filter-group select:focus {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  .transactions-section {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .stats-summary {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    font-size: 0.95rem;
+    color: var(--text-light);
+  }
+
+  .stat {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--background-alt);
+    border-radius: var(--radius-sm);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-2xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-light);
+  }
+
+  .empty-state h2 {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
