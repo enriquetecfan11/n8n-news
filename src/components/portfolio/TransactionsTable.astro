@@ -87,7 +87,20 @@ const getAssetCurrency = (assetId: string) => {
             <td class="total-cell">{formatCurrency(total, currency)}</td>
             <td style="font-size: 0.875rem; color: var(--text-light);">{tx.notes || '-'}</td>
             {showDelete && (
-              <td>
+              <td class="actions-cell">
+                <button
+                  class="edit-btn"
+                  data-edit-transaction={tx.id}
+                  data-type={tx.type}
+                  data-quantity={tx.quantity}
+                  data-price={tx.unit_price}
+                  data-date={tx.date}
+                  data-fee={tx.fee}
+                  data-notes={tx.notes}
+                  title="Editar transacción"
+                >
+                  ✎
+                </button>
                 <button
                   class="delete-btn"
                   data-transaction-id={tx.id}
@@ -191,6 +204,33 @@ const getAssetCurrency = (assetId: string) => {
     font-weight: 600;
   }
 
+  .actions-cell {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .edit-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+  }
+
+  .edit-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+  }
+
   .delete-btn {
     background: none;
     border: none;
@@ -225,8 +265,27 @@ const getAssetCurrency = (assetId: string) => {
 </style>
 
 <script>
-  function initDeleteButtons() {
+  function initTransactionButtons() {
+    const editButtons = document.querySelectorAll('[data-edit-transaction]');
     const deleteButtons = document.querySelectorAll('[data-transaction-id]');
+
+    editButtons.forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const txId = btn.getAttribute('data-edit-transaction');
+        const type = btn.getAttribute('data-type');
+        const quantity = btn.getAttribute('data-quantity');
+        const price = btn.getAttribute('data-price');
+        const date = btn.getAttribute('data-date');
+        const fee = btn.getAttribute('data-fee');
+        const notes = btn.getAttribute('data-notes');
+
+        if (window.openEditTransactionModal) {
+          window.openEditTransactionModal(txId, type, quantity, price, date, fee, notes);
+        }
+      });
+    });
 
     deleteButtons.forEach((btn) => {
       btn.addEventListener('click', async (e) => {
@@ -259,8 +318,8 @@ const getAssetCurrency = (assetId: string) => {
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDeleteButtons);
+    document.addEventListener('DOMContentLoaded', initTransactionButtons);
   } else {
-    initDeleteButtons();
+    initTransactionButtons();
   }
 </script>

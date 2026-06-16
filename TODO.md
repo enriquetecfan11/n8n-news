@@ -8,7 +8,7 @@
 
 ## ⏳ En Progreso / Pendientes
 
-- [ ] Editar transacciones (API listo, falta UI)
+- [x] Editar transacciones (API listo, UI completada con modal)
 - [ ] Importar transacciones desde CSV
 - [ ] Recalcular todos los holdings al cambiar precios
 

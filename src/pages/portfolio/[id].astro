@@ -6,6 +6,8 @@ import TransactionsTable from '../../components/portfolio/TransactionsTable.astr
 import AddTransactionModal from '../../components/portfolio/AddTransactionModal.astro';
 import EditPortfolioModal from '../../components/portfolio/EditPortfolioModal.astro';
 import CreateAssetModal from '../../components/portfolio/CreateAssetModal.astro';
+import EditTransactionModal from '../../components/portfolio/EditTransactionModal.astro';
+import ImportTransactionsModal from '../../components/portfolio/ImportTransactionsModal.astro';
 import {
   getPortfolios,
   getPortfolioById,
@@ -98,6 +100,8 @@ if (error || !portfolio || !summary) {
           <span class="currency-badge">{portfolio.base_currency}</span>
           <button class="btn btn-primary btn-sm" data-open-asset-modal>+ Activo</button>
           <button class="btn btn-primary btn-sm" data-open-transaction-modal>+ Transacción</button>
+          <button class="btn btn-secondary btn-sm" data-open-import-modal>📥 Importar CSV</button>
+          <button class="btn btn-secondary btn-sm" data-refresh-prices>🔄 Actualizar</button>
           <button class="btn btn-secondary btn-sm" data-open-edit-portfolio-modal>✎ Editar</button>
           <button class="btn btn-danger btn-sm" data-delete-portfolio data-portfolio-id={id}>🗑️ Eliminar</button>
         </div>
@@ -221,11 +225,25 @@ if (error || !portfolio || !summary) {
   />
 
   <CreateAssetModal />
+
+  <EditTransactionModal />
+
+  <ImportTransactionsModal portfolioId={id} />
 </BaseLayout>
 
 <script define:vars={{ portfolioId: id }}>
   function initPortfolioDashboard() {
     const deleteBtn = document.querySelector('[data-delete-portfolio]');
+    const importBtn = document.querySelector('[data-open-import-modal]');
+    const refreshBtn = document.querySelector('[data-refresh-prices]');
+
+    if (importBtn) {
+      importBtn.addEventListener('click', () => {
+        if (window.openImportTransactionsModal) {
+          window.openImportTransactionsModal();
+        }
+      });
+    }
 
     if (deleteBtn) {
       deleteBtn.addEventListener('click', async () => {

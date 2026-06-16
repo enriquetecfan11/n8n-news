@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import TransactionsTable from '../../../components/portfolio/TransactionsTable.astro';
+import EditTransactionModal from '../../../components/portfolio/EditTransactionModal.astro';
+import ImportTransactionsModal from '../../../components/portfolio/ImportTransactionsModal.astro';
 import {
   getPortfolios,
   getPortfolioById,
@@ -79,6 +81,7 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
           <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolio.name}</a>
           <h1>Historial de Transacciones</h1>
         </div>
+        <button class="btn btn-secondary btn-sm" data-open-import-modal style="align-self: flex-start;">📥 Importar CSV</button>
       </section>
 
       {/* Filters */}
@@ -159,6 +162,33 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
 
   .page-header {
     margin-bottom: var(--space-3xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-lg);
+  }
+
+  .btn-sm {
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.875rem;
+  }
+
+  .btn {
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
   }
 
   .breadcrumb {
@@ -267,3 +297,27 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
     }
   }
 </style>
+
+<EditTransactionModal />
+
+<ImportTransactionsModal portfolioId={id} />
+
+<script>
+  function initTransactionsPage() {
+    const importBtn = document.querySelector('[data-open-import-modal]');
+
+    if (importBtn) {
+      importBtn.addEventListener('click', () => {
+        if (window.openImportTransactionsModal) {
+          window.openImportTransactionsModal();
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTransactionsPage);
+  } else {
+    initTransactionsPage();
+  }
+</script>
