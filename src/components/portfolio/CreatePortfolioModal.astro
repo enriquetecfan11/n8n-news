@@ -1,0 +1,298 @@
+---
+interface Props {
+  isOpen?: boolean;
+}
+
+const { isOpen = false } = Astro.props;
+---
+
+<div id="portfolio-modal" class="modal" data-open={isOpen}>
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Nuevo Portafolio</h2>
+      <button class="modal-close" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="portfolio-form" class="modal-form">
+      <div class="form-group">
+        <label htmlFor="portfolio-name">Nombre *</label>
+        <input
+          id="portfolio-name"
+          type="text"
+          name="name"
+          placeholder="Mi Portafolio Principal"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="portfolio-description">Descripción</label>
+        <textarea
+          id="portfolio-description"
+          name="description"
+          placeholder="Opcional: descripción del portafolio"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="portfolio-currency">Divisa Base</label>
+        <select id="portfolio-currency" name="baseCurrency">
+          <option value="EUR">EUR (Euros)</option>
+          <option value="USD">USD (Dólares)</option>
+          <option value="GBP">GBP (Libras)</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear Portafolio</button>
+      </div>
+    </form>
+
+    <div id="portfolio-status" class="form-status"></div>
+  </div>
+</div>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+  }
+
+  .modal[data-open='true'] {
+    display: flex;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+  }
+
+  .modal-close:hover {
+    color: var(--text);
+  }
+
+  .modal-form {
+    padding: var(--space-2xl);
+  }
+
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--background);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .form-status {
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border-radius: var(--radius-md);
+    display: none;
+  }
+
+  .form-status.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .form-status.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+</style>
+
+<script>
+  function initPortfolioModal() {
+    const modal = document.getElementById('portfolio-modal');
+    const form = document.getElementById('portfolio-form');
+    const closeBtn = document.querySelector('.modal-close');
+    const cancelBtn = document.querySelector('.modal-cancel');
+    const statusDiv = document.getElementById('portfolio-status');
+    const openBtn = document.querySelector('[data-open-portfolio-modal]');
+
+    if (!modal || !form) return;
+
+    // Open modal
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        modal.setAttribute('data-open', 'true');
+      });
+    }
+
+    // Close modal
+    const closeModal = () => {
+      modal.setAttribute('data-open', 'false');
+      form.reset();
+      statusDiv.textContent = '';
+      statusDiv.className = 'form-status';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    // Close on overlay click
+    const overlay = modal.querySelector('.modal-overlay');
+    overlay?.addEventListener('click', closeModal);
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        description: formData.get('description'),
+        baseCurrency: formData.get('baseCurrency'),
+      };
+
+      try {
+        statusDiv.textContent = 'Creando portafolio...';
+        statusDiv.className = 'form-status';
+
+        const response = await fetch('/api/portfolio/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error desconocido');
+        }
+
+        statusDiv.textContent = '✓ Portafolio creado correctamente. Recargando...';
+        statusDiv.className = 'form-status success';
+
+        setTimeout(() => {
+          window.location.href = '/portfolio';
+        }, 1500);
+      } catch (error) {
+        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error al crear portafolio'}`;
+        statusDiv.className = 'form-status error';
+      }
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortfolioModal);
+  } else {
+    initPortfolioModal();
+  }
+</script>

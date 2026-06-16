@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import KpiCard from '../../components/portfolio/KpiCard.astro';
 import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
 import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
+import AddTransactionModal from '../../components/portfolio/AddTransactionModal.astro';
 import {
   getPortfolios,
   getPortfolioById,
@@ -91,7 +92,11 @@ if (error || !portfolio || !summary) {
           <h1>{portfolio.name}</h1>
           {portfolio.description && <p class="subtitle">{portfolio.description}</p>}
         </div>
-        <span class="currency-badge">{portfolio.base_currency}</span>
+        <div class="header-actions">
+          <span class="currency-badge">{portfolio.base_currency}</span>
+          <button class="btn btn-primary btn-sm" data-open-transaction-modal>+ Transacción</button>
+          <button class="btn btn-danger btn-sm" data-delete-portfolio data-portfolio-id={id}>🗑️ Eliminar</button>
+        </div>
       </section>
 
       {/* KPI Cards */}
@@ -178,6 +183,7 @@ if (error || !portfolio || !summary) {
               ).map((a: Asset) => [a.id, a])
             )}
             limit={5}
+            showDelete={true}
           />
         </section>
       )}
@@ -190,7 +196,57 @@ if (error || !portfolio || !summary) {
       )}
     </div>
   </main>
+
+  <AddTransactionModal
+    portfolioId={id}
+    assets={await (async () => {
+      try {
+        const assetsList = await getAssets();
+        return assetsList.map((a: Asset) => ({ id: a.id, name: a.name, ticker: a.ticker || '' }));
+      } catch {
+        return [];
+      }
+    })()}
+  />
 </BaseLayout>
+
+<script define:vars={{ portfolioId: id }}>
+  function initPortfolioDashboard() {
+    const deleteBtn = document.querySelector('[data-delete-portfolio]');
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este portafolio? Se eliminarán todas sus transacciones.')) {
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/portfolio/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: portfolioId }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error desconocido');
+          }
+
+          alert('Portafolio eliminado correctamente');
+          window.location.href = '/portfolio';
+        } catch (error) {
+          alert(`Error: ${error instanceof Error ? error.message : 'Error al eliminar'}`);
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortfolioDashboard);
+  } else {
+    initPortfolioDashboard();
+  }
+</script>
 
 <style>
   .main-content {
@@ -210,6 +266,26 @@ if (error || !portfolio || !summary) {
     align-items: start;
     margin-bottom: var(--space-3xl);
     gap: var(--space-2xl);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .btn-sm {
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.875rem;
+  }
+
+  .btn-danger {
+    background: #ef4444;
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background: #dc2626;
   }
 
   .breadcrumb {

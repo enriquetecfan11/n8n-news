@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PortfolioCard from '../../components/portfolio/PortfolioCard.astro';
+import CreatePortfolioModal from '../../components/portfolio/CreatePortfolioModal.astro';
 import {
   getPortfolios,
   getTransactionsByPortfolio,
@@ -53,9 +54,9 @@ try {
           <h1>Portafolios de Inversión</h1>
           <p class="subtitle">Monitorea el rendimiento de tus inversiones en tiempo real</p>
         </div>
-        <a href="#" class="btn btn-primary" style="opacity: 0.5; cursor: default;">
+        <button class="btn btn-primary" data-open-portfolio-modal>
           + Nuevo Portafolio
-        </a>
+        </button>
       </section>
 
       {error ? (
@@ -89,6 +90,8 @@ try {
       )}
     </div>
   </main>
+
+  <CreatePortfolioModal />
 </BaseLayout>
 
 <style>

@@ -129,7 +129,7 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
               <span class="stat">({transactions.length} total)</span>
             )}
           </div>
-          <TransactionsTable transactions={filteredTransactions} assets={assets} />
+          <TransactionsTable transactions={filteredTransactions} assets={assets} showDelete={true} />
         </section>
       ) : (
         <div class="empty-state">

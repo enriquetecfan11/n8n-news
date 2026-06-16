@@ -59,3 +59,12 @@ logs/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# IA
+.agents
+.claude
+.astro
+.playwright-mcp
+.mcp.json
+.nvmrc
+skills-lock.json
