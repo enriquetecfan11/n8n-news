@@ -245,6 +245,15 @@ if (error || !portfolio || !summary) {
       });
     }
 
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '🔄 Actualizando...';
+        // Reload with cache busting
+        window.location.href = window.location.href + '?refresh=' + Date.now();
+      });
+    }
+
     if (deleteBtn) {
       deleteBtn.addEventListener('click', async () => {
         if (!confirm('¿Estás seguro de que deseas eliminar este portafolio? Se eliminarán todas sus transacciones.')) {

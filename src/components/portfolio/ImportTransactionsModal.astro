@@ -1,0 +1,472 @@
+---
+interface Props {
+  portfolioId?: string;
+}
+
+const { portfolioId } = Astro.props;
+---
+
+<div id="import-transactions-modal" class="modal" data-open="false">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Importar Transacciones desde CSV</h2>
+      <button class="modal-close" aria-label="Cerrar">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="import-info">
+        <p>Sube un archivo CSV con las siguientes columnas:</p>
+        <ul class="csv-columns">
+          <li><strong>date</strong> - Fecha (YYYY-MM-DD)</li>
+          <li><strong>type</strong> - Tipo: buy, sell, dividend, fee</li>
+          <li><strong>ticker</strong> - Ticker del activo (ej: AAPL)</li>
+          <li><strong>quantity</strong> - Cantidad</li>
+          <li><strong>unitPrice</strong> - Precio unitario</li>
+          <li><strong>fee</strong> - Comisión (opcional)</li>
+          <li><strong>notes</strong> - Notas (opcional)</li>
+        </ul>
+      </div>
+
+      <form id="import-transactions-form" class="import-form">
+        <div class="form-group">
+          <label htmlFor="csv-file">Archivo CSV *</label>
+          <input
+            id="csv-file"
+            type="file"
+            name="file"
+            accept=".csv"
+            required
+          />
+        </div>
+
+        <div class="preview-section" id="preview-section" style="display: none;">
+          <h3>Vista Previa</h3>
+          <div class="preview-table-wrapper">
+            <table class="preview-table">
+              <thead>
+                <tr id="preview-header"></tr>
+              </thead>
+              <tbody id="preview-body"></tbody>
+            </table>
+          </div>
+          <p class="preview-count"><span id="preview-count">0</span> transacciones a importar</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="import-submit">Importar</button>
+        </div>
+      </form>
+
+      <div id="import-status" class="form-status"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+  }
+
+  .modal[data-open='true'] {
+    display: flex;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+  }
+
+  .modal-close:hover {
+    color: var(--text);
+  }
+
+  .modal-body {
+    padding: var(--space-2xl);
+  }
+
+  .import-info {
+    background: var(--background-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+
+  .import-info p {
+    margin: 0 0 var(--space-md) 0;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .csv-columns {
+    margin: 0;
+    padding-left: var(--space-2xl);
+    list-style: disc;
+    color: var(--text-light);
+    font-size: 0.875rem;
+  }
+
+  .csv-columns li {
+    margin-bottom: var(--space-xs);
+  }
+
+  .csv-columns strong {
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+  }
+
+  .import-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .form-group input[type='file'] {
+    display: block;
+    width: 100%;
+    padding: var(--space-md);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-group input[type='file']:hover {
+    border-color: var(--text-light);
+  }
+
+  .form-group input[type='file']:focus {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  .preview-section {
+    margin-bottom: var(--space-lg);
+  }
+
+  .preview-section h3 {
+    margin: 0 0 var(--space-md) 0;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .preview-table-wrapper {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: auto;
+    margin-bottom: var(--space-md);
+    max-height: 300px;
+  }
+
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .preview-table thead {
+    background: var(--background-alt);
+    position: sticky;
+    top: 0;
+  }
+
+  .preview-table th,
+  .preview-table td {
+    padding: var(--space-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .preview-table th {
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
+
+  .preview-count {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-light);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--background);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .form-status {
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border-radius: var(--radius-md);
+    display: none;
+  }
+
+  .form-status.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .form-status.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .form-status.info {
+    display: block;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  @media (max-width: 600px) {
+    .modal-content {
+      width: 95%;
+      max-height: 95vh;
+    }
+
+    .import-info {
+      padding: var(--space-md);
+    }
+
+    .form-actions {
+      flex-direction: column-reverse;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<script define:vars={{ portfolioId }}>
+  function initImportTransactionsModal() {
+    const modal = document.getElementById('import-transactions-modal');
+    const form = document.getElementById('import-transactions-form');
+    const closeBtn = document.querySelector('.modal-close');
+    const cancelBtn = document.querySelector('.modal-cancel');
+    const fileInput = document.getElementById('csv-file');
+    const previewSection = document.getElementById('preview-section');
+    const previewHeader = document.getElementById('preview-header');
+    const previewBody = document.getElementById('preview-body');
+    const previewCount = document.getElementById('preview-count');
+    const statusDiv = document.getElementById('import-status');
+    const submitBtn = document.getElementById('import-submit');
+
+    if (!modal || !form) return;
+
+    const closeModal = () => {
+      modal.setAttribute('data-open', 'false');
+      form.reset();
+      previewSection.style.display = 'none';
+      statusDiv.textContent = '';
+      statusDiv.className = 'form-status';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    const overlay = modal.querySelector('.modal-overlay');
+    overlay?.addEventListener('click', closeModal);
+
+    // Handle CSV file selection and preview
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const csv = event.target?.result;
+          if (typeof csv !== 'string') return;
+
+          const lines = csv.trim().split('\n');
+          if (lines.length < 2) {
+            statusDiv.textContent = '✗ El archivo CSV debe tener encabezados y al menos una fila de datos';
+            statusDiv.className = 'form-status error';
+            return;
+          }
+
+          const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+          const rows = lines.slice(1).map((line) =>
+            line.split(',').map((v) => v.trim())
+          );
+
+          // Build preview
+          previewHeader.innerHTML = headers.map((h) => `<th>${h}</th>`).join('');
+          previewBody.innerHTML = rows
+            .slice(0, 5)
+            .map((row) => `<tr>${row.map((v) => `<td>${v || '-'}</td>`).join('')}</tr>`)
+            .join('');
+
+          previewCount.textContent = rows.length;
+          previewSection.style.display = 'block';
+          statusDiv.textContent = '';
+          statusDiv.className = 'form-status';
+        } catch (error) {
+          statusDiv.textContent = '✗ Error al leer el archivo CSV';
+          statusDiv.className = 'form-status error';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const file = fileInput?.files?.[0];
+      if (!file) return;
+
+      try {
+        submitBtn.disabled = true;
+        statusDiv.textContent = 'Procesando archivo...';
+        statusDiv.className = 'form-status info';
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('portfolioId', portfolioId || '');
+
+        const response = await fetch('/api/transaction/import-csv', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error desconocido');
+        }
+
+        const result = await response.json();
+        statusDiv.textContent = `✓ ${result.count} transacciones importadas correctamente. Recargando...`;
+        statusDiv.className = 'form-status success';
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (error) {
+        submitBtn.disabled = false;
+        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
+        statusDiv.className = 'form-status error';
+      }
+    });
+
+    // Open modal from button
+    window.openImportTransactionsModal = () => {
+      modal.setAttribute('data-open', 'true');
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initImportTransactionsModal);
+  } else {
+    initImportTransactionsModal();
+  }
+</script>

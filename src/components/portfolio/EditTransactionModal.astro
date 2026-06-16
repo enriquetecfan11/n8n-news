@@ -1,0 +1,374 @@
+---
+interface Props {
+  transactionId?: string;
+  transactionType?: string;
+  transactionQuantity?: number;
+  transactionPrice?: number;
+  transactionDate?: string;
+  transactionFee?: number;
+  transactionNotes?: string;
+  assets?: Array<{ id: string; name: string; ticker: string }>;
+}
+
+const {
+  transactionId,
+  transactionType,
+  transactionQuantity,
+  transactionPrice,
+  transactionDate,
+  transactionFee,
+  transactionNotes,
+  assets = [],
+} = Astro.props;
+---
+
+<div id="edit-transaction-modal" class="modal" data-open="false">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Editar Transacción</h2>
+      <button class="modal-close" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="edit-transaction-form" class="modal-form">
+      <input type="hidden" name="transactionId" value={transactionId} />
+
+      <div class="form-group">
+        <label htmlFor="edit-tx-type">Tipo *</label>
+        <select id="edit-tx-type" name="type" required>
+          <option value="buy" selected={transactionType === 'buy'}>Compra</option>
+          <option value="sell" selected={transactionType === 'sell'}>Venta</option>
+          <option value="dividend" selected={transactionType === 'dividend'}>Dividendo</option>
+          <option value="fee" selected={transactionType === 'fee'}>Comisión</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label htmlFor="edit-tx-quantity">Cantidad *</label>
+          <input
+            id="edit-tx-quantity"
+            type="number"
+            name="quantity"
+            placeholder="10.5"
+            value={transactionQuantity}
+            step="0.00000001"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label htmlFor="edit-tx-price">Precio Unitario *</label>
+          <input
+            id="edit-tx-price"
+            type="number"
+            name="unitPrice"
+            placeholder="150.50"
+            value={transactionPrice}
+            step="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label htmlFor="edit-tx-date">Fecha *</label>
+          <input
+            id="edit-tx-date"
+            type="date"
+            name="date"
+            value={transactionDate}
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label htmlFor="edit-tx-fee">Comisión</label>
+          <input
+            id="edit-tx-fee"
+            type="number"
+            name="fee"
+            placeholder="0.00"
+            value={transactionFee || 0}
+            step="0.01"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="edit-tx-notes">Notas</label>
+        <textarea
+          id="edit-tx-notes"
+          name="notes"
+          placeholder="Notas opcionales"
+          rows="2"
+        >{transactionNotes}</textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </form>
+
+    <div id="edit-transaction-status" class="form-status"></div>
+  </div>
+</div>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+  }
+
+  .modal[data-open='true'] {
+    display: flex;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+  }
+
+  .modal-close:hover {
+    color: var(--text);
+  }
+
+  .modal-form {
+    padding: var(--space-2xl);
+  }
+
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--background);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .form-status {
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border-radius: var(--radius-md);
+    display: none;
+  }
+
+  .form-status.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .form-status.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  @media (max-width: 600px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  function initEditTransactionModal() {
+    const modal = document.getElementById('edit-transaction-modal');
+    const form = document.getElementById('edit-transaction-form');
+    const closeBtn = document.querySelector('.modal-close');
+    const cancelBtn = document.querySelector('.modal-cancel');
+    const statusDiv = document.getElementById('edit-transaction-status');
+
+    if (!modal || !form) return;
+
+    const closeModal = () => {
+      modal.setAttribute('data-open', 'false');
+      statusDiv.textContent = '';
+      statusDiv.className = 'form-status';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    const overlay = modal.querySelector('.modal-overlay');
+    overlay?.addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        id: formData.get('transactionId'),
+        type: formData.get('type'),
+        quantity: formData.get('quantity'),
+        unitPrice: formData.get('unitPrice'),
+        date: formData.get('date'),
+        fee: formData.get('fee'),
+        notes: formData.get('notes'),
+      };
+
+      try {
+        statusDiv.textContent = 'Guardando cambios...';
+        statusDiv.className = 'form-status';
+
+        const response = await fetch('/api/transaction/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error desconocido');
+        }
+
+        statusDiv.textContent = '✓ Transacción actualizada. Recargando...';
+        statusDiv.className = 'form-status success';
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (error) {
+        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
+        statusDiv.className = 'form-status error';
+      }
+    });
+
+    // Abrir modal desde botón de edición
+    window.openEditTransactionModal = (txId: string, type: string, qty: string, price: string, date: string, fee: string, notes: string) => {
+      (document.querySelector('input[name="transactionId"]') as HTMLInputElement).value = txId;
+      (document.querySelector('select[name="type"]') as HTMLSelectElement).value = type;
+      (document.querySelector('input[name="quantity"]') as HTMLInputElement).value = qty;
+      (document.querySelector('input[name="unitPrice"]') as HTMLInputElement).value = price;
+      (document.querySelector('input[name="date"]') as HTMLInputElement).value = date;
+      (document.querySelector('input[name="fee"]') as HTMLInputElement).value = fee || '0';
+      (document.querySelector('textarea[name="notes"]') as HTMLTextAreaElement).value = notes || '';
+      modal.setAttribute('data-open', 'true');
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEditTransactionModal);
+  } else {
+    initEditTransactionModal();
+  }
+</script>
