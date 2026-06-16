@@ -1,0 +1,316 @@
+---
+interface Props {
+  isOpen?: boolean;
+}
+
+const { isOpen = false } = Astro.props;
+---
+
+<div id="asset-modal" class="modal" data-open={isOpen}>
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Nuevo Activo</h2>
+      <button class="modal-close" aria-label="Cerrar">×</button>
+    </div>
+
+    <form id="asset-form" class="modal-form">
+      <div class="form-group">
+        <label htmlFor="asset-name">Nombre *</label>
+        <input
+          id="asset-name"
+          type="text"
+          name="name"
+          placeholder="Apple Inc."
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="asset-ticker">Ticker *</label>
+        <input
+          id="asset-ticker"
+          type="text"
+          name="ticker"
+          placeholder="AAPL"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="asset-type">Tipo *</label>
+        <select id="asset-type" name="type" required>
+          <option value="">Selecciona un tipo...</option>
+          <option value="stock">Acción</option>
+          <option value="etf">ETF</option>
+          <option value="crypto">Crypto</option>
+          <option value="cash">Efectivo</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="asset-currency">Divisa *</label>
+        <select id="asset-currency" name="currency" required>
+          <option value="">Selecciona una divisa...</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label htmlFor="asset-exchange">Bolsa (opcional)</label>
+        <input
+          id="asset-exchange"
+          type="text"
+          name="exchange"
+          placeholder="NASDAQ"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear Activo</button>
+      </div>
+    </form>
+
+    <div id="asset-status" class="form-status"></div>
+  </div>
+</div>
+
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+  }
+
+  .modal[data-open='true'] {
+    display: flex;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+  }
+
+  .modal-close:hover {
+    color: var(--text);
+  }
+
+  .modal-form {
+    padding: var(--space-2xl);
+  }
+
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--text);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: var(--space-sm) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--background);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .form-status {
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border-radius: var(--radius-md);
+    display: none;
+  }
+
+  .form-status.error {
+    display: block;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .form-status.success {
+    display: block;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+</style>
+
+<script>
+  function initAssetModal() {
+    const modal = document.getElementById('asset-modal');
+    const form = document.getElementById('asset-form');
+    const closeBtn = document.querySelector('.modal-close');
+    const cancelBtn = document.querySelector('.modal-cancel');
+    const statusDiv = document.getElementById('asset-status');
+    const openBtn = document.querySelector('[data-open-asset-modal]');
+
+    if (!modal || !form) return;
+
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        modal.setAttribute('data-open', 'true');
+      });
+    }
+
+    const closeModal = () => {
+      modal.setAttribute('data-open', 'false');
+      form.reset();
+      statusDiv.textContent = '';
+      statusDiv.className = 'form-status';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    const overlay = modal.querySelector('.modal-overlay');
+    overlay?.addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        type: formData.get('type'),
+        currency: formData.get('currency'),
+        ticker: formData.get('ticker'),
+        exchange: formData.get('exchange'),
+      };
+
+      try {
+        statusDiv.textContent = 'Creando activo...';
+        statusDiv.className = 'form-status';
+
+        const response = await fetch('/api/asset/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error desconocido');
+        }
+
+        statusDiv.textContent = '✓ Activo creado correctamente. Recargando...';
+        statusDiv.className = 'form-status success';
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (error) {
+        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
+        statusDiv.className = 'form-status error';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAssetModal);
+  } else {
+    initAssetModal();
+  }
+</script>

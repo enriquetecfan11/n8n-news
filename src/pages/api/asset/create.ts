@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createAsset } from '../../../lib/supabase';
+import { createAsset, getAssets } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -11,6 +11,20 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({ error: 'Nombre, tipo y divisa son requeridos' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Validar duplicados: si el ticker está especificado, verificar que no exista
+    if (ticker) {
+      const existingAssets = await getAssets();
+      const duplicate = existingAssets.find(
+        (a: any) => a.ticker?.toUpperCase() === ticker.toUpperCase()
+      );
+      if (duplicate) {
+        return new Response(
+          JSON.stringify({ error: `El activo ${ticker} ya existe` }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const asset = await createAsset(name, type, currency, ticker, exchange);

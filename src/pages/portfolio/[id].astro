@@ -4,6 +4,8 @@ import KpiCard from '../../components/portfolio/KpiCard.astro';
 import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
 import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
 import AddTransactionModal from '../../components/portfolio/AddTransactionModal.astro';
+import EditPortfolioModal from '../../components/portfolio/EditPortfolioModal.astro';
+import CreateAssetModal from '../../components/portfolio/CreateAssetModal.astro';
 import {
   getPortfolios,
   getPortfolioById,
@@ -94,7 +96,9 @@ if (error || !portfolio || !summary) {
         </div>
         <div class="header-actions">
           <span class="currency-badge">{portfolio.base_currency}</span>
+          <button class="btn btn-primary btn-sm" data-open-asset-modal>+ Activo</button>
           <button class="btn btn-primary btn-sm" data-open-transaction-modal>+ Transacción</button>
+          <button class="btn btn-secondary btn-sm" data-open-edit-portfolio-modal>✎ Editar</button>
           <button class="btn btn-danger btn-sm" data-delete-portfolio data-portfolio-id={id}>🗑️ Eliminar</button>
         </div>
       </section>
@@ -208,6 +212,15 @@ if (error || !portfolio || !summary) {
       }
     })()}
   />
+
+  <EditPortfolioModal
+    portfolioId={id}
+    portfolioName={portfolio.name}
+    portfolioDescription={portfolio.description}
+    portfolioCurrency={portfolio.base_currency}
+  />
+
+  <CreateAssetModal />
 </BaseLayout>
 
 <script define:vars={{ portfolioId: id }}>
@@ -277,6 +290,16 @@ if (error || !portfolio || !summary) {
   .btn-sm {
     padding: var(--space-xs) var(--space-md);
     font-size: 0.875rem;
+  }
+
+  .btn-secondary {
+    background: var(--background-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--border);
   }
 
   .btn-danger {
