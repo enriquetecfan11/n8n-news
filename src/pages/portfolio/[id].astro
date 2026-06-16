@@ -4,6 +4,7 @@ import KpiCard from '../../components/portfolio/KpiCard.astro';
 import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
 import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
 import {
+  getPortfolios,
   getPortfolioById,
   getTransactionsByPortfolio,
   getAssets,
@@ -16,6 +17,18 @@ import {
   getPricesForHoldings,
 } from '../../lib/portfolio';
 import type { Asset, Transaction } from '../../lib/portfolio';
+
+export async function getStaticPaths() {
+  try {
+    const portfolios = await getPortfolios();
+    return portfolios.map((p: any) => ({
+      params: { id: p.id },
+    }));
+  } catch (error) {
+    console.error('Error generating static paths:', error);
+    return [];
+  }
+}
 
 const { id } = Astro.params;
 
