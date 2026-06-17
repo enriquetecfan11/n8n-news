@@ -25,6 +25,16 @@ export async function getAssets() {
   return data;
 }
 
+export async function getAssetsByUser(userId: string) {
+  const { data, error } = await supabase
+    .from('assets')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
 export async function getTransactionsByPortfolio(portfolioId: string) {
   const { data, error } = await supabase
     .from('transactions')

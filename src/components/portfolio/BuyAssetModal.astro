@@ -605,12 +605,21 @@ const { portfolioId } = Astro.props;
           body: JSON.stringify(assetData),
         });
 
+        let assetId: string;
+
         if (!assetResponse.ok) {
           const error = await assetResponse.json();
-          throw new Error(error.error || 'Error creando activo');
+          // Si el activo ya existe (409), usa su ID
+          if (assetResponse.status === 409 && error.assetId) {
+            assetId = error.assetId;
+          } else {
+            throw new Error(error.error || 'Error creando activo');
+          }
+        } else {
+          const assetResult = await assetResponse.json();
+          assetId = assetResult.id;
         }
 
-        const { assetId } = await assetResponse.json();
         data.assetId = assetId;
 
         // Then create the transaction

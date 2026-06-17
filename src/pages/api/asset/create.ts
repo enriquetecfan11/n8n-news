@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { supabase, getCurrentSession, createAssetForUser, getAssets } from '../../../lib/supabase';
+import { supabase, getCurrentSession, createAssetForUser, getAssetsByUser } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -21,15 +21,15 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Validar duplicados: si el ticker está especificado, verificar que no exista
+    // Validar duplicados: si el ticker está especificado, verificar que no exista EN LOS ACTIVOS DEL USUARIO
     if (ticker) {
-      const existingAssets = await getAssets();
-      const duplicate = existingAssets.find(
+      const userAssets = await getAssetsByUser(session.user.id);
+      const duplicate = userAssets.find(
         (a: any) => a.ticker?.toUpperCase() === ticker.toUpperCase()
       );
       if (duplicate) {
         return new Response(
-          JSON.stringify({ error: `El activo ${ticker} ya existe` }),
+          JSON.stringify({ error: `Ya tienes un activo con ticker "${ticker}"`, assetId: duplicate.id }),
           { status: 409, headers: { 'Content-Type': 'application/json' } }
         );
       }
