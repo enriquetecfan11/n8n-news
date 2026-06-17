@@ -27,19 +27,19 @@ const relatedPosts = newsFilter.getRelatedPosts(id, 5);
 // Funciones de utilidad para metadatos
 function getImpactColor(impact: string) {
   switch (impact) {
-    case 'alto': return 'var(--impact-alto)';
-    case 'medio': return 'var(--impact-medio)';
-    case 'bajo': return 'var(--impact-bajo)';
-    default: return 'var(--text-lighter)';
+    case 'alto': return 'impact-alto';
+    case 'medio': return 'impact-medio';
+    case 'bajo': return 'impact-bajo';
+    default: return 'impact-default';
   }
 }
 
 function getSentimentColor(sentiment: string) {
   switch (sentiment) {
-    case 'positivo': return 'var(--sentiment-positivo)';
-    case 'negativo': return 'var(--sentiment-negativo)';
-    case 'neutral': return 'var(--sentiment-neutral)';
-    default: return 'var(--sentiment-neutral)';
+    case 'positivo': return 'sentiment-positivo';
+    case 'negativo': return 'sentiment-negativo';
+    case 'neutral': return 'sentiment-neutral';
+    default: return 'sentiment-neutral';
   }
 }
 
@@ -75,15 +75,15 @@ function getRelevanceAccent(score?: number) {
 function getSectorChipStyle(sector: string) {
   const s = sector.toLowerCase();
   if (s.includes('retail') || s.includes('consumo')) {
-    return ' --chip-bg-custom:#E3F2FD; --chip-fg-custom:#1565C0; --chip-border-custom:rgba(21,101,192,.22) ';
+    return 'chip-retail';
   }
   if (s.includes('manufact') || s.includes('fabrica') || s.includes('industr')) {
-    return ' --chip-bg-custom:#E8F5E9; --chip-fg-custom:#2E7D32; --chip-border-custom:rgba(46,125,50,.22) ';
+    return 'chip-industrial';
   }
   if (s.includes('tech') || s.includes('tecnolog')) {
-    return ' --chip-bg-custom:#F3E5F5; --chip-fg-custom:#6A1B9A; --chip-border-custom:rgba(106,27,154,.22) ';
+    return 'chip-tech';
   }
-  return '';
+  return 'chip-default';
 }
 ---
 
@@ -142,6 +142,13 @@ function getSectorChipStyle(sector: string) {
       }
       .impact-badge { border-color: var(--badge-color); color: var(--badge-color); }
       .sentiment-badge { border-color: var(--badge-color); color: var(--badge-color); }
+      .impact-alto { --badge-color: var(--color-danger); }
+      .impact-medio { --badge-color: var(--color-warning); }
+      .impact-bajo { --badge-color: var(--color-success); }
+      .impact-default { --badge-color: var(--app-text-muted); }
+      .sentiment-positivo { --badge-color: var(--color-success); }
+      .sentiment-negativo { --badge-color: var(--color-danger); }
+      .sentiment-neutral { --badge-color: var(--app-text-muted); }
 
       .score-inline {
         display: inline-flex;
@@ -172,6 +179,26 @@ function getSectorChipStyle(sector: string) {
         border: 1px solid var(--chip-border-custom, transparent);
         font-size: 0.8rem;
         font-weight: 500;
+      }
+      .chip-retail {
+        --chip-bg-custom: #E3F2FD;
+        --chip-fg-custom: #1565C0;
+        --chip-border-custom: rgba(21, 101, 192, 0.22);
+      }
+      .chip-industrial {
+        --chip-bg-custom: #E8F5E9;
+        --chip-fg-custom: #2E7D32;
+        --chip-border-custom: rgba(46, 125, 50, 0.22);
+      }
+      .chip-tech {
+        --chip-bg-custom: #F3E5F5;
+        --chip-fg-custom: #6A1B9A;
+        --chip-border-custom: rgba(106, 27, 154, 0.22);
+      }
+      .chip-default {
+        --chip-bg-custom: var(--app-surface-2);
+        --chip-fg-custom: var(--app-text);
+        --chip-border-custom: var(--app-border);
       }
 
       .post-title {
@@ -300,10 +327,10 @@ function getSectorChipStyle(sector: string) {
           <div class="post-header">
             <div class="badges-row">
               {impact && (
-                <span class="badge impact-badge" style={`--badge-color: ${getImpactColor(impact)}`}>{impact.toUpperCase()}</span>
+                <span class={`badge impact-badge ${getImpactColor(impact)}`}>{impact.toUpperCase()}</span>
               )}
               {sentiment && (
-                <span class="badge sentiment-badge" style={`--badge-color: ${getSentimentColor(sentiment)}`}>{getSentimentIcon(sentiment)} {sentiment}</span>
+                <span class={`badge sentiment-badge ${getSentimentColor(sentiment)}`}>{getSentimentIcon(sentiment)} {sentiment}</span>
               )}
               {relevanceScore && (
                 <span class="score-inline">Relevancia {relevanceScore}/10</span>
@@ -313,7 +340,7 @@ function getSectorChipStyle(sector: string) {
             {sectors && sectors.length > 0 && (
               <div class="chips-row">
                 {sectors.map(sector => (
-                  <span class="chip" style={getSectorChipStyle(sector)}>{getSectorIcon(sector)} {sector}</span>
+                  <span class={`chip ${getSectorChipStyle(sector)}`}>{getSectorIcon(sector)} {sector}</span>
                 ))}
               </div>
             )}

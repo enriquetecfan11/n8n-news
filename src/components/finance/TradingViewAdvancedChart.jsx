@@ -1,9 +1,28 @@
 // TradingViewAdvancedChart.jsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
     const containerRef = useRef(null);
     const scriptRef = useRef(null);
+    const [theme, setTheme] = useState(() =>
+        typeof document === 'undefined'
+            ? 'dark'
+            : (document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme'))
+                ? 'dark'
+                : 'light'
+    );
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            const isDark = document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme');
+            setTheme(isDark ? 'dark' : 'light');
+        });
+
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         // Verificar que el contenedor existe
@@ -19,7 +38,7 @@ function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
             symbol,
             interval: "1",
             timezone: "Europe/Madrid",
-            theme: "dark",
+            theme,
             style: "1",
             locale: "es",
             allow_symbol_change: true,
@@ -27,7 +46,7 @@ function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
             hotlist: false,
             calendar: false,
             support_host: "https://www.tradingview.com",
-            toolbar_bg: "#0f1117",
+            toolbar_bg: theme === 'dark' ? "#0f1117" : "#ffffff",
             backgroundColor: "rgba(0,0,0,0)",
             enable_publishing: false,
             hide_side_toolbar: false,
@@ -53,19 +72,15 @@ function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
                 containerRef.current.removeChild(scriptRef.current);
             }
         };
-    }, [symbol]);
+    }, [symbol, theme]);
 
     return (
-        <div style={{ background: "#0f1117", borderRadius: "12px", overflow: "hidden", height: "100%", minHeight: "700px", width: "100%" }}>
-            <div
-                className="tradingview-widget-container"
-                style={{ height: "100%", minHeight: "700px", width: "100%", background: "#0f1117", colorScheme: "dark" }}
-            >
+        <div className="tradingview-shell tradingview-shell--chart">
+            <div className="tradingview-widget-container tradingview-shell--chart">
                 <div
                     id="tradingview_chart_container"
                     className="tradingview-widget-container__widget"
                     ref={containerRef}
-                    style={{ height: "700px", minHeight: "700px", width: "100%", background: "#0f1117", colorScheme: "dark" }}
                 />
             </div>
         </div>
