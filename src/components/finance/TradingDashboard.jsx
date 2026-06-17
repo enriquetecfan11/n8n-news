@@ -1,23 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import TradingViewAdvancedChart from './TradingViewAdvancedChart';
 
-const WATCHLIST = [
-  { label: 'SP500', symbol: 'FOREXCOM:SPXUSD' },
-  { label: 'NASDAQ', symbol: 'NASDAQ:NDX' },
-  { label: 'DOW', symbol: 'TVC:DJI' },
-  { label: 'DAX', symbol: 'TVC:DAX' },
-  { label: 'IBEX35', symbol: 'BME:IBEX' },
-  { label: 'BTC', symbol: 'COINBASE:BTCUSD' },
-  { label: 'ETH', symbol: 'COINBASE:ETHUSD' },
-  { label: 'Oro', symbol: 'TVC:GOLD' },
-  { label: 'EUR/USD', symbol: 'FX:EURUSD' },
-];
-
 const TABS = [
-  { id: 'chart', label: '📈 Gráfico' },
-  { id: 'heatmap', label: '🔥 Mapa de calor' },
-  { id: 'market', label: '📊 Mercado' },
-  { id: 'news', label: '📰 Noticias' },
+  { id: 'chart', label: 'Gráfico' },
+  { id: 'heatmap', label: 'Mapa de calor' },
+  { id: 'market', label: 'Mercado' },
+  { id: 'news', label: 'Noticias' },
 ];
 
 const TICKER_SYMBOLS = [
@@ -35,17 +23,8 @@ const TICKER_SYMBOLS = [
   { proName: 'NASDAQ:AAPL', title: 'Apple' },
 ];
 
-const chartSymbols = [
-  { label: 'S&P 500', symbol: 'FOREXCOM:SPXUSD' },
-  { label: 'Nasdaq', symbol: 'NASDAQ:NDX' },
-  { label: 'DAX', symbol: 'TVC:DAX' },
-  { label: 'IBEX', symbol: 'BME:IBEX' },
-  { label: 'BTC', symbol: 'COINBASE:BTCUSD' },
-];
-
 function getTheme() {
-  if (typeof document === 'undefined') return 'dark';
-  return document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme') ? 'dark' : 'light';
+  return 'dark';
 }
 
 function loadTradingViewWidget(containerId, scriptSrc, config) {
@@ -61,9 +40,9 @@ function loadTradingViewWidget(containerId, scriptSrc, config) {
 }
 
 const TradingDashboard = ({ news = [] }) => {
-  const [activeSymbol, setActiveSymbol] = useState(chartSymbols[0].symbol);
   const [activeTab, setActiveTab] = useState('chart');
   const [theme, setTheme] = useState(getTheme);
+  const [marketSnapshotAt, setMarketSnapshotAt] = useState(new Date());
 
   const topGainers = useMemo(
     () => [
@@ -89,33 +68,67 @@ const TradingDashboard = ({ news = [] }) => {
 
   const sectorRows = useMemo(
     () => [
-      { name: 'Tecnología', trend: '+2.4%', note: 'Lidera el impulso del mercado' },
-      { name: 'Finanzas', trend: '+1.1%', note: 'Mejora del sentimiento' },
-      { name: 'Energía', trend: '-0.6%', note: 'Presión por materias primas' },
-      { name: 'Salud', trend: '+0.8%', note: 'Rotación defensiva' },
-      { name: 'Consumo', trend: '+0.3%', note: 'Sesgo mixto' },
+      { name: 'Tecnología', trend: '+2.4%', note: 'Lidera el impulso del mercado', tone: 'strong' },
+      { name: 'Finanzas', trend: '+1.1%', note: 'Mejora del sentimiento', tone: 'positive' },
+      { name: 'Energía', trend: '-0.6%', note: 'Presión por materias primas', tone: 'weak' },
+      { name: 'Salud', trend: '+0.8%', note: 'Rotación defensiva', tone: 'positive' },
+      { name: 'Consumo', trend: '+0.3%', note: 'Sesgo mixto', tone: 'positive' },
+      { name: 'Industria', trend: '-1.4%', note: 'Afectada por ciclo económico', tone: 'weak' },
     ],
     []
   );
 
-  useEffect(() => {
-    const syncTheme = () => setTheme(getTheme());
-    syncTheme();
+  const marketSummary = useMemo(() => {
+    const positives = topGainers.length;
+    const negatives = topLosers.length;
+    const netStrength = positives - negatives;
+    return {
+      state: netStrength > 1 ? 'Alcista' : netStrength < 0 ? 'Bajista' : 'Neutral',
+      positives,
+      negatives,
+      bestSector: 'Tecnología',
+      worstSector: 'Energía',
+      volatility: 'Media',
+      volume: 'Alto',
+    };
+  }, [topGainers, topLosers]);
 
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+  const highlightedMoves = useMemo(
+    () => [
+      { label: 'NVIDIA', change: '+4.12%', detail: 'Máximo del día en semiconductores' },
+      { label: 'Intel', change: '-5.22%', detail: 'Presión por ventas en chipmakers' },
+      { label: 'Apple', change: '+1.22%', detail: 'Recupera tono tras apertura débil' },
+      { label: 'Tesla', change: '+0.91%', detail: 'Rebote en automoción' },
+    ],
+    []
+  );
+
+  const marketTime = marketSnapshotAt.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  useEffect(() => {
+    setTheme('dark');
+    setMarketSnapshotAt(new Date());
   }, []);
+
+  const refreshMarketSnapshot = () => {
+    setMarketSnapshotAt(new Date());
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       loadTradingViewWidget('tv-ticker-tape', 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js', {
         symbols: TICKER_SYMBOLS,
         showSymbolLogo: true,
-        isTransparent: true,
+        isTransparent: false,
         displayMode: 'adaptive',
-        colorTheme: theme,
+        colorTheme: 'dark',
         locale: 'es',
       });
     }, 25);
@@ -144,7 +157,7 @@ const TradingDashboard = ({ news = [] }) => {
           symbolActiveColor: 'rgba(59, 130, 246, 0.12)',
           showToolbar: true,
           width: '100%',
-          height: '100%',
+          height: '980',
           blockSize: 'market_cap_basic',
           dataSource: 'SPX500',
           symbols: [{ s: 'NASDAQ:NVDA' }, { s: 'NASDAQ:AAPL' }, { s: 'NASDAQ:MSFT' }, { s: 'NASDAQ:AMZN' }, { s: 'NASDAQ:META' }],
@@ -152,24 +165,8 @@ const TradingDashboard = ({ news = [] }) => {
       }
 
       if (activeTab === 'market') {
-        loadTradingViewWidget('tv-market-overview', 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js', {
-          colorTheme: theme,
-          dateRange: '12M',
-          showChart: true,
-          locale: 'es',
-          largeChartUrl: '',
-          isTransparent: true,
-          showSymbolLogo: true,
-          showFloatingTooltip: false,
-          width: '100%',
-          height: '660',
-          tabs: [
-            { title: 'Índices', symbols: [{ s: 'FOREXCOM:SPXUSD', d: 'S&P 500 Index' }], originalTitle: 'Indices' },
-            { title: 'Forex', symbols: [{ s: 'FX_IDC:EURUSD', d: 'EUR to USD' }], originalTitle: 'Forex' },
-            { title: 'Crypto', symbols: [{ s: 'BITSTAMP:BTCUSD', d: 'Bitcoin' }, { s: 'BITSTAMP:ETHUSD', d: 'Ethereum' }] },
-            { title: 'Tech', symbols: [{ s: 'NASDAQ:META', d: 'Meta' }, { s: 'NASDAQ:GOOGL', d: 'Google' }, { s: 'NASDAQ:NVDA', d: 'NVIDIA' }, { s: 'NASDAQ:AAPL', d: 'Apple' }, { s: 'NASDAQ:TSLA', d: 'Tesla' }, { s: 'NASDAQ:MSFT', d: 'Microsoft' }] },
-          ],
-        });
+        const container = document.getElementById('tv-market-overview');
+        if (container) container.innerHTML = '';
       }
     }, 25);
 
@@ -182,44 +179,6 @@ const TradingDashboard = ({ news = [] }) => {
         <div id="tv-ticker-tape" className="widget-slot widget-slot-tape" />
       </div>
 
-      <header className="market-hero">
-        <div className="market-hero__copy">
-          <p className="eyebrow">Mercados en tiempo real</p>
-          <h1>Panel de mercado limpio, escalable y centrado en TradingView</h1>
-          <p className="hero-text">La información secundaria queda agrupada en pestañas para dejar al gráfico como punto focal y reducir ruido visual.</p>
-        </div>
-
-        <div className="market-symbols" role="tablist" aria-label="Seleccionar símbolo principal">
-          {WATCHLIST.map((item) => (
-            <button
-              key={item.symbol}
-              type="button"
-              className={`symbol-pill ${activeSymbol === item.symbol ? 'is-active' : ''}`}
-              onClick={() => setActiveSymbol(item.symbol)}
-            >
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <div className="main-chart-card">
-        <div className="chart-card__header">
-          <div>
-            <p className="card-kicker">📈 Gráfico principal</p>
-            <h2>{chartSymbols.find((item) => item.symbol === activeSymbol)?.label ?? 'Activo'}</h2>
-          </div>
-          <div className="chart-status">
-            <span className="status-dot" />
-            <span>TradingView avanzado</span>
-          </div>
-        </div>
-
-        <div className="chart-card__body">
-          <TradingViewAdvancedChart symbol={activeSymbol} />
-        </div>
-      </div>
-
       <nav className="market-tabs" aria-label="Secciones del mercado">
         {TABS.map((tab) => (
           <button
@@ -227,127 +186,175 @@ const TradingDashboard = ({ news = [] }) => {
             type="button"
             className={`market-tab ${activeTab === tab.id ? 'is-active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
+            role="tab"
+            aria-selected={activeTab === tab.id}
           >
-            {tab.label}
+            <span>{tab.label}</span>
           </button>
         ))}
       </nav>
 
       <div className="tab-stage">
         {activeTab === 'chart' && (
-          <div className="chart-tab-grid">
-            <aside className="info-stack">
-              <section className="info-card">
-                <p className="info-card__title">Resumen rápido</p>
-                <div className="mini-stat"><span>Sesión</span><strong>Abierta</strong></div>
-                <div className="mini-stat"><span>Sesgo</span><strong>Moderadamente alcista</strong></div>
-                <div className="mini-stat"><span>Volatilidad</span><strong>Media</strong></div>
-              </section>
-
-              <section className="info-card">
-                <p className="info-card__title">Activos destacados</p>
-                {chartSymbols.map((item) => (
-                  <button key={item.symbol} type="button" className={`asset-row ${activeSymbol === item.symbol ? 'is-active' : ''}`} onClick={() => setActiveSymbol(item.symbol)}>
-                    <span>{item.label}</span>
-                    <span>Ver</span>
-                  </button>
-                ))}
-              </section>
-            </aside>
-
-            <section className="focus-panel">
-              <p className="section-caption">Mantén aquí la vigilancia mínima necesaria mientras operas.</p>
-              <div className="focus-metrics">
-                <div className="metric-card"><span>Rango</span><strong>Intradía</strong></div>
-                <div className="metric-card"><span>Noticias</span><strong>{news.length}</strong></div>
-                <div className="metric-card"><span>Relevancia</span><strong>Alta</strong></div>
-              </div>
-            </section>
-          </div>
+          <section className="full-bleed-panel">
+            <TradingViewAdvancedChart symbol="FOREXCOM:SPXUSD" height={980} />
+          </section>
         )}
 
         {activeTab === 'heatmap' && (
-          <section className="panel panel-wide">
-            <div className="panel-heading">
-              <div>
-                <p className="card-kicker">🔥 Mapa de calor</p>
-                <h3>Visión sectorial y por capitalización</h3>
-              </div>
-            </div>
+          <section className="full-bleed-panel">
             <div id="tv-heatmap" className="widget-slot widget-slot-heatmap" />
           </section>
         )}
 
         {activeTab === 'market' && (
-          <div className="market-grid">
-            <section className="panel panel-wide panel-overview">
-              <div className="panel-heading">
+          <div className="market-view">
+            <header className="market-header panel">
+              <div className="market-header__status">
+                <span className="market-status-dot" aria-hidden="true" />
                 <div>
-                  <p className="card-kicker">📊 Resúmenes de mercado</p>
-                  <h3>Visión general desde TradingView</h3>
+                  <strong>🟢 Alcista</strong>
+                  <span>Datos en tiempo real</span>
                 </div>
               </div>
-              <div id="tv-market-overview" className="widget-slot widget-slot-overview" />
+
+              <div className="market-header__meta">
+                <div>
+                  <span>Última actualización</span>
+                  <strong>{marketTime}</strong>
+                </div>
+                <div>
+                  <span>Retraso</span>
+                  <strong>0 min</strong>
+                </div>
+              </div>
+
+              <button type="button" className="market-refresh" onClick={refreshMarketSnapshot} aria-label="Actualizar datos del mercado">
+                ↻ Actualizar
+              </button>
+            </header>
+
+            <section className="panel market-summary-title">
+              <h3>Resumen del mercado</h3>
             </section>
 
-            <section className="panel panel-list">
-              <h3>Más alcistas</h3>
-              {topGainers.map((item) => (
-                <article key={item.name} className="market-row">
-                  <div>
-                    <strong>{item.name}</strong>
-                    <span>{item.sector}</span>
-                  </div>
-                  <div>
-                    <strong className="positive">{item.change}</strong>
-                    <span>{item.price}</span>
-                  </div>
-                </article>
-              ))}
+            <section className="market-summary-strip panel">
+              <div className="summary-chip summary-state">
+                <span className="summary-label">Estado</span>
+                <strong>{marketSummary.state}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Positivos</span>
+                <strong className="positive">{marketSummary.positives}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Negativos</span>
+                <strong className="negative">{marketSummary.negatives}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Mejor sector</span>
+                <strong>{marketSummary.bestSector}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Peor sector</span>
+                <strong>{marketSummary.worstSector}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Volatilidad</span>
+                <strong>{marketSummary.volatility}</strong>
+              </div>
+              <div className="summary-chip">
+                <span className="summary-label">Volumen</span>
+                <strong>{marketSummary.volume}</strong>
+              </div>
             </section>
 
-            <section className="panel panel-list">
-              <h3>Más bajistas</h3>
-              {topLosers.map((item) => (
-                <article key={item.name} className="market-row">
-                  <div>
-                    <strong>{item.name}</strong>
-                    <span>{item.sector}</span>
-                  </div>
-                  <div>
-                    <strong className="negative">{item.change}</strong>
-                    <span>{item.price}</span>
-                  </div>
-                </article>
-              ))}
+            <div className="market-columns">
+              <section className="panel panel-list">
+                <div className="panel-title-row">
+                  <h3>Más alcistas</h3>
+                  <span className="panel-subtitle">Ticker · nombre · precio · variación</span>
+                </div>
+                {topGainers.map((item) => (
+                  <article key={item.name} className="market-row market-row-compact">
+                    <div className="market-symbol-block">
+                      <strong className="market-ticker">{item.name.slice(0, 4).toUpperCase()}</strong>
+                      <div>
+                        <strong>{item.name}</strong>
+                        <span>{item.sector}</span>
+                      </div>
+                    </div>
+                    <div className="market-price-block">
+                      <strong>{item.price}</strong>
+                      <span className="positive">{item.change}</span>
+                    </div>
+                  </article>
+                ))}
+              </section>
+
+              <section className="panel panel-list">
+                <div className="panel-title-row">
+                  <h3>Más bajistas</h3>
+                  <span className="panel-subtitle">Ticker · nombre · precio · variación</span>
+                </div>
+                {topLosers.map((item) => (
+                  <article key={item.name} className="market-row market-row-compact">
+                    <div className="market-symbol-block">
+                      <strong className="market-ticker">{item.name.slice(0, 4).toUpperCase()}</strong>
+                      <div>
+                        <strong>{item.name}</strong>
+                        <span>{item.sector}</span>
+                      </div>
+                    </div>
+                    <div className="market-price-block">
+                      <strong>{item.price}</strong>
+                      <span className="negative">{item.change}</span>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            </div>
+
+            <section className="panel panel-sectors-visual">
+              <div className="panel-title-row">
+                <h3>Sectores</h3>
+                <span className="panel-subtitle">Fortaleza relativa del día</span>
+              </div>
+              <div className="sector-grid">
+                {sectorRows.map((item) => (
+                  <article key={item.name} className={`sector-card sector-${item.tone}`}>
+                    <div className="sector-card__top">
+                      <strong>{item.name}</strong>
+                      <span className={item.trend.startsWith('+') ? 'positive' : 'negative'}>{item.trend}</span>
+                    </div>
+                    <p>{item.note}</p>
+                  </article>
+                ))}
+              </div>
             </section>
 
-            <section className="panel panel-list panel-sectors">
-              <h3>Sectores</h3>
-              {sectorRows.map((item) => (
-                <article key={item.name} className="market-row sector-row">
-                  <div>
-                    <strong>{item.name}</strong>
-                    <span>{item.note}</span>
-                  </div>
-                  <div>
-                    <strong className={item.trend.startsWith('+') ? 'positive' : 'negative'}>{item.trend}</strong>
-                  </div>
-                </article>
-              ))}
+            <section className="panel panel-moves">
+              <div className="panel-title-row">
+                <h3>Movimientos destacados</h3>
+                <span className="panel-subtitle">Lo que realmente movió el mercado</span>
+              </div>
+              <div className="move-list">
+                {highlightedMoves.map((move) => (
+                  <article key={move.label} className="move-item">
+                    <div>
+                      <strong>{move.label}</strong>
+                      <span>{move.detail}</span>
+                    </div>
+                    <strong className={move.change.startsWith('+') ? 'positive' : 'negative'}>{move.change}</strong>
+                  </article>
+                ))}
+              </div>
             </section>
           </div>
         )}
 
         {activeTab === 'news' && (
           <section className="panel panel-news">
-            <div className="panel-heading">
-              <div>
-                <p className="card-kicker">📰 Noticias</p>
-                <h3>Todas las noticias relacionadas</h3>
-              </div>
-            </div>
-
             <div className="news-list-modern">
               {news.map((item) => (
                 <a key={item.url} href={item.url} className="news-item" target="_blank" rel="noreferrer">

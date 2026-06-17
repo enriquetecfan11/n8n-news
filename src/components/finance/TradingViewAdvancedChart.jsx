@@ -1,27 +1,15 @@
 // TradingViewAdvancedChart.jsx
 import React, { useEffect, useRef, useState } from 'react';
 
-function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
+function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500', height = 900 }) {
     const containerRef = useRef(null);
     const scriptRef = useRef(null);
     const [theme, setTheme] = useState(() =>
-        typeof document === 'undefined'
-            ? 'dark'
-            : (document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme'))
-                ? 'dark'
-                : 'light'
+        'dark'
     );
 
     useEffect(() => {
-        const observer = new MutationObserver(() => {
-            const isDark = document.body.classList.contains('dark-theme') || document.documentElement.classList.contains('dark-theme');
-            setTheme(isDark ? 'dark' : 'light');
-        });
-
-        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-        return () => observer.disconnect();
+        setTheme('dark');
     }, []);
 
     useEffect(() => {
@@ -75,12 +63,13 @@ function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
     }, [symbol, theme]);
 
     return (
-        <div className="tradingview-shell tradingview-shell--chart">
-            <div className="tradingview-widget-container tradingview-shell--chart">
+        <div className="tradingview-shell tradingview-shell--chart" style={{ height: `${height}px` }}>
+            <div className="tradingview-widget-container tradingview-shell--chart" style={{ height: `${height}px` }}>
                 <div
                     id="tradingview_chart_container"
                     className="tradingview-widget-container__widget"
                     ref={containerRef}
+                    style={{ height: `${height}px` }}
                 />
             </div>
         </div>

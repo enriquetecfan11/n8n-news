@@ -2,20 +2,20 @@
 
 .portfolio-grid {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .portfolio-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
 
 .portfolio-card {
   background: var(--pf-card);
   border: 1px solid var(--pf-border);
   border-radius: var(--radius-xl);
-  padding: 0.9rem;
+  padding: 0.6rem;
   transition: transform var(--duration-normal) var(--ease-out),
               box-shadow var(--duration-normal) var(--ease-out),
               border-color var(--duration-normal) var(--ease-out);
@@ -32,37 +32,37 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.7rem;
-  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  gap: 0.3rem;
 }
 
 .portfolio-card-title {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--pf-text);
 }
 
 .portfolio-card-subtitle {
-  font-size: 0.8rem;
+  font-size: 0.65rem;
   color: var(--pf-text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .portfolio-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.45rem;
-  margin-top: 0.65rem;
+  gap: 0.28rem;
+  margin-top: 0.4rem;
 }
 
 .stat-item {
-  padding: 0.5rem 0.6rem;
+  padding: 0.32rem 0.42rem;
   border-radius: var(--radius-lg);
   background: var(--pf-stat-bg);
 }
 
 .stat-label {
-  font-size: 0.62rem;
+  font-size: 0.54rem;
   color: var(--pf-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -71,7 +71,7 @@
 }
 
 .stat-value {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--pf-text);
   font-family: var(--font-family-mono);
@@ -82,15 +82,15 @@
 .kpi-container {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
 }
 
 .kpi-card {
   background: var(--pf-card);
   border: 1px solid var(--pf-border);
   border-radius: var(--radius-xl);
-  padding: 0.55rem 0.65rem;
+  padding: 0.35rem 0.45rem;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -101,7 +101,7 @@
 }
 
 .kpi-label {
-  font-size: 0.62rem;
+  font-size: 0.53rem;
   color: var(--pf-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -109,7 +109,7 @@
 }
 
 .kpi-value {
-  font-size: clamp(1.1rem, 2vw, 1.55rem);
+  font-size: clamp(0.92rem, 1.6vw, 1.15rem);
   font-weight: 700;
   color: var(--pf-text);
   line-height: 1;
@@ -118,9 +118,9 @@
 }
 
 .kpi-change {
-  font-size: 0.72rem;
-  margin-top: 0.2rem;
-  padding: 0.25rem 0.45rem;
+  font-size: 0.58rem;
+  margin-top: 0.1rem;
+  padding: 0.16rem 0.32rem;
   border-radius: var(--radius-md);
   width: fit-content;
   font-family: var(--font-family-mono);
@@ -159,7 +159,7 @@
 .holdings-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.35rem 0 0;
+  margin: 0.15rem 0 0;
 }
 
 .holdings-table thead {
@@ -168,17 +168,17 @@
 }
 
 .holdings-table th {
-  padding: 0.55rem 0.75rem;
+  padding: 0.3rem 0.45rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.68rem;
+  font-size: 0.55rem;
   color: var(--pf-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .holdings-table td {
-  padding: 0.55rem 0.75rem;
+  padding: 0.3rem 0.45rem;
   border-bottom: 1px solid var(--pf-border);
   color: var(--pf-text);
 }
@@ -205,7 +205,7 @@
 }
 
 .holding-ticker {
-  font-size: 0.875rem;
+  font-size: 0.72rem;
   color: var(--pf-text-muted);
   font-weight: 500;
   font-family: var(--font-family-mono);
@@ -213,9 +213,9 @@
 
 .holding-badge {
   display: inline-block;
-  padding: 0.2rem 0.45rem;
+  padding: 0.12rem 0.3rem;
   border-radius: var(--radius-md);
-  font-size: 0.66rem;
+  font-size: 0.5rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -253,17 +253,17 @@
 }
 
 .transactions-table th {
-  padding: 0.55rem 0.75rem;
+  padding: 0.3rem 0.45rem;
   text-align: left;
   font-weight: 600;
-  font-size: 0.68rem;
+  font-size: 0.55rem;
   color: var(--pf-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .transactions-table td {
-  padding: 0.55rem 0.75rem;
+  padding: 0.3rem 0.45rem;
   border-bottom: 1px solid var(--pf-border);
   color: var(--pf-text);
 }
