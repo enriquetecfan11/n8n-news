@@ -9,7 +9,7 @@ import BuyAssetModal from '../../components/portfolio/BuyAssetModal.astro';
 import EditTransactionModal from '../../components/portfolio/EditTransactionModal.astro';
 import ImportTransactionsModal from '../../components/portfolio/ImportTransactionsModal.astro';
 import {
-  getPortfolios,
+  getCurrentSession,
   getPortfolioById,
   getTransactionsByPortfolio,
   getAssets,
@@ -23,16 +23,9 @@ import {
 } from '../../lib/portfolio';
 import type { Asset, Transaction } from '../../lib/portfolio';
 
-export async function getStaticPaths() {
-  try {
-    const portfolios = await getPortfolios();
-    return portfolios.map((p: any) => ({
-      params: { id: p.id },
-    }));
-  } catch (error) {
-    console.error('Error generating static paths:', error);
-    return [];
-  }
+const session = await getCurrentSession();
+if (!session) {
+  return Astro.redirect('/login');
 }
 
 const { id } = Astro.params;

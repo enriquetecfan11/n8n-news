@@ -111,6 +111,23 @@ export async function createAsset(
   return data;
 }
 
+export async function createAssetForUser(
+  userId: string,
+  name: string,
+  type: 'stock' | 'etf' | 'crypto' | 'cash',
+  currency: string,
+  ticker?: string,
+  exchange?: string
+) {
+  const { data, error } = await supabase
+    .from('assets')
+    .insert([{ user_id: userId, name, type, currency, ticker, exchange }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function createTransaction(
   portfolioId: string,
   assetId: string,
@@ -124,6 +141,36 @@ export async function createTransaction(
   const { data, error } = await supabase
     .from('transactions')
     .insert([{ portfolio_id: portfolioId, asset_id: assetId, type, quantity, unit_price: unitPrice, fee, date, notes }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function createTransactionForUser(
+  userId: string,
+  portfolioId: string,
+  assetId: string,
+  type: 'buy' | 'sell' | 'dividend' | 'fee',
+  quantity: number,
+  unitPrice: number,
+  date: string,
+  fee?: number,
+  notes?: string
+) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert([{
+      user_id: userId,
+      portfolio_id: portfolioId,
+      asset_id: assetId,
+      type,
+      quantity,
+      unit_price: unitPrice,
+      fee,
+      date,
+      notes
+    }])
     .select()
     .single();
   if (error) throw error;
@@ -154,4 +201,43 @@ export async function updateTransaction(
 export async function deleteTransaction(id: string) {
   const { error } = await supabase.from('transactions').delete().eq('id', id);
   if (error) throw error;
+}
+
+// Auth helper functions
+export async function getCurrentSession() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return session;
+}
+
+export async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  return user;
+}
+
+// Updated helpers to include user_id
+export async function getPortfoliosByUser(userId: string) {
+  const { data, error } = await supabase
+    .from('portfolios')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function createPortfolioForUser(
+  userId: string,
+  name: string,
+  description?: string,
+  baseCurrency: string = 'EUR'
+) {
+  const { data, error } = await supabase
+    .from('portfolios')
+    .insert([{ user_id: userId, name, description, base_currency: baseCurrency }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }

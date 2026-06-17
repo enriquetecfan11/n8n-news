@@ -2,28 +2,21 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import HoldingsTable from '../../../components/portfolio/HoldingsTable.astro';
 import {
-  getPortfolios,
+  getCurrentSession,
   getPortfolioById,
   getTransactionsByPortfolio,
   getAssets,
 } from '../../../lib/supabase';
-
-export async function getStaticPaths() {
-  try {
-    const portfolios = await getPortfolios();
-    return portfolios.map((p: any) => ({
-      params: { id: p.id },
-    }));
-  } catch (error) {
-    console.error('Error generating static paths:', error);
-    return [];
-  }
-}
 import {
   getHoldings,
   getPricesForHoldings,
 } from '../../../lib/portfolio';
 import type { Asset, Transaction } from '../../../lib/portfolio';
+
+const session = await getCurrentSession();
+if (!session) {
+  return Astro.redirect('/login');
+}
 
 const { id } = Astro.params;
 

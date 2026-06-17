@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { getCurrentSession } from '../../lib/supabase';
 
 async function searchCoinGecko(ticker: string) {
   try {
@@ -76,6 +77,14 @@ async function searchYahooFinance(ticker: string) {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await request.json();
     const { ticker, type } = body;
 

@@ -3,12 +3,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PortfolioCard from '../../components/portfolio/PortfolioCard.astro';
 import CreatePortfolioModal from '../../components/portfolio/CreatePortfolioModal.astro';
 import {
-  getPortfolios,
+  getCurrentSession,
+  getPortfoliosByUser,
   getTransactionsByPortfolio,
   getAssets,
 } from '../../lib/supabase';
 import { getHoldings, getPortfolioSummary } from '../../lib/portfolio';
 import type { Portfolio, Asset, Transaction } from '../../lib/portfolio';
+
+const session = await getCurrentSession();
+if (!session) {
+  return Astro.redirect('/login');
+}
 
 interface PortfolioWithStats extends Portfolio {
   totalValue: number;
@@ -21,7 +27,7 @@ let portfolios: PortfolioWithStats[] = [];
 let error: string | null = null;
 
 try {
-  const allPortfolios = await getPortfolios();
+  const allPortfolios = await getPortfoliosByUser(session.user.id);
   const allAssets = await getAssets();
   const assetMap = new Map(allAssets.map((a: Asset) => [a.id, a]));
 

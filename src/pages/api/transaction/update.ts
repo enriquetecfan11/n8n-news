@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
-import { updateTransaction } from '../../../lib/supabase';
+import { getCurrentSession, updateTransaction } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await request.json();
     const { id, type, quantity, unitPrice, date, fee, notes } = body;
 

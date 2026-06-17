@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
-import { createPortfolio } from '../../../lib/supabase';
+import { supabase, getCurrentSession, createPortfolioForUser } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await request.json();
     const { name, description, baseCurrency } = body;
 
@@ -13,7 +21,12 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const portfolio = await createPortfolio(name, description, baseCurrency || 'EUR');
+    const portfolio = await createPortfolioForUser(
+      session.user.id,
+      name,
+      description,
+      baseCurrency || 'EUR'
+    );
 
     return new Response(JSON.stringify(portfolio), {
       status: 201,

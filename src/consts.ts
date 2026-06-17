@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = 'Analiza con IA';
 export const SITE_TITLE_SHORT = 'Analiza con IA';
-export const SITE_DESCRIPTION = 'Analiza con IA es un blog de noticias sobre finanzas, tecnología y el sector financiero por Analiza con IA';
+export const SITE_DESCRIPTION = 'Analiza con IA - Gestiona tus inversiones con inteligencia artificial';
 export const SITE_AUTHOR = 'Analiza con IA';
 export const SITE_URL = 'https://analizaconia.com';
 export const SITE_LANG = 'es';

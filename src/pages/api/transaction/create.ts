@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
-import { createTransaction } from '../../../lib/supabase';
+import { getCurrentSession, createTransactionForUser } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await request.json();
     const { portfolioId, assetId, type, quantity, unitPrice, date, fee, notes } = body;
 
@@ -13,7 +21,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const transaction = await createTransaction(
+    const transaction = await createTransactionForUser(
+      session.user.id,
       portfolioId,
       assetId,
       type,

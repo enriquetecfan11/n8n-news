@@ -1,8 +1,16 @@
 import type { APIRoute } from 'astro';
-import { createAsset, getAssets } from '../../../lib/supabase';
+import { supabase, getCurrentSession, createAssetForUser, getAssets } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body = await request.json();
     const { name, type, currency, ticker, exchange } = body;
 
@@ -27,7 +35,14 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    const asset = await createAsset(name, type, currency, ticker, exchange);
+    const asset = await createAssetForUser(
+      session.user.id,
+      name,
+      type,
+      currency,
+      ticker,
+      exchange
+    );
 
     return new Response(JSON.stringify(asset), {
       status: 201,

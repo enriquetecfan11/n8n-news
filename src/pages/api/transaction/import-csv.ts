@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createTransaction, getAssets, getPortfolioById } from '../../../lib/supabase';
+import { getCurrentSession, createTransactionForUser, getAssets, getPortfolioById } from '../../../lib/supabase';
 
 interface CSVRow {
   date: string;
@@ -86,6 +86,14 @@ const validateRow = (row: CSVRow, rowNumber: number): string | null => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const session = await getCurrentSession();
+    if (!session) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const portfolioId = formData.get('portfolioId') as string;
@@ -161,7 +169,8 @@ export const POST: APIRoute = async ({ request }) => {
           continue;
         }
 
-        await createTransaction(
+        await createTransactionForUser(
+          session.user.id,
           portfolioId,
           assetId,
           row.type,
