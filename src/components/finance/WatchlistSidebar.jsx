@@ -46,7 +46,8 @@ const WatchlistSidebar = ({ isExpanded, onToggle, isMobile = false }) => {
         { s: 'NASDAQ:AAPL' },
         { s: 'NASDAQ:TSLA' },
         { s: 'NASDAQ:MSFT' },
-        { s: 'NASDAQ:INTC' }
+        { s: 'NASDAQ:INTC' },
+        { s: 'NASDAQ:SPCX' },
       ]
     });
 

@@ -1,272 +1,244 @@
 ---
-interface Props {
-  isOpen?: boolean;
-}
-
-const { isOpen = false } = Astro.props;
+import Modal from '../Modal.astro';
 ---
 
-<div id="asset-modal" class="modal" data-open={isOpen}>
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Nuevo Activo</h2>
-      <button class="modal-close" aria-label="Cerrar">×</button>
+<Modal id="modal-agregar-activo" title="Agregar Activo">
+  <form id="asset-form" class="space-y-4">
+    <div>
+      <label for="asset-name" class="block text-sm font-medium text-slate-300 mb-1.5">
+        Nombre <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="asset-name"
+        type="text"
+        name="name"
+        class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Apple Inc."
+        required
+      />
     </div>
 
-    <form id="asset-form" class="modal-form">
-      <div class="form-group">
-        <label htmlFor="asset-name">Nombre *</label>
-        <input
-          id="asset-name"
-          type="text"
-          name="name"
-          placeholder="Apple Inc."
-          required
-        />
+    <div>
+      <label for="asset-ticker" class="block text-sm font-medium text-slate-300 mb-1.5">
+        Ticker <span class="text-red-500">*</span>
+      </label>
+      <div class="flex gap-2 items-end">
+        <div class="flex-1 relative">
+          <input
+            id="asset-ticker"
+            type="text"
+            name="ticker"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            placeholder="ej. AAPL, BTC"
+            required
+          />
+          <div id="ticker-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
+            <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        </div>
+        <button
+          id="search-ticker-btn"
+          type="button"
+          class="bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl px-4 py-3 text-sm transition-colors whitespace-nowrap"
+        >
+          Buscar
+        </button>
+      </div>
+      <span class="text-xs text-[#6b7a99] mt-1">Símbolo de cotización</span>
+
+      <div id="ticker-preview" class="hidden mt-3 p-3 bg-[#2a3347] rounded-xl flex items-center justify-between border-2">
+        <div>
+          <span id="preview-name" class="text-white font-semibold text-sm"></span>
+          <span id="preview-exchange" class="text-[#6b7a99] text-xs ml-2"></span>
+        </div>
+        <div class="text-right">
+          <span id="preview-price" class="text-white text-sm font-mono"></span>
+          <span id="preview-type" class="ml-2 text-xs px-2 py-0.5 rounded-full font-medium"></span>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label htmlFor="asset-ticker">Ticker *</label>
-        <input
-          id="asset-ticker"
-          type="text"
-          name="ticker"
-          placeholder="AAPL"
-          required
-        />
+      <div id="ticker-error" class="hidden mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+        <span class="text-red-400 text-xs font-medium">Ticker no encontrado, puedes añadirlo manualmente</span>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label htmlFor="asset-type">Tipo *</label>
-        <select id="asset-type" name="type" required>
-          <option value="">Selecciona un tipo...</option>
-          <option value="stock">Acción</option>
-          <option value="etf">ETF</option>
-          <option value="crypto">Crypto</option>
-          <option value="cash">Efectivo</option>
-        </select>
-      </div>
+    <div>
+      <label for="asset-type" class="block text-sm font-medium text-slate-300 mb-1.5">
+        Tipo <span class="text-red-500">*</span>
+      </label>
+      <select
+        id="asset-type"
+        name="type"
+        class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+      >
+        <option value="stock">Acción</option>
+        <option value="etf">ETF</option>
+        <option value="crypto">Crypto</option>
+        <option value="cash">Efectivo</option>
+      </select>
+    </div>
 
-      <div class="form-group">
-        <label htmlFor="asset-currency">Divisa *</label>
-        <select id="asset-currency" name="currency" required>
-          <option value="">Selecciona una divisa...</option>
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-        </select>
-      </div>
+    <div>
+      <label for="asset-currency" class="block text-sm font-medium text-slate-300 mb-1.5">
+        Divisa <span class="text-red-500">*</span>
+      </label>
+      <select
+        id="asset-currency"
+        name="currency"
+        class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+      >
+        <option value="USD">USD ($)</option>
+        <option value="EUR">EUR (€)</option>
+        <option value="GBP">GBP (£)</option>
+      </select>
+    </div>
 
-      <div class="form-group">
-        <label htmlFor="asset-exchange">Bolsa (opcional)</label>
-        <input
-          id="asset-exchange"
-          type="text"
-          name="exchange"
-          placeholder="NASDAQ"
-        />
-      </div>
+    <div>
+      <label for="asset-exchange" class="block text-sm font-medium text-slate-300 mb-1.5">
+        Bolsa
+      </label>
+      <input
+        id="asset-exchange"
+        type="text"
+        name="exchange"
+        class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="NASDAQ"
+      />
+      <span class="text-xs text-[#6b7a99] mt-1">Opcional</span>
+    </div>
 
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Crear Activo</button>
-      </div>
-    </form>
+    <button
+      type="submit"
+      class="w-full mt-6 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
+    >
+      Agregar Activo
+    </button>
+  </form>
 
-    <div id="asset-status" class="form-status"></div>
-  </div>
-</div>
-
-<style>
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1050;
-  }
-
-  .modal[data-open='true'] {
-    display: flex;
-  }
-
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-  }
-
-  .modal-content {
-    position: relative;
-    background: var(--background);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-2xl);
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: auto;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-2xl);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-light);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: var(--text);
-  }
-
-  .modal-form {
-    padding: var(--space-2xl);
-  }
-
-  .form-group {
-    margin-bottom: var(--space-lg);
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: var(--space-sm);
-    font-weight: 600;
-    color: var(--text);
-    font-size: 0.95rem;
-  }
-
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--background);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.95rem;
-    transition: border-color 0.2s ease;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: var(--text);
-  }
-
-  .form-actions {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: flex-end;
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--border);
-  }
-
-  .btn {
-    padding: var(--space-sm) var(--space-lg);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary {
-    background: var(--text);
-    color: var(--background);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .btn-secondary {
-    background: var(--background-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-secondary:hover {
-    background: var(--border);
-  }
-
-  .form-status {
-    padding: var(--space-md);
-    margin-top: var(--space-md);
-    border-radius: var(--radius-md);
-    display: none;
-  }
-
-  .form-status.error {
-    display: block;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .form-status.success {
-    display: block;
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-  }
-</style>
+  <div id="asset-status" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
+</Modal>
 
 <script>
+  async function searchTicker(ticker, type) {
+    try {
+      const res = await fetch('/api/search-ticker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker, type }),
+      });
+
+      if (!res.ok) throw new Error('Server request failed');
+
+      const { data } = await res.json();
+      return data;
+    } catch (error) {
+      console.error('Ticker search error:', error);
+      return null;
+    }
+  }
+
+  function setTickerPreview(data) {
+    const preview = document.getElementById('ticker-preview');
+    const error = document.getElementById('ticker-error');
+    const nameField = document.getElementById('asset-name');
+    const typeField = document.getElementById('asset-type');
+    const currencyField = document.getElementById('asset-currency');
+    const exchangeField = document.getElementById('asset-exchange');
+
+    error.classList.add('hidden');
+    preview.classList.remove('hidden');
+
+    document.getElementById('preview-name').textContent = data.name;
+    document.getElementById('preview-exchange').textContent = data.exchange;
+    document.getElementById('preview-price').textContent =
+      `${data.price.toFixed(2)} ${data.currency}`;
+
+    const typeEl = document.getElementById('preview-type');
+    typeEl.textContent = data.type;
+    typeEl.className = 'ml-2 text-xs px-2 py-0.5 rounded-full font-medium ';
+
+    if (data.type === 'stock') {
+      typeEl.classList.add('bg-blue-500/20', 'text-blue-400');
+    } else if (data.type === 'crypto') {
+      typeEl.classList.add('bg-orange-500/20', 'text-orange-400');
+    } else if (data.type === 'etf') {
+      typeEl.classList.add('bg-violet-500/20', 'text-violet-400');
+    }
+
+    preview.className = 'mt-3 p-3 bg-[#2a3347] rounded-xl flex items-center justify-between border-2 border-green-500/30';
+
+    nameField.value = data.name;
+    typeField.value = data.type;
+    currencyField.value = data.currency;
+    exchangeField.value = data.exchange;
+  }
+
+  function clearTickerPreview() {
+    document.getElementById('ticker-preview').classList.add('hidden');
+    document.getElementById('ticker-error').classList.add('hidden');
+  }
+
+  function showTickerError() {
+    document.getElementById('ticker-preview').classList.add('hidden');
+    document.getElementById('ticker-error').classList.remove('hidden');
+  }
+
   function initAssetModal() {
-    const modal = document.getElementById('asset-modal');
+    const modal = document.getElementById('modal-agregar-activo');
     const form = document.getElementById('asset-form');
-    const closeBtn = document.querySelector('.modal-close');
-    const cancelBtn = document.querySelector('.modal-cancel');
     const statusDiv = document.getElementById('asset-status');
-    const openBtn = document.querySelector('[data-open-asset-modal]');
+    const tickerInput = document.getElementById('asset-ticker');
+    const typeSelect = document.getElementById('asset-type');
+    const searchBtn = document.getElementById('search-ticker-btn');
+    const spinner = document.getElementById('ticker-spinner');
 
     if (!modal || !form) return;
 
-    if (openBtn) {
-      openBtn.addEventListener('click', () => {
-        modal.setAttribute('data-open', 'true');
-      });
+    let searchTimeout;
+
+    async function performSearch() {
+      const ticker = tickerInput.value.trim().toUpperCase();
+      if (!ticker) {
+        clearTickerPreview();
+        return;
+      }
+
+      spinner.classList.remove('hidden');
+      searchBtn.disabled = true;
+
+      const type = typeSelect.value;
+      const result = await searchTicker(ticker, type);
+
+      spinner.classList.add('hidden');
+      searchBtn.disabled = false;
+
+      if (result) {
+        setTickerPreview(result);
+      } else {
+        showTickerError();
+      }
     }
 
-    const closeModal = () => {
-      modal.setAttribute('data-open', 'false');
-      form.reset();
-      statusDiv.textContent = '';
-      statusDiv.className = 'form-status';
-    };
+    searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      performSearch();
+    });
 
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
+    tickerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    });
 
-    const overlay = modal.querySelector('.modal-overlay');
-    overlay?.addEventListener('click', closeModal);
+    typeSelect.addEventListener('change', () => {
+      clearTickerPreview();
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -282,7 +254,7 @@ const { isOpen = false } = Astro.props;
 
       try {
         statusDiv.textContent = 'Creando activo...';
-        statusDiv.className = 'form-status';
+        statusDiv.className = '';
 
         const response = await fetch('/api/asset/create', {
           method: 'POST',
@@ -295,15 +267,15 @@ const { isOpen = false } = Astro.props;
           throw new Error(error.error || 'Error desconocido');
         }
 
-        statusDiv.textContent = '✓ Activo creado correctamente. Recargando...';
-        statusDiv.className = 'form-status success';
+        statusDiv.textContent = '✓ Activo creado. Recargando...';
+        statusDiv.className = 'show-success';
 
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       } catch (error) {
         statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
-        statusDiv.className = 'form-status error';
+        statusDiv.className = 'show-error';
       }
     });
   }
@@ -314,3 +286,32 @@ const { isOpen = false } = Astro.props;
     initAssetModal();
   }
 </script>
+
+<style>
+  #asset-status.show-error {
+    display: block !important;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  #asset-status.show-success {
+    display: block !important;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  #ticker-spinner svg {
+    animation: spin 1s linear infinite;
+  }
+
+  #ticker-preview.hidden,
+  #ticker-error.hidden {
+    display: none !important;
+  }
+</style>

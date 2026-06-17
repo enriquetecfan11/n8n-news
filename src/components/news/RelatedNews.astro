@@ -85,9 +85,11 @@ function getSectorIcon(sector: string) {
             {showMetadata && (
               <div class="post-metadata">
                 <div class="metadata-row">
-                  <span class="date">
-                    📅 <FormattedDate date={post.data.pubDate} />
-                  </span>
+                  {post.data.pubDate && (
+                    <span class="date">
+                      📅 <FormattedDate date={post.data.pubDate} />
+                    </span>
+                  )}
                   {post.data.source && (
                     <span class="source">📰 {post.data.source}</span>
                   )}

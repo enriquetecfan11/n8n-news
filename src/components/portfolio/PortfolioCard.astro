@@ -51,11 +51,11 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
 <style>
   .portfolio-card {
     display: block;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     cursor: pointer;
     text-decoration: none;
     color: inherit;
@@ -63,7 +63,8 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
 
   .portfolio-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.15);
+    border-color: #6366f1;
   }
 
   .portfolio-card-header {
@@ -77,26 +78,28 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
   .portfolio-card-title {
     margin: 0;
     font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text);
+    font-weight: 700;
+    color: var(--pf-text);
   }
 
   .portfolio-card-subtitle {
-    margin: 0.25rem 0 0;
+    margin: 0.5rem 0 0;
     font-size: 0.875rem;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
   }
 
   .currency-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5rem 0.75rem;
-    background: var(--background-alt);
+    background: #6366f1;
     border-radius: var(--radius-full);
     font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-light);
+    font-weight: 700;
+    color: white;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.75px;
   }
 
   .portfolio-stats {
@@ -108,24 +111,25 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
 
   .stat-item {
     padding: var(--space-md);
-    border-radius: var(--radius-md);
-    background: var(--background-alt);
+    border-radius: var(--radius-lg);
+    background: var(--pf-stat-bg);
   }
 
   .stat-label {
     display: block;
     font-size: 0.75rem;
-    color: var(--text-lighter);
+    color: var(--pf-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.75px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
   }
 
   .stat-value {
     display: block;
     font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
+    font-weight: 700;
+    color: var(--pf-text);
   }
 
   .pnl-positive {
@@ -140,12 +144,13 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
     display: inline-block;
     margin-top: var(--space-md);
     font-size: 0.875rem;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
     transition: color 0.2s ease;
+    font-weight: 500;
   }
 
   .portfolio-card:hover .card-link-hint {
-    color: var(--text);
+    color: #6366f1;
   }
 
   @media (max-width: 480px) {

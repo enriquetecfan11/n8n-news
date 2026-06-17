@@ -1,9 +1,13 @@
 ---
 interface Props {
-	date: Date;
+	date?: Date;
 }
 
 const { date } = Astro.props;
+
+if (!date) {
+	throw new Error('FormattedDate requires a date prop');
+}
 ---
 
 <time datetime={date.toISOString()}>

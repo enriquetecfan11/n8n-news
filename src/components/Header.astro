@@ -52,11 +52,11 @@ import Analytics from "@vercel/analytics/astro";
 
 <style>
 	.main-header {
-		background: #ffffff;
+		background: var(--app-header-bg);
 		position: sticky;
 		top: 0;
 		z-index: 1000;
-		border-bottom: 1px solid #e5e7eb;
+		border-bottom: 1px solid var(--app-header-border);
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	}
 
@@ -108,7 +108,7 @@ import Analytics from "@vercel/analytics/astro";
 	.brand-name {
 		font-size: 1.25rem;
 		font-weight: 700;
-		color: #111827;
+		color: var(--app-header-text);
 		letter-spacing: -0.025em;
 		line-height: 1.2;
 	}
@@ -151,7 +151,7 @@ import Analytics from "@vercel/analytics/astro";
 
 	:global(.nav-link) {
 		position: relative;
-		color: #6b7280;
+		color: var(--app-header-nav);
 		font-weight: 500;
 		font-size: 0.95rem;
 		text-decoration: none;
@@ -172,7 +172,7 @@ import Analytics from "@vercel/analytics/astro";
 	}
 
 	:global(.nav-link:hover) {
-		color: #111827;
+		color: var(--app-header-nav-hover);
 	}
 
 	:global(.nav-link:hover::after) {
@@ -205,19 +205,19 @@ import Analytics from "@vercel/analytics/astro";
 		justify-content: center;
 		width: 40px;
 		height: 40px;
-		border: 1px solid #e5e7eb;
-		background: #ffffff;
+		border: 1px solid var(--app-header-btn-border);
+		background: var(--app-header-btn-bg);
 		border-radius: 8px;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		color: #6b7280;
+		color: var(--app-header-nav);
 		font-size: 1.1rem;
 	}
 
 	.action-btn:hover {
-		background: #f9fafb;
-		border-color: #d1d5db;
-		color: #374151;
+		background: var(--app-header-btn-hover);
+		border-color: var(--app-border);
+		color: var(--app-header-nav-hover);
 		transform: translateY(-1px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
@@ -356,14 +356,17 @@ import Analytics from "@vercel/analytics/astro";
 
     private toggleTheme() {
       const body = document.body;
+      const root = document.documentElement;
       const isDark = body.classList.contains('dark-theme');
       
       if (isDark) {
         body.classList.remove('dark-theme');
+        root.classList.remove('dark-theme');
         localStorage.setItem('theme', 'light');
         this.updateThemeIcon('light');
       } else {
         body.classList.add('dark-theme');
+        root.classList.add('dark-theme');
         localStorage.setItem('theme', 'dark');
         this.updateThemeIcon('dark');
       }
@@ -398,11 +401,14 @@ import Analytics from "@vercel/analytics/astro";
     private loadTheme() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       const body = document.body;
+      const root = document.documentElement;
       
       if (savedTheme === 'dark') {
         body.classList.add('dark-theme');
+        root.classList.add('dark-theme');
       } else {
         body.classList.remove('dark-theme');
+        root.classList.remove('dark-theme');
       }
       
       this.updateThemeIcon(savedTheme);

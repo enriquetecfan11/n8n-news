@@ -1,4 +1,6 @@
 ---
+import Modal from '../Modal.astro';
+
 interface Props {
   portfolioId?: string;
 }
@@ -6,344 +8,240 @@ interface Props {
 const { portfolioId } = Astro.props;
 ---
 
-<div id="import-transactions-modal" class="modal" data-open="false">
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Importar Transacciones desde CSV</h2>
-      <button class="modal-close" aria-label="Cerrar">×</button>
+<Modal
+  id="import-transactions-modal"
+  title="Importar Transacciones"
+  subtitle="Carga múltiples transacciones desde un archivo CSV"
+  wide={true}
+>
+  <div class="import-info">
+    <div class="import-info-header">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 6V10M10 14H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <p>Sube un archivo CSV con las columnas requeridas</p>
     </div>
-
-    <div class="modal-body">
-      <div class="import-info">
-        <p>Sube un archivo CSV con las siguientes columnas:</p>
-        <ul class="csv-columns">
-          <li><strong>date</strong> - Fecha (YYYY-MM-DD)</li>
-          <li><strong>type</strong> - Tipo: buy, sell, dividend, fee</li>
-          <li><strong>ticker</strong> - Ticker del activo (ej: AAPL)</li>
-          <li><strong>quantity</strong> - Cantidad</li>
-          <li><strong>unitPrice</strong> - Precio unitario</li>
-          <li><strong>fee</strong> - Comisión (opcional)</li>
-          <li><strong>notes</strong> - Notas (opcional)</li>
-        </ul>
-      </div>
-
-      <form id="import-transactions-form" class="import-form">
-        <div class="form-group">
-          <label htmlFor="csv-file">Archivo CSV *</label>
-          <input
-            id="csv-file"
-            type="file"
-            name="file"
-            accept=".csv"
-            required
-          />
-        </div>
-
-        <div class="preview-section" id="preview-section" style="display: none;">
-          <h3>Vista Previa</h3>
-          <div class="preview-table-wrapper">
-            <table class="preview-table">
-              <thead>
-                <tr id="preview-header"></tr>
-              </thead>
-              <tbody id="preview-body"></tbody>
-            </table>
-          </div>
-          <p class="preview-count"><span id="preview-count">0</span> transacciones a importar</p>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="import-submit">Importar</button>
-        </div>
-      </form>
-
-      <div id="import-status" class="form-status"></div>
-    </div>
+    <ul class="csv-columns">
+      <li><code>date</code> - Fecha en formato <strong>YYYY-MM-DD</strong></li>
+      <li><code>type</code> - Tipo de transacción: <strong>buy</strong>, <strong>sell</strong>, <strong>dividend</strong>, <strong>fee</strong></li>
+      <li><code>ticker</code> - Símbolo del activo (ej: <strong>AAPL</strong>, <strong>BTC</strong>)</li>
+      <li><code>quantity</code> - Cantidad de unidades</li>
+      <li><code>unitPrice</code> - Precio por unidad</li>
+      <li><code>fee</code> - Comisión <span class="optional">(opcional)</span></li>
+      <li><code>notes</code> - Notas adicionales <span class="optional">(opcional)</span></li>
+    </ul>
   </div>
-</div>
+
+  <form id="import-transactions-form">
+    <div class="form-group">
+      <label for="csv-file" class="form-label">
+        <span class="form-label-text">Selecciona un archivo CSV</span>
+        <span class="form-label-required">*</span>
+      </label>
+      <div class="file-input-wrapper">
+        <input
+          id="csv-file"
+          type="file"
+          name="file"
+          accept=".csv"
+          class="file-input"
+          required
+        />
+        <div class="file-input-placeholder">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2V22M2 12H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p>Arrastra tu archivo CSV aquí o haz clic para seleccionar</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-section" id="preview-section" style="display: none;">
+      <h3>Vista Previa</h3>
+      <div class="preview-table-wrapper">
+        <table class="preview-table">
+          <thead>
+            <tr id="preview-header"></tr>
+          </thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+      <p class="preview-count"><span id="preview-count">0</span> transacciones a importar</p>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="import-submit">Importar</button>
+    </div>
+  </form>
+
+  <div id="import-status" class="form-status"></div>
+</Modal>
 
 <style>
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1050;
-  }
-
-  .modal[data-open='true'] {
+  .form-label {
     display: flex;
-  }
-
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-  }
-
-  .modal-content {
-    position: relative;
-    background: var(--background);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-2xl);
-    max-width: 700px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: auto;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-2xl);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-light);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: var(--text);
-  }
-
-  .modal-body {
-    padding: var(--space-2xl);
+    align-items: baseline;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
   }
 
   .import-info {
-    background: var(--background-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
   }
 
-  .import-info p {
-    margin: 0 0 var(--space-md) 0;
-    color: var(--text);
-    font-weight: 500;
+  .import-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .import-info-header svg {
+    flex-shrink: 0;
+    color: #6366f1;
+  }
+
+  .import-info-header p {
+    margin: 0;
+    color: var(--pf-text);
+    font-weight: 600;
+    font-size: 0.95rem;
   }
 
   .csv-columns {
     margin: 0;
-    padding-left: var(--space-2xl);
+    padding-left: 1.5rem;
     list-style: disc;
-    color: var(--text-light);
-    font-size: 0.875rem;
+    color: var(--pf-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
   }
 
   .csv-columns li {
-    margin-bottom: var(--space-xs);
+    margin-bottom: 0.35rem;
+  }
+
+  .csv-columns code {
+    background: rgba(99, 102, 241, 0.12);
+    color: #6366f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    font-size: 0.8rem;
   }
 
   .csv-columns strong {
-    color: var(--text);
-    font-family: 'Courier New', monospace;
+    color: var(--pf-text);
+    font-weight: 600;
   }
 
-  .import-form {
+  .csv-columns .optional {
+    color: var(--pf-text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+  }
+
+  .file-input-wrapper {
+    position: relative;
+  }
+
+  .file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .file-input-placeholder {
     display: flex;
     flex-direction: column;
-  }
-
-  .form-group {
-    margin-bottom: var(--space-lg);
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: var(--space-sm);
-    font-weight: 600;
-    color: var(--text);
-    font-size: 0.95rem;
-  }
-
-  .form-group input[type='file'] {
-    display: block;
-    width: 100%;
-    padding: var(--space-md);
-    border: 2px dashed var(--border);
-    border-radius: var(--radius-md);
-    background: var(--background);
-    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    border: 2px dashed var(--pf-border);
+    border-radius: 0.75rem;
+    background: var(--pf-stat-bg);
     cursor: pointer;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
+    gap: 0.75rem;
   }
 
-  .form-group input[type='file']:hover {
-    border-color: var(--text-light);
+  .file-input:hover ~ .file-input-placeholder,
+  .file-input:focus ~ .file-input-placeholder {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.08);
   }
 
-  .form-group input[type='file']:focus {
-    outline: none;
-    border-color: var(--text);
+  .file-input-placeholder svg {
+    color: var(--pf-text-muted);
   }
 
-  .preview-section {
-    margin-bottom: var(--space-lg);
+  .file-input-placeholder p {
+    margin: 0;
+    color: var(--pf-text-muted);
+    font-size: 0.9rem;
+    text-align: center;
   }
 
   .preview-section h3 {
-    margin: 0 0 var(--space-md) 0;
-    font-size: 1rem;
-    color: var(--text);
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--pf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .preview-table-wrapper {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: var(--pf-stat-bg);
+    border: 1px solid var(--pf-border);
+    border-radius: 0.75rem;
     overflow: auto;
-    margin-bottom: var(--space-md);
+    margin-bottom: 0.75rem;
     max-height: 300px;
   }
 
   .preview-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
   }
 
   .preview-table thead {
-    background: var(--background-alt);
+    background: rgba(99, 102, 241, 0.1);
     position: sticky;
     top: 0;
   }
 
   .preview-table th,
   .preview-table td {
-    padding: var(--space-sm);
+    padding: 0.5rem 0.75rem;
     text-align: left;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
+    border-bottom: 1px solid var(--pf-border);
+    color: var(--pf-text);
   }
 
   .preview-table th {
     font-weight: 600;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     letter-spacing: 0.5px;
   }
 
   .preview-count {
     margin: 0;
-    font-size: 0.875rem;
-    color: var(--text-light);
-  }
-
-  .form-actions {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: flex-end;
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--border);
-  }
-
-  .btn {
-    padding: var(--space-sm) var(--space-lg);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary {
-    background: var(--text);
-    color: var(--background);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .btn-secondary {
-    background: var(--background-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-secondary:hover {
-    background: var(--border);
-  }
-
-  .form-status {
-    padding: var(--space-md);
-    margin-top: var(--space-md);
-    border-radius: var(--radius-md);
-    display: none;
-  }
-
-  .form-status.error {
-    display: block;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .form-status.success {
-    display: block;
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-  }
-
-  .form-status.info {
-    display: block;
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-  }
-
-  @media (max-width: 600px) {
-    .modal-content {
-      width: 95%;
-      max-height: 95vh;
-    }
-
-    .import-info {
-      padding: var(--space-md);
-    }
-
-    .form-actions {
-      flex-direction: column-reverse;
-    }
-
-    .btn {
-      width: 100%;
-    }
+    font-size: 0.85rem;
+    color: var(--pf-text-muted);
+    font-weight: 500;
   }
 </style>
 
@@ -351,8 +249,6 @@ const { portfolioId } = Astro.props;
   function initImportTransactionsModal() {
     const modal = document.getElementById('import-transactions-modal');
     const form = document.getElementById('import-transactions-form');
-    const closeBtn = document.querySelector('.modal-close');
-    const cancelBtn = document.querySelector('.modal-cancel');
     const fileInput = document.getElementById('csv-file');
     const previewSection = document.getElementById('preview-section');
     const previewHeader = document.getElementById('preview-header');
@@ -364,20 +260,21 @@ const { portfolioId } = Astro.props;
     if (!modal || !form) return;
 
     const closeModal = () => {
-      modal.setAttribute('data-open', 'false');
+      modal.classList.add('hidden');
       form.reset();
-      previewSection.style.display = 'none';
-      statusDiv.textContent = '';
-      statusDiv.className = 'form-status';
+      if (previewSection) previewSection.style.display = 'none';
+      if (statusDiv) {
+        statusDiv.textContent = '';
+        statusDiv.className = 'form-status';
+      }
     };
 
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
+    modal.querySelector('.modal-cancel')?.addEventListener('click', closeModal);
 
-    const overlay = modal.querySelector('.modal-overlay');
-    overlay?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
 
-    // Handle CSV file selection and preview
     fileInput?.addEventListener('change', (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -390,30 +287,36 @@ const { portfolioId } = Astro.props;
 
           const lines = csv.trim().split('\n');
           if (lines.length < 2) {
-            statusDiv.textContent = '✗ El archivo CSV debe tener encabezados y al menos una fila de datos';
-            statusDiv.className = 'form-status error';
+            if (statusDiv) {
+              statusDiv.textContent = '✗ El archivo CSV debe tener encabezados y al menos una fila de datos';
+              statusDiv.className = 'form-status error';
+            }
             return;
           }
 
           const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-          const rows = lines.slice(1).map((line) =>
-            line.split(',').map((v) => v.trim())
-          );
+          const rows = lines.slice(1).map((line) => line.split(',').map((v) => v.trim()));
 
-          // Build preview
-          previewHeader.innerHTML = headers.map((h) => `<th>${h}</th>`).join('');
-          previewBody.innerHTML = rows
-            .slice(0, 5)
-            .map((row) => `<tr>${row.map((v) => `<td>${v || '-'}</td>`).join('')}</tr>`)
-            .join('');
-
-          previewCount.textContent = rows.length;
-          previewSection.style.display = 'block';
-          statusDiv.textContent = '';
-          statusDiv.className = 'form-status';
-        } catch (error) {
-          statusDiv.textContent = '✗ Error al leer el archivo CSV';
-          statusDiv.className = 'form-status error';
+          if (previewHeader) {
+            previewHeader.innerHTML = headers.map((h) => `<th>${h}</th>`).join('');
+          }
+          if (previewBody) {
+            previewBody.innerHTML = rows
+              .slice(0, 5)
+              .map((row) => `<tr>${row.map((v) => `<td>${v || '-'}</td>`).join('')}</tr>`)
+              .join('');
+          }
+          if (previewCount) previewCount.textContent = String(rows.length);
+          if (previewSection) previewSection.style.display = 'block';
+          if (statusDiv) {
+            statusDiv.textContent = '';
+            statusDiv.className = 'form-status';
+          }
+        } catch {
+          if (statusDiv) {
+            statusDiv.textContent = '✗ Error al leer el archivo CSV';
+            statusDiv.className = 'form-status error';
+          }
         }
       };
       reader.readAsText(file);
@@ -423,12 +326,14 @@ const { portfolioId } = Astro.props;
       e.preventDefault();
 
       const file = fileInput?.files?.[0];
-      if (!file) return;
+      if (!file || !submitBtn) return;
 
       try {
         submitBtn.disabled = true;
-        statusDiv.textContent = 'Procesando archivo...';
-        statusDiv.className = 'form-status info';
+        if (statusDiv) {
+          statusDiv.textContent = 'Procesando archivo...';
+          statusDiv.className = 'form-status info';
+        }
 
         const formData = new FormData();
         formData.append('file', file);
@@ -445,22 +350,25 @@ const { portfolioId } = Astro.props;
         }
 
         const result = await response.json();
-        statusDiv.textContent = `✓ ${result.count} transacciones importadas correctamente. Recargando...`;
-        statusDiv.className = 'form-status success';
+        if (statusDiv) {
+          statusDiv.textContent = `✓ ${result.count} transacciones importadas correctamente. Recargando...`;
+          statusDiv.className = 'form-status success';
+        }
 
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       } catch (error) {
         submitBtn.disabled = false;
-        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
-        statusDiv.className = 'form-status error';
+        if (statusDiv) {
+          statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
+          statusDiv.className = 'form-status error';
+        }
       }
     });
 
-    // Open modal from button
     window.openImportTransactionsModal = () => {
-      modal.setAttribute('data-open', 'true');
+      modal.classList.remove('hidden');
     };
   }
 

@@ -47,14 +47,14 @@ try {
 ---
 
 <BaseLayout title="Portafolios de Inversión" description="Gestiona tus portafolios de inversión">
-  <main class="main-content">
+  <main class="main-content portfolio-section">
     <div class="wrapper">
       <section class="portfolio-header">
         <div>
           <h1>Portafolios de Inversión</h1>
           <p class="subtitle">Monitorea el rendimiento de tus inversiones en tiempo real</p>
         </div>
-        <button class="btn btn-primary" data-open-portfolio-modal>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-nuevo-portfolio').classList.remove('hidden')">
           + Nuevo Portafolio
         </button>
       </section>
@@ -95,6 +95,11 @@ try {
 </BaseLayout>
 
 <style>
+  .portfolio-section {
+    background: var(--pf-bg);
+    color: var(--pf-text);
+  }
+
   .main-content {
     flex: 1;
     padding: var(--space-2xl) 0;
@@ -116,22 +121,22 @@ try {
 
   .portfolio-header h1 {
     margin: 0 0 var(--space-md) 0;
-    font-size: clamp(1.875rem, 4vw, 2.5rem);
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
     font-weight: 700;
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .subtitle {
     margin: 0;
     font-size: 1.1rem;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
   }
 
   .btn {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg);
+    padding: 0.75rem 1.5rem;
     border: none;
     border-radius: var(--radius-lg);
     font-size: 0.95rem;
@@ -142,13 +147,14 @@ try {
   }
 
   .btn-primary {
-    background: var(--text);
-    color: var(--background);
+    background: #6366f1;
+    color: white;
   }
 
   .btn-primary:hover {
+    background: #4f46e5;
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
   }
 
   .portfolio-grid {
@@ -158,7 +164,7 @@ try {
   }
 
   .error-message {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: var(--radius-lg);
     padding: var(--space-2xl);
@@ -172,12 +178,12 @@ try {
   .empty-state {
     text-align: center;
     padding: var(--space-3xl) var(--space-2xl);
-    color: var(--text-light);
+    color: var(--pf-text-muted);
   }
 
   .empty-state h2 {
     margin: 0 0 var(--space-md) 0;
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   @media (max-width: 768px) {

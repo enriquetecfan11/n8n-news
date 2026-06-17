@@ -26,30 +26,49 @@ const {
   <div class="modal-overlay"></div>
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Editar Transacción</h2>
-      <button class="modal-close" aria-label="Cerrar">×</button>
+      <div>
+        <h2>Editar Transacción</h2>
+        <p class="modal-subtitle">Actualiza los detalles de esta transacción</p>
+      </div>
+      <button class="modal-close" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M15.8333 4.16667L4.16667 15.8333M4.16667 4.16667L15.8333 15.8333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
 
     <form id="edit-transaction-form" class="modal-form">
       <input type="hidden" name="transactionId" value={transactionId} />
 
       <div class="form-group">
-        <label htmlFor="edit-tx-type">Tipo *</label>
-        <select id="edit-tx-type" name="type" required>
-          <option value="buy" selected={transactionType === 'buy'}>Compra</option>
-          <option value="sell" selected={transactionType === 'sell'}>Venta</option>
-          <option value="dividend" selected={transactionType === 'dividend'}>Dividendo</option>
-          <option value="fee" selected={transactionType === 'fee'}>Comisión</option>
-        </select>
+        <label htmlFor="edit-tx-type" class="form-label">
+          <span class="form-label-text">Tipo</span>
+          <span class="form-label-required">*</span>
+        </label>
+        <div class="form-select-wrapper">
+          <select id="edit-tx-type" name="type" class="form-select" required>
+            <option value="buy" selected={transactionType === 'buy'}>Compra</option>
+            <option value="sell" selected={transactionType === 'sell'}>Venta</option>
+            <option value="dividend" selected={transactionType === 'dividend'}>Dividendo</option>
+            <option value="fee" selected={transactionType === 'fee'}>Comisión</option>
+          </select>
+          <svg class="form-select-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3.5 6L8 10L12.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label htmlFor="edit-tx-quantity">Cantidad *</label>
+          <label htmlFor="edit-tx-quantity" class="form-label">
+            <span class="form-label-text">Cantidad</span>
+            <span class="form-label-required">*</span>
+          </label>
           <input
             id="edit-tx-quantity"
             type="number"
             name="quantity"
+            class="form-input"
             placeholder="10.5"
             value={transactionQuantity}
             step="0.00000001"
@@ -58,11 +77,15 @@ const {
         </div>
 
         <div class="form-group">
-          <label htmlFor="edit-tx-price">Precio Unitario *</label>
+          <label htmlFor="edit-tx-price" class="form-label">
+            <span class="form-label-text">Precio Unitario</span>
+            <span class="form-label-required">*</span>
+          </label>
           <input
             id="edit-tx-price"
             type="number"
             name="unitPrice"
+            class="form-input"
             placeholder="150.50"
             value={transactionPrice}
             step="0.01"
@@ -73,22 +96,30 @@ const {
 
       <div class="form-row">
         <div class="form-group">
-          <label htmlFor="edit-tx-date">Fecha *</label>
+          <label htmlFor="edit-tx-date" class="form-label">
+            <span class="form-label-text">Fecha</span>
+            <span class="form-label-required">*</span>
+          </label>
           <input
             id="edit-tx-date"
             type="date"
             name="date"
+            class="form-input"
             value={transactionDate}
             required
           />
         </div>
 
         <div class="form-group">
-          <label htmlFor="edit-tx-fee">Comisión</label>
+          <label htmlFor="edit-tx-fee" class="form-label">
+            <span class="form-label-text">Comisión</span>
+            <span class="form-label-optional">(opcional)</span>
+          </label>
           <input
             id="edit-tx-fee"
             type="number"
             name="fee"
+            class="form-input"
             placeholder="0.00"
             value={transactionFee || 0}
             step="0.01"
@@ -97,18 +128,27 @@ const {
       </div>
 
       <div class="form-group">
-        <label htmlFor="edit-tx-notes">Notas</label>
+        <label htmlFor="edit-tx-notes" class="form-label">
+          <span class="form-label-text">Notas</span>
+          <span class="form-label-optional">(opcional)</span>
+        </label>
         <textarea
           id="edit-tx-notes"
           name="notes"
-          placeholder="Notas opcionales"
+          class="form-textarea"
+          placeholder="Notas sobre esta transacción"
           rows="2"
         >{transactionNotes}</textarea>
       </div>
 
       <div class="form-actions">
         <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="submit" class="btn btn-primary">
+          <span>Guardar Cambios</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M13.5 2L6 9.5L2 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </form>
 
@@ -122,6 +162,27 @@ const {
     position: fixed;
     inset: 0;
     z-index: 1050;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .modal[data-open='true'] {
@@ -131,53 +192,66 @@ const {
   .modal-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
   }
 
   .modal-content {
     position: relative;
-    background: var(--background);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-2xl);
+    background: #1a1d27;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     max-width: 600px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
     margin: auto;
+    animation: slideIn 0.3s ease;
   }
 
   .modal-header {
+    padding: var(--space-2xl) var(--space-2xl) var(--space-xl) var(--space-2xl);
+    border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: var(--space-2xl);
-    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+    gap: var(--space-lg);
   }
 
   .modal-header h2 {
-    margin: 0;
+    margin: 0 0 var(--space-xs) 0;
     font-size: 1.5rem;
-    color: var(--text);
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+  }
+
+  .modal-subtitle {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .modal-close {
     background: none;
     border: none;
-    font-size: 1.5rem;
-    color: var(--text-light);
+    color: #94a3b8;
     cursor: pointer;
-    padding: 0;
+    padding: var(--space-xs);
     width: 32px;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s ease;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
   .modal-close:hover {
-    color: var(--text);
+    background: rgba(99, 102, 241, 0.1);
+    color: #f8fafc;
   }
 
   .modal-form {
@@ -185,42 +259,101 @@ const {
   }
 
   .form-group {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-2xl);
   }
 
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: var(--space-sm);
+  .form-row .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  .form-label-text {
     font-weight: 600;
-    color: var(--text);
+    color: #f8fafc;
     font-size: 0.95rem;
+    letter-spacing: -0.2px;
   }
 
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
+  .form-label-required {
+    color: #ef4444;
+    font-weight: 600;
+  }
+
+  .form-label-optional {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
+  .form-input,
+  .form-textarea {
     width: 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
+    padding: var(--space-md) var(--space-md);
+    border: 1px solid #2a2d3a;
     border-radius: var(--radius-md);
-    background: var(--background);
-    color: var(--text);
+    background: #1a1d27;
+    color: #f8fafc;
     font-family: inherit;
     font-size: 0.95rem;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
   }
 
-  .form-group input:focus,
-  .form-group textarea:focus,
-  .form-group select:focus {
+  .form-input:focus,
+  .form-textarea:focus {
     outline: none;
     border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .form-select-wrapper {
+    position: relative;
+  }
+
+  .form-select {
+    width: 100%;
+    padding: var(--space-md) var(--space-md) var(--space-md) var(--space-md);
+    border: 1px solid #2a2d3a;
+    border-radius: var(--radius-md);
+    background: #1a1d27;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 0.95rem;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-select-icon {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #94a3b8;
   }
 
   .form-actions {
@@ -228,18 +361,23 @@ const {
     gap: var(--space-md);
     justify-content: flex-end;
     margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
+    padding-top: var(--space-xl);
     border-top: 1px solid var(--border);
   }
 
   .btn {
-    padding: var(--space-sm) var(--space-lg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
     border: none;
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
   }
 
   .btn-primary {
@@ -249,43 +387,70 @@ const {
 
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
   }
 
   .btn-secondary {
-    background: var(--background-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
+    background: rgba(99, 102, 241, 0.1);
+    color: #f8fafc;
+    border: 1px solid #2a2d3a;
   }
 
   .btn-secondary:hover {
     background: var(--border);
+    border-color: var(--border);
   }
 
   .form-status {
-    padding: var(--space-md);
-    margin-top: var(--space-md);
+    margin-top: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     border-radius: var(--radius-md);
     display: none;
+    font-weight: 500;
   }
 
   .form-status.error {
     display: block;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
   }
 
   .form-status.success {
     display: block;
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.08);
+    color: #15803d;
+    border: 1px solid rgba(34, 197, 94, 0.2);
   }
 
   @media (max-width: 600px) {
     .form-row {
       grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .modal-content {
+      width: 95%;
+    }
+
+    .modal-header {
+      padding: var(--space-lg) var(--space-lg) var(--space-md) var(--space-lg);
+    }
+
+    .modal-form {
+      padding: var(--space-lg);
+    }
+
+    .form-actions {
+      flex-direction: column-reverse;
+    }
+
+    .btn {
+      width: 100%;
     }
   }
 </style>

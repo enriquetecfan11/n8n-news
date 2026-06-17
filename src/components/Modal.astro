@@ -1,0 +1,223 @@
+---
+interface Props {
+  title: string;
+  id: string;
+  subtitle?: string;
+  wide?: boolean;
+}
+
+const { title, id, subtitle, wide = false } = Astro.props;
+---
+
+<div
+  id={id}
+  class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+>
+  <div class:list={["modal-panel relative rounded-2xl shadow-2xl w-full overflow-hidden", wide ? "max-w-2xl" : "max-w-lg"]}>
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <h2 class="modal-title">{title}</h2>
+        {subtitle && <p class="modal-subtitle">{subtitle}</p>}
+      </div>
+      <button
+        type="button"
+        onclick={`document.getElementById('${id}').classList.add('hidden')`}
+        class="modal-close"
+        aria-label="Cerrar"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="modal-body">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    background: var(--pf-overlay);
+  }
+
+  .modal-panel {
+    background: var(--pf-modal-bg);
+    border: 1px solid var(--pf-border);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--pf-border);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+  }
+
+  .modal-header-text {
+    min-width: 0;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--pf-text);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .modal-subtitle {
+    margin: 0.375rem 0 0;
+    font-size: 0.9rem;
+    color: var(--pf-text-muted);
+    line-height: 1.4;
+  }
+
+  .modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--pf-text-muted);
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .modal-close:hover {
+    color: var(--pf-text);
+    background: rgba(99, 102, 241, 0.12);
+  }
+
+  .modal-body {
+    padding: 1.5rem 2rem 2rem;
+  }
+
+  .modal-body :global(label) {
+    color: var(--pf-text-muted);
+  }
+
+  .modal-body :global(input),
+  .modal-body :global(select),
+  .modal-body :global(textarea) {
+    background-color: var(--pf-input-bg) !important;
+    color: var(--pf-text) !important;
+    border-color: transparent !important;
+  }
+
+  .modal-body :global(input::placeholder),
+  .modal-body :global(textarea::placeholder) {
+    color: var(--pf-text-muted);
+  }
+
+  .modal-body :global(.form-group) {
+    margin-bottom: 1.25rem;
+  }
+
+  .modal-body :global(.form-label-text) {
+    font-weight: 600;
+    color: var(--pf-text);
+    font-size: 0.9rem;
+  }
+
+  .modal-body :global(.form-label-required) {
+    color: #ef4444;
+  }
+
+  .modal-body :global(.form-label-optional),
+  .modal-body :global(.form-hint) {
+    color: var(--pf-text-muted);
+    font-size: 0.8rem;
+  }
+
+  .modal-body :global(.form-actions) {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--pf-border);
+  }
+
+  .modal-body :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .modal-body :global(.btn-primary) {
+    background: #6366f1;
+    color: white;
+  }
+
+  .modal-body :global(.btn-primary:hover:not(:disabled)) {
+    background: #4f46e5;
+  }
+
+  .modal-body :global(.btn-primary:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .modal-body :global(.btn-secondary) {
+    background: var(--pf-stat-bg);
+    color: var(--pf-text);
+    border: 1px solid var(--pf-border);
+  }
+
+  .modal-body :global(.btn-secondary:hover) {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  .modal-body :global(.form-status) {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    display: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .modal-body :global(.form-status.error),
+  .modal-body :global(.form-status.success),
+  .modal-body :global(.form-status.info) {
+    display: block;
+  }
+
+  .modal-body :global(.form-status.error) {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .modal-body :global(.form-status.success) {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  .modal-body :global(.form-status.info) {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+</style>

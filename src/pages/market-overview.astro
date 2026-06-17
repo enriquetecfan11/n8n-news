@@ -2,13 +2,19 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import ThemeInit from "../components/ThemeInit.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import TradingDashboard from "../components/finance/TradingDashboard.jsx";
+import "../styles/news-variables.css";
+import "../styles/global.css";
+import "../styles/theme.css";
+import "../styles/trading-dashboard.css";
 ---
 
 <!doctype html>
 <html lang="es">
     <head>
+        <ThemeInit />
         <BaseHead
             title={`Vista general de mercados | ${SITE_TITLE}`}
             description={SITE_DESCRIPTION}
@@ -25,10 +31,9 @@ import TradingDashboard from "../components/finance/TradingDashboard.jsx";
                 text-align: center;
                 font-size: 2.2rem;
                 font-weight: 700;
-                color: var(--primary);
+                color: var(--app-text);
             }
         </style>
-        <link rel="stylesheet" href="/src/styles/trading-dashboard.css">
     </head>
     <body>
         <Header />

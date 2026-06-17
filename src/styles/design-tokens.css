@@ -1,6 +1,6 @@
-/* Design Tokens - Sistema Unificado de Diseño */
+/* Design Tokens - Portfolio Investment System */
 :root {
-  /* ===== ESPACIADO CONSISTENTE ===== */
+  /* ===== SPACING ===== */
   --space-2xs: 4px;
   --space-xs: 8px;
   --space-sm: 12px;
@@ -11,9 +11,9 @@
   --space-3xl: 64px;
   --space-4xl: 96px;
 
-  /* ===== TIPOGRAFÍA FLUIDA ===== */
-  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  /* ===== TYPOGRAPHY ===== */
+  --font-family: 'Figtree', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'Geist Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   
   /* Escalas fluidas con clamp() para responsividad */
   --font-size-xs: clamp(0.75rem, 1.2vw, 0.875rem);
@@ -36,69 +36,62 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
 
-  /* ===== COLORES WCAG AA COMPLIANT ===== */
-  /* Colores primarios */
-  --color-primary: #1e40af;
-  --color-primary-light: #3b82f6;
-  --color-primary-dark: #1e3a8a;
-  
-  /* Colores de estado */
-  --color-success: #059669;
-  --color-success-light: #10b981;
-  --color-success-dark: #047857;
-  --color-danger: #DC2626;
-  --color-danger-light: #ef4444;
-  --color-danger-dark: #b91c1c;
-  --color-warning: #d97706;
-  --color-warning-light: #f59e0b;
-  --color-warning-dark: #b45309;
-  --color-info: #0ea5e9;
-  --color-info-light: #38bdf8;
-  --color-info-dark: #0284c7;
-  
-  /* Escala de grises */
-  --color-neutral-50: #F9FAFB;
-  --color-neutral-100: #F3F4F6;
-  --color-neutral-200: #E5E7EB;
-  --color-neutral-300: #D1D5DB;
-  --color-neutral-400: #9CA3AF;
-  --color-neutral-500: #6B7280;
-  --color-neutral-600: #4B5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1F2937;
-  --color-neutral-900: #111827;
-  
-  /* Colores de sector */
-  --color-sector-tech: #6366f1;
-  --color-sector-finance: #10b981;
-  --color-sector-energy: #f59e0b;
-  --color-sector-health: #ec4899;
-  --color-sector-consumer: #8b5cf6;
-  --color-sector-politics: #3b82f6;
-  --color-sector-economy: #f59e0b;
-  --color-sector-automotive: #ef4444;
-  --color-sector-trade: #06b6d4;
-  
-  /* Colores de impacto */
-  --color-impact-high: #DC2626;
-  --color-impact-medium: #d97706;
-  --color-impact-low: #059669;
-  
-  /* Colores de sentimiento */
-  --color-sentiment-positive: #059669;
-  --color-sentiment-neutral: #6B7280;
-  --color-sentiment-negative: #DC2626;
+  /* ===== PALETTE (Investment Portfolio) ===== */
+  /* Neutrals - from brief */
+  --color-neutral-bg: #FAFAF7;
+  --color-neutral-text: #1A1A18;
+  --color-neutral-secondary: #6B6B69;
+  --color-neutral-border: #E5E5E3;
 
-  /* ===== FONDOS Y BORDES ===== */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
-  --bg-tertiary: #F3F4F6;
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-tertiary: #9CA3AF;
-  --border-color: #E5E7EB;
-  --border-color-light: #F3F4F6;
-  --border-color-dark: #D1D5DB;
+  /* Semantic Colors */
+  --color-gain: #059669;
+  --color-loss: #B91C1C;
+  --color-info: #0369A1;
+  --color-warning: #B45309;
+
+  /* Extended palette for flexibility */
+  --color-neutral-50: #FAFAF7;
+  --color-neutral-100: #F5F5F2;
+  --color-neutral-200: #E5E5E3;
+  --color-neutral-300: #D8D8D5;
+  --color-neutral-400: #B0B0AD;
+  --color-neutral-500: #6B6B69;
+  --color-neutral-600: #4A4A47;
+  --color-neutral-700: #2F2F2D;
+  --color-neutral-800: #1A1A18;
+  --color-neutral-900: #0D0D0C;
+
+  /* Sector colors (refined) */
+  --color-sector-tech: #0369A1;
+  --color-sector-finance: #059669;
+  --color-sector-energy: #B45309;
+  --color-sector-health: #B91C1C;
+  --color-sector-consumer: #0369A1;
+  --color-sector-politics: #6B6B69;
+  --color-sector-economy: #B45309;
+  --color-sector-automotive: #B91C1C;
+  --color-sector-trade: #059669;
+
+  /* Impact levels */
+  --color-impact-high: #B91C1C;
+  --color-impact-medium: #B45309;
+  --color-impact-low: #059669;
+
+  /* Sentiment */
+  --color-sentiment-positive: #059669;
+  --color-sentiment-neutral: #6B6B69;
+  --color-sentiment-negative: #B91C1C;
+
+  /* ===== BACKGROUNDS & TEXT ===== */
+  --bg-primary: #FAFAF7;
+  --bg-secondary: #F5F5F2;
+  --bg-tertiary: #E5E5E3;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6B69;
+  --text-tertiary: #B0B0AD;
+  --border-color: #E5E5E3;
+  --border-color-light: #F5F5F2;
+  --border-color-dark: #D8D8D5;
 
   /* ===== SOMBRAS ===== */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -143,23 +136,23 @@
 
 /* ===== DARK MODE ===== */
 body.dark-mode {
-  --bg-primary: #1F2937;
-  --bg-secondary: #111827;
-  --bg-tertiary: #0F172A;
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-tertiary: #9CA3AF;
-  --border-color: #374151;
-  --border-color-light: #4B5563;
-  --border-color-dark: #1F2937;
-  
-  /* Ajustar sombras para dark mode */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.2);
-  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+  --bg-primary: #0D0D0C;
+  --bg-secondary: #1A1A18;
+  --bg-tertiary: #2F2F2D;
+  --text-primary: #FAFAF7;
+  --text-secondary: #B0B0AD;
+  --text-tertiary: #6B6B69;
+  --border-color: #2F2F2D;
+  --border-color-light: #1A1A18;
+  --border-color-dark: #0D0D0C;
+
+  /* Dark mode shadows - more pronounced */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.6);
 }
 
 /* ===== UTILIDADES DE ACCESIBILIDAD ===== */

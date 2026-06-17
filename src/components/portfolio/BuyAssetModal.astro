@@ -1,0 +1,693 @@
+---
+import Modal from '../Modal.astro';
+
+interface Props {
+  portfolioId: string;
+}
+
+const { portfolioId } = Astro.props;
+---
+
+<Modal id="modal-comprar-activo" title="Comprar Activo">
+  <div id="wizard-container" class="space-y-6">
+    <!-- PASO 1: AÑADIR ACTIVO -->
+    <div id="step-1" class="step-content">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-title">Buscar y añadir activo</div>
+      </div>
+
+      <form id="asset-form" class="space-y-4">
+        <!-- Ticker Input con búsqueda -->
+        <div>
+          <label for="asset-ticker" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Ticker <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2 items-end">
+            <div class="flex-1 relative">
+              <input
+                id="asset-ticker"
+                type="text"
+                name="ticker"
+                class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                placeholder="ej. AAPL, BTC"
+                required
+              />
+              <div id="ticker-spinner" class="hidden absolute right-4 top-1/2 -translate-y-1/2">
+                <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+            </div>
+            <button
+              id="search-ticker-btn"
+              type="button"
+              class="bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl px-4 py-3 text-sm transition-colors whitespace-nowrap"
+            >
+              Buscar
+            </button>
+          </div>
+
+          <!-- Preview del activo encontrado -->
+          <div id="ticker-preview" class="hidden mt-3 p-3 bg-[#2a3347] rounded-xl flex items-center justify-between border-2 border-green-500/30">
+            <div>
+              <span id="preview-name" class="text-white font-semibold text-sm"></span>
+              <span id="preview-exchange" class="text-[#6b7a99] text-xs ml-2"></span>
+            </div>
+            <div class="text-right">
+              <span id="preview-price" class="text-white text-sm font-mono"></span>
+              <span id="preview-type" class="ml-2 text-xs px-2 py-0.5 rounded-full font-medium"></span>
+            </div>
+          </div>
+
+          <!-- Error si no se encuentra -->
+          <div id="ticker-error" class="hidden mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+            <span class="text-red-400 text-xs font-medium">Ticker no encontrado, puedes añadirlo manualmente</span>
+          </div>
+        </div>
+
+        <!-- Nombre -->
+        <div>
+          <label for="asset-name" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Nombre <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="asset-name"
+            type="text"
+            name="name"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Apple Inc."
+            required
+          />
+        </div>
+
+        <!-- Tipo -->
+        <div>
+          <label for="asset-type" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Tipo <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="asset-type"
+            name="type"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="stock">Acción</option>
+            <option value="etf">ETF</option>
+            <option value="crypto">Crypto</option>
+            <option value="cash">Efectivo</option>
+          </select>
+        </div>
+
+        <!-- Divisa -->
+        <div>
+          <label for="asset-currency" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Divisa <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="asset-currency"
+            name="currency"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </div>
+
+        <!-- Bolsa (opcional) -->
+        <div>
+          <label for="asset-exchange" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Bolsa
+          </label>
+          <input
+            id="asset-exchange"
+            type="text"
+            name="exchange"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="NASDAQ"
+          />
+          <span class="text-xs text-[#6b7a99] mt-1">Opcional</span>
+        </div>
+
+        <!-- Botón siguiente -->
+        <button
+          type="button"
+          id="btn-next-step"
+          class="w-full mt-6 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
+        >
+          Siguiente: Comprar →
+        </button>
+      </form>
+
+      <div id="asset-status" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
+    </div>
+
+    <!-- PASO 2: COMPRAR ACTIVO -->
+    <div id="step-2" class="step-content hidden">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <div class="step-title">Completar la compra</div>
+      </div>
+
+      <form id="transaction-form" class="space-y-4">
+        <input type="hidden" name="portfolioId" value={portfolioId} />
+        <input type="hidden" id="transaction-asset-id" name="assetId" />
+
+        <!-- Resumen del activo seleccionado -->
+        <div class="p-3 bg-[#2a3347] rounded-xl border border-blue-500/30">
+          <div class="text-sm">
+            <span class="text-[#6b7a99]">Activo seleccionado:</span>
+            <span id="summary-asset-name" class="text-white font-semibold ml-2"></span>
+            <span id="summary-asset-ticker" class="text-[#6b7a99] text-xs ml-2"></span>
+          </div>
+        </div>
+
+        <!-- Tipo de compra: Cantidad o Dinero -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">
+            Tipo de compra <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-3">
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="buyType"
+                value="quantity"
+                class="w-4 h-4"
+                checked
+              />
+              <span class="ml-2 text-sm text-slate-300">Por cantidad</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="buyType"
+                value="investment"
+                class="w-4 h-4"
+              />
+              <span class="ml-2 text-sm text-slate-300">Por inversión</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- OPCIÓN 1: Cantidad de unidades -->
+        <div id="quantity-section">
+          <div>
+            <label for="transaction-quantity" class="block text-sm font-medium text-slate-300 mb-1.5">
+              Cantidad de unidades <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="transaction-quantity"
+              type="number"
+              name="quantity"
+              class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="10.5"
+              step="0.00000001"
+            />
+          </div>
+
+          <div>
+            <label for="transaction-price" class="block text-sm font-medium text-slate-300 mb-1.5">
+              Precio unitario <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2 items-end">
+              <input
+                id="transaction-price"
+                type="number"
+                name="unitPrice"
+                class="flex-1 bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="150.50"
+                step="0.01"
+              />
+              <span id="currency-display" class="text-slate-300 text-sm font-semibold whitespace-nowrap">USD</span>
+            </div>
+            <span class="text-xs text-[#6b7a99] mt-1">Se mostró el precio actual en la búsqueda</span>
+          </div>
+
+          <div id="total-cost-section" class="p-3 bg-[#2a3347] rounded-xl mt-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-[#6b7a99]">Costo total:</span>
+              <span id="total-cost" class="text-white font-semibold font-mono">0.00 USD</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPCIÓN 2: Cantidad de dinero a invertir -->
+        <div id="investment-section" class="hidden">
+          <div>
+            <label for="investment-amount" class="block text-sm font-medium text-slate-300 mb-1.5">
+              Cantidad a invertir <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2 items-end">
+              <input
+                id="investment-amount"
+                type="number"
+                name="investmentAmount"
+                class="flex-1 bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="1000.00"
+                step="0.01"
+              />
+              <span id="currency-display-2" class="text-slate-300 text-sm font-semibold whitespace-nowrap">USD</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="investment-price" class="block text-sm font-medium text-slate-300 mb-1.5">
+              Precio unitario <span class="text-red-500">*</span>
+            </label>
+            <div class="flex gap-2 items-end">
+              <input
+                id="investment-price"
+                type="number"
+                name="investmentUnitPrice"
+                class="flex-1 bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="150.50"
+                step="0.01"
+              />
+              <span id="currency-display-3" class="text-slate-300 text-sm font-semibold whitespace-nowrap">USD</span>
+            </div>
+          </div>
+
+          <div id="units-calculated-section" class="p-3 bg-[#2a3347] rounded-xl mt-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-[#6b7a99]">Unidades que obtendrás:</span>
+              <span id="units-calculated" class="text-white font-semibold font-mono">0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comisión (opcional) -->
+        <div>
+          <label for="transaction-fee" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Comisión
+          </label>
+          <input
+            id="transaction-fee"
+            type="number"
+            name="fee"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="0.00"
+            step="0.01"
+            value="0"
+          />
+          <span class="text-xs text-[#6b7a99] mt-1">Opcional</span>
+        </div>
+
+        <!-- Fecha -->
+        <div>
+          <label for="transaction-date" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Fecha <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="transaction-date"
+            type="date"
+            name="date"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+            value={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+
+        <!-- Notas (opcional) -->
+        <div>
+          <label for="transaction-notes" class="block text-sm font-medium text-slate-300 mb-1.5">
+            Notas
+          </label>
+          <textarea
+            id="transaction-notes"
+            name="notes"
+            class="w-full bg-[#2a3347] text-white placeholder:text-[#6b7a99] rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            placeholder="Detalles adicionales..."
+            rows="2"
+          ></textarea>
+          <span class="text-xs text-[#6b7a99] mt-1">Opcional</span>
+        </div>
+
+        <!-- Botones de navegación -->
+        <div class="flex gap-3 mt-6">
+          <button
+            type="button"
+            id="btn-prev-step"
+            class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
+          >
+            ← Atrás
+          </button>
+          <button
+            type="submit"
+            class="flex-1 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-xl px-6 py-3 transition-colors"
+          >
+            Completar Compra
+          </button>
+        </div>
+      </form>
+
+      <div id="transaction-status" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
+    </div>
+  </div>
+</Modal>
+
+<script>
+  async function searchTicker(ticker, type) {
+    try {
+      const res = await fetch('/api/search-ticker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker, type }),
+      });
+
+      if (!res.ok) throw new Error('Server request failed');
+
+      const { data } = await res.json();
+      return data;
+    } catch (error) {
+      console.error('Ticker search error:', error);
+      return null;
+    }
+  }
+
+  function initWizardModal() {
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const btnNextStep = document.getElementById('btn-next-step');
+    const btnPrevStep = document.getElementById('btn-prev-step');
+
+    // Step 1: Asset form
+    const assetForm = document.getElementById('asset-form');
+    const assetStatusDiv = document.getElementById('asset-status');
+    const tickerInput = document.getElementById('asset-ticker');
+    const typeSelect = document.getElementById('asset-type');
+    const searchBtn = document.getElementById('search-ticker-btn');
+    const spinner = document.getElementById('ticker-spinner');
+
+    // Step 2: Transaction form
+    const transactionForm = document.getElementById('transaction-form');
+    const transactionStatusDiv = document.getElementById('transaction-status');
+    const buyTypeRadios = document.querySelectorAll('input[name="buyType"]');
+    const quantitySection = document.getElementById('quantity-section');
+    const investmentSection = document.getElementById('investment-section');
+    const quantityInput = document.getElementById('transaction-quantity');
+    const priceInput = document.getElementById('transaction-price');
+    const investmentInput = document.getElementById('investment-amount');
+    const investmentPriceInput = document.getElementById('investment-price');
+    const currencyDisplay = document.getElementById('currency-display');
+    const currencyDisplay2 = document.getElementById('currency-display-2');
+    const currencyDisplay3 = document.getElementById('currency-display-3');
+
+    // Preview elements
+    const previewName = document.getElementById('preview-name');
+    const previewExchange = document.getElementById('preview-exchange');
+    const previewPrice = document.getElementById('preview-price');
+    const previewType = document.getElementById('preview-type');
+    const previewDiv = document.getElementById('ticker-preview');
+    const errorDiv = document.getElementById('ticker-error');
+
+    // Summary
+    const summaryAssetName = document.getElementById('summary-asset-name');
+    const summaryAssetTicker = document.getElementById('summary-asset-ticker');
+
+    let lastSearchedData = null;
+
+    // Search ticker
+    async function performSearch() {
+      const ticker = tickerInput.value.trim().toUpperCase();
+      if (!ticker) {
+        previewDiv.classList.add('hidden');
+        errorDiv.classList.add('hidden');
+        return;
+      }
+
+      spinner.classList.remove('hidden');
+      searchBtn.disabled = true;
+
+      const type = typeSelect.value;
+      const result = await searchTicker(ticker, type);
+
+      spinner.classList.add('hidden');
+      searchBtn.disabled = false;
+
+      if (result) {
+        lastSearchedData = result;
+        setTickerPreview(result);
+      } else {
+        errorDiv.classList.remove('hidden');
+        previewDiv.classList.add('hidden');
+      }
+    }
+
+    function setTickerPreview(data) {
+      errorDiv.classList.add('hidden');
+      previewDiv.classList.remove('hidden');
+
+      previewName.textContent = data.name;
+      previewExchange.textContent = data.exchange;
+      previewPrice.textContent = `${data.price.toFixed(2)} ${data.currency}`;
+
+      const typeEl = previewType;
+      typeEl.textContent = data.type;
+      typeEl.className = 'ml-2 text-xs px-2 py-0.5 rounded-full font-medium ';
+
+      if (data.type === 'stock') {
+        typeEl.classList.add('bg-blue-500/20', 'text-blue-400');
+      } else if (data.type === 'crypto') {
+        typeEl.classList.add('bg-orange-500/20', 'text-orange-400');
+      } else if (data.type === 'etf') {
+        typeEl.classList.add('bg-violet-500/20', 'text-violet-400');
+      }
+
+      document.getElementById('asset-name').value = data.name;
+      typeSelect.value = data.type;
+      document.getElementById('asset-currency').value = data.currency;
+      document.getElementById('asset-exchange').value = data.exchange;
+
+      // Set price in transaction form
+      priceInput.value = data.price.toFixed(2);
+      investmentPriceInput.value = data.price.toFixed(2);
+
+      currencyDisplay.textContent = data.currency;
+      currencyDisplay2.textContent = data.currency;
+      currencyDisplay3.textContent = data.currency;
+    }
+
+    searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      performSearch();
+    });
+
+    tickerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    });
+
+    typeSelect.addEventListener('change', () => {
+      previewDiv.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+    });
+
+    // Navigate to step 2
+    btnNextStep.addEventListener('click', () => {
+      if (!document.getElementById('asset-name').value || !document.getElementById('asset-ticker').value) {
+        assetStatusDiv.textContent = '✗ Por favor completa el formulario';
+        assetStatusDiv.className = 'show-error';
+        return;
+      }
+
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+
+      // Populate summary
+      summaryAssetName.textContent = document.getElementById('asset-name').value;
+      summaryAssetTicker.textContent = `(${document.getElementById('asset-ticker').value})`;
+    });
+
+    // Navigate back to step 1
+    btnPrevStep.addEventListener('click', () => {
+      step2.classList.add('hidden');
+      step1.classList.remove('hidden');
+    });
+
+    // Buy type toggle
+    buyTypeRadios.forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'quantity') {
+          quantitySection.classList.remove('hidden');
+          investmentSection.classList.add('hidden');
+        } else {
+          quantitySection.classList.add('hidden');
+          investmentSection.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Calculate total cost
+    function updateTotalCost() {
+      const quantity = parseFloat(quantityInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      const total = quantity * price;
+      document.getElementById('total-cost').textContent = `${total.toFixed(2)} ${document.getElementById('asset-currency').value}`;
+    }
+
+    // Calculate units from investment
+    function updateUnitsCalculated() {
+      const investment = parseFloat(investmentInput.value) || 0;
+      const price = parseFloat(investmentPriceInput.value) || 0;
+      const units = price > 0 ? investment / price : 0;
+      document.getElementById('units-calculated').textContent = units.toFixed(8);
+    }
+
+    quantityInput.addEventListener('input', updateTotalCost);
+    priceInput.addEventListener('input', updateTotalCost);
+    investmentInput.addEventListener('input', updateUnitsCalculated);
+    investmentPriceInput.addEventListener('input', updateUnitsCalculated);
+
+    // Submit transaction
+    transactionForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(transactionForm);
+      const buyType = formData.get('buyType');
+
+      let data: any = {
+        portfolioId: formData.get('portfolioId'),
+        type: 'buy',
+        date: formData.get('date'),
+        fee: parseFloat(formData.get('fee') as string) || 0,
+        notes: formData.get('notes'),
+      };
+
+      if (buyType === 'quantity') {
+        data.quantity = parseFloat(formData.get('quantity') as string);
+        data.unitPrice = parseFloat(formData.get('unitPrice') as string);
+      } else {
+        const investment = parseFloat(formData.get('investmentAmount') as string);
+        const price = parseFloat(formData.get('investmentUnitPrice') as string);
+        data.quantity = investment / price;
+        data.unitPrice = price;
+      }
+
+      try {
+        transactionStatusDiv.textContent = 'Creando activo y registrando compra...';
+        transactionStatusDiv.className = '';
+
+        // First, create the asset
+        const assetData = {
+          name: document.getElementById('asset-name').value,
+          type: document.getElementById('asset-type').value,
+          currency: document.getElementById('asset-currency').value,
+          ticker: document.getElementById('asset-ticker').value,
+          exchange: document.getElementById('asset-exchange').value,
+        };
+
+        const assetResponse = await fetch('/api/asset/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(assetData),
+        });
+
+        if (!assetResponse.ok) {
+          const error = await assetResponse.json();
+          throw new Error(error.error || 'Error creando activo');
+        }
+
+        const { assetId } = await assetResponse.json();
+        data.assetId = assetId;
+
+        // Then create the transaction
+        const transactionResponse = await fetch('/api/transaction/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!transactionResponse.ok) {
+          const error = await transactionResponse.json();
+          throw new Error(error.error || 'Error registrando transacción');
+        }
+
+        transactionStatusDiv.textContent = '✓ Compra completada. Recargando...';
+        transactionStatusDiv.className = 'show-success';
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (error) {
+        transactionStatusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error'}`;
+        transactionStatusDiv.className = 'show-error';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWizardModal);
+  } else {
+    initWizardModal();
+  }
+</script>
+
+<style>
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #2a3347;
+  }
+
+  .step-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  .step-content.hidden {
+    display: none !important;
+  }
+
+  #asset-status.show-error,
+  #transaction-status.show-error {
+    display: block !important;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  #asset-status.show-success,
+  #transaction-status.show-success {
+    display: block !important;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  #ticker-preview.hidden,
+  #ticker-error.hidden {
+    display: none !important;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  #ticker-spinner svg {
+    animation: spin 1s linear infinite;
+  }
+</style>

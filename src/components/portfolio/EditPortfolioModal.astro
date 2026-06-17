@@ -1,4 +1,6 @@
 ---
+import Modal from '../Modal.astro';
+
 interface Props {
   portfolioId?: string;
   portfolioName?: string;
@@ -9,248 +11,93 @@ interface Props {
 const { portfolioId, portfolioName, portfolioDescription, portfolioCurrency } = Astro.props;
 ---
 
-<div id="edit-portfolio-modal" class="modal" data-open="false">
-  <div class="modal-overlay"></div>
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Editar Portafolio</h2>
-      <button class="modal-close" aria-label="Cerrar">×</button>
+<Modal
+  id="edit-portfolio-modal"
+  title="Editar Portafolio"
+  subtitle="Actualiza los detalles de tu portafolio"
+>
+  <form id="edit-portfolio-form">
+    <input type="hidden" name="portfolioId" value={portfolioId} />
+
+    <div class="form-group">
+      <label for="edit-name" class="form-label">
+        <span class="form-label-text">Nombre del Portafolio</span>
+        <span class="form-label-required">*</span>
+      </label>
+      <input
+        id="edit-name"
+        type="text"
+        name="name"
+        class="w-full bg-[#2a3347] text-white rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={portfolioName}
+        required
+      />
     </div>
 
-    <form id="edit-portfolio-form" class="modal-form">
-      <input type="hidden" name="portfolioId" value={portfolioId} />
+    <div class="form-group">
+      <label for="edit-description" class="form-label">
+        <span class="form-label-text">Descripción</span>
+        <span class="form-label-optional">(opcional)</span>
+      </label>
+      <textarea
+        id="edit-description"
+        name="description"
+        class="w-full bg-[#2a3347] text-white rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+        rows="3"
+      >{portfolioDescription}</textarea>
+      <span class="form-hint">Actualiza las notas sobre la estrategia de este portafolio</span>
+    </div>
 
-      <div class="form-group">
-        <label htmlFor="edit-name">Nombre *</label>
-        <input
-          id="edit-name"
-          type="text"
-          name="name"
-          placeholder="Mi Portafolio Principal"
-          value={portfolioName}
-          required
-        />
-      </div>
+    <div class="form-group">
+      <label for="edit-currency" class="form-label">
+        <span class="form-label-text">Divisa Base</span>
+      </label>
+      <select
+        id="edit-currency"
+        name="baseCurrency"
+        class="w-full bg-[#2a3347] text-white rounded-xl px-4 py-3 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="EUR" selected={portfolioCurrency === 'EUR'}>EUR (€ Euros)</option>
+        <option value="USD" selected={portfolioCurrency === 'USD'}>USD ($ Dólares)</option>
+        <option value="GBP" selected={portfolioCurrency === 'GBP'}>GBP (£ Libras)</option>
+      </select>
+    </div>
 
-      <div class="form-group">
-        <label htmlFor="edit-description">Descripción</label>
-        <textarea
-          id="edit-description"
-          name="description"
-          placeholder="Opcional: descripción del portafolio"
-          rows="3"
-        >{portfolioDescription}</textarea>
-      </div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+  </form>
 
-      <div class="form-group">
-        <label htmlFor="edit-currency">Divisa Base</label>
-        <select id="edit-currency" name="baseCurrency">
-          <option value="EUR" selected={portfolioCurrency === 'EUR'}>EUR (Euros)</option>
-          <option value="USD" selected={portfolioCurrency === 'USD'}>USD (Dólares)</option>
-          <option value="GBP" selected={portfolioCurrency === 'GBP'}>GBP (Libras)</option>
-        </select>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary modal-cancel">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-      </div>
-    </form>
-
-    <div id="edit-portfolio-status" class="form-status"></div>
-  </div>
-</div>
-
-<style>
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1050;
-  }
-
-  .modal[data-open='true'] {
-    display: flex;
-  }
-
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-  }
-
-  .modal-content {
-    position: relative;
-    background: var(--background);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-2xl);
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    margin: auto;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-2xl);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--text);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-light);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: var(--text);
-  }
-
-  .modal-form {
-    padding: var(--space-2xl);
-  }
-
-  .form-group {
-    margin-bottom: var(--space-lg);
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: var(--space-sm);
-    font-weight: 600;
-    color: var(--text);
-    font-size: 0.95rem;
-  }
-
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    width: 100%;
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--background);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.95rem;
-    transition: border-color 0.2s ease;
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: var(--text);
-  }
-
-  .form-actions {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: flex-end;
-    margin-top: var(--space-2xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--border);
-  }
-
-  .btn {
-    padding: var(--space-sm) var(--space-lg);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary {
-    background: var(--text);
-    color: var(--background);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .btn-secondary {
-    background: var(--background-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-secondary:hover {
-    background: var(--border);
-  }
-
-  .form-status {
-    padding: var(--space-md);
-    margin-top: var(--space-md);
-    border-radius: var(--radius-md);
-    display: none;
-  }
-
-  .form-status.error {
-    display: block;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .form-status.success {
-    display: block;
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-  }
-</style>
+  <div id="edit-portfolio-status" class="form-status"></div>
+</Modal>
 
 <script>
   function initEditPortfolioModal() {
     const modal = document.getElementById('edit-portfolio-modal');
     const form = document.getElementById('edit-portfolio-form');
-    const closeBtn = document.querySelector('.modal-close');
-    const cancelBtn = document.querySelector('.modal-cancel');
     const statusDiv = document.getElementById('edit-portfolio-status');
     const openBtn = document.querySelector('[data-open-edit-portfolio-modal]');
 
     if (!modal || !form) return;
 
-    if (openBtn) {
-      openBtn.addEventListener('click', () => {
-        modal.setAttribute('data-open', 'true');
-      });
-    }
-
     const closeModal = () => {
-      modal.setAttribute('data-open', 'false');
-      statusDiv.textContent = '';
-      statusDiv.className = 'form-status';
+      modal.classList.add('hidden');
+      if (statusDiv) {
+        statusDiv.textContent = '';
+        statusDiv.className = 'form-status';
+      }
     };
 
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
+    openBtn?.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
 
-    const overlay = modal.querySelector('.modal-overlay');
-    overlay?.addEventListener('click', closeModal);
+    modal.querySelector('.modal-cancel')?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -264,8 +111,10 @@ const { portfolioId, portfolioName, portfolioDescription, portfolioCurrency } = 
       };
 
       try {
-        statusDiv.textContent = 'Guardando cambios...';
-        statusDiv.className = 'form-status';
+        if (statusDiv) {
+          statusDiv.textContent = 'Guardando cambios...';
+          statusDiv.className = 'form-status info';
+        }
 
         const response = await fetch('/api/portfolio/update', {
           method: 'POST',
@@ -278,15 +127,19 @@ const { portfolioId, portfolioName, portfolioDescription, portfolioCurrency } = 
           throw new Error(error.error || 'Error desconocido');
         }
 
-        statusDiv.textContent = '✓ Portafolio actualizado correctamente. Recargando...';
-        statusDiv.className = 'form-status success';
+        if (statusDiv) {
+          statusDiv.textContent = '✓ Portafolio actualizado correctamente. Recargando...';
+          statusDiv.className = 'form-status success';
+        }
 
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       } catch (error) {
-        statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error al guardar'}`;
-        statusDiv.className = 'form-status error';
+        if (statusDiv) {
+          statusDiv.textContent = `✗ ${error instanceof Error ? error.message : 'Error al guardar'}`;
+          statusDiv.className = 'form-status error';
+        }
       }
     });
   }
@@ -297,3 +150,12 @@ const { portfolioId, portfolioName, portfolioDescription, portfolioCurrency } = 
     initEditPortfolioModal();
   }
 </script>
+
+<style>
+  .form-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+</style>

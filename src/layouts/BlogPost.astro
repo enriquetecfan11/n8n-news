@@ -149,10 +149,10 @@ function getSectorChipStyle(sector: string) {
         font-weight: 600;
         color: var(--text);
         background: var(--bg-tertiary, var(--chip-bg));
-        border: 1px solid var(--border);
+        border: 1px solid var(--badge-color, var(--border));
       }
-      .impact-badge { border-color: ${getImpactColor(impact)}; color: ${getImpactColor(impact)}; }
-      .sentiment-badge { border-color: ${getSentimentColor(sentiment)}; color: ${getSentimentColor(sentiment)}; }
+      .impact-badge { border-color: var(--badge-color); color: var(--badge-color); }
+      .sentiment-badge { border-color: var(--badge-color); color: var(--badge-color); }
 
       .score-inline {
         display: inline-flex;
@@ -297,10 +297,10 @@ function getSectorChipStyle(sector: string) {
           <div class="post-header">
             <div class="badges-row">
               {impact && (
-                <span class="badge impact-badge">{impact.toUpperCase()}</span>
+                <span class="badge impact-badge" style={`--badge-color: ${getImpactColor(impact)}`}>{impact.toUpperCase()}</span>
               )}
               {sentiment && (
-                <span class="badge sentiment-badge">{getSentimentIcon(sentiment)} {sentiment}</span>
+                <span class="badge sentiment-badge" style={`--badge-color: ${getSentimentColor(sentiment)}`}>{getSentimentIcon(sentiment)} {sentiment}</span>
               )}
               {relevanceScore && (
                 <span class="score-inline">Relevancia {relevanceScore}/10</span>
@@ -325,7 +325,7 @@ function getSectorChipStyle(sector: string) {
 
             <h1 class="post-title">{title}</h1>
             <div class="post-meta">
-              <span>📅 <FormattedDate date={pubDate} /></span>
+              {pubDate && <span>📅 <FormattedDate date={pubDate} /></span>}
               {source && <span>📰 {source}</span>}
               {updatedDate && (
                 <span>🔄 Actualizado: <FormattedDate date={updatedDate} /></span>
@@ -353,7 +353,7 @@ function getSectorChipStyle(sector: string) {
                 <a href={`/blog/${post.id}/`} class="related-item">
                   <div>{post.data.title}</div>
                   <div class="related-meta">
-                    <span><FormattedDate date={post.data.pubDate} /></span>
+                    {post.data.pubDate && <span><FormattedDate date={post.data.pubDate} /></span>}
                     {post.data.impact && <span>• {post.data.impact}</span>}
                     {post.data.sentiment && <span>• {getSentimentIcon(post.data.sentiment)}</span>}
                   </div>
@@ -362,18 +362,7 @@ function getSectorChipStyle(sector: string) {
             </div>
           )}
 
-          <div class="sidebar-card">
-            <h3 class="sidebar-title">Navegación</h3>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <a class="related-item" href="/blog/">Todas las noticias</a>
-              {sectors && sectors.length > 0 && (
-                <a class="related-item" href={`/blog/sector/${sectors[0]}/`}>Más de {sectors[0]}</a>
-              )}
-              {tickers && tickers.length > 0 && (
-                <a class="related-item" href={`/blog/ticker/${tickers[0]}/`}>Noticias de {tickers[0]}</a>
-              )}
-            </div>
-          </div>
+          
         </aside>
       </div>
     </main>

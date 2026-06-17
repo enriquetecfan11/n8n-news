@@ -27,35 +27,46 @@ const changeClass =
 
 <style>
   .kpi-card {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
     padding: var(--space-lg);
     display: flex;
     flex-direction: column;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .kpi-card:hover {
+    border-color: #6366f1;
+    background: var(--pf-card-hover);
   }
 
   .kpi-label {
-    font-size: 0.875rem;
-    color: var(--text-light);
-    margin-bottom: var(--space-sm);
+    font-size: 0.75rem;
+    color: var(--pf-text-muted);
+    margin-bottom: var(--space-md);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.75px;
+    font-weight: 600;
   }
 
   .kpi-value {
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
     font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
+    color: var(--pf-text);
+    line-height: 1.1;
+    font-family: var(--font-family-mono);
+    letter-spacing: -0.02em;
   }
 
   .kpi-change {
     font-size: 0.875rem;
-    margin-top: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-sm);
+    margin-top: var(--space-md);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
     width: fit-content;
+    font-family: var(--font-family-mono);
+    font-weight: 600;
   }
 
   .kpi-change.positive {

@@ -1,0 +1,142 @@
+/* App-wide light / dark theme tokens */
+
+:root {
+  color-scheme: light;
+
+  --app-bg: #ffffff;
+  --app-surface: #f9fafb;
+  --app-surface-2: #f3f4f6;
+  --app-border: #e5e7eb;
+  --app-text: #111827;
+  --app-text-muted: #6b7280;
+  --app-text-subtle: #9ca3af;
+
+  --app-header-bg: #ffffff;
+  --app-header-border: #e5e7eb;
+  --app-header-text: #111827;
+  --app-header-nav: #6b7280;
+  --app-header-nav-hover: #111827;
+  --app-header-btn-bg: #ffffff;
+  --app-header-btn-border: #e5e7eb;
+  --app-header-btn-hover: #f9fafb;
+
+  --app-footer-bg: #f9fafb;
+  --app-footer-border: #e5e7eb;
+  --app-footer-text: #6b7280;
+
+  /* Portfolio surfaces */
+  --pf-bg: #f8fafc;
+  --pf-surface: #ffffff;
+  --pf-card: #ffffff;
+  --pf-card-hover: #f8fafc;
+  --pf-stat-bg: #f1f5f9;
+  --pf-border: #e2e8f0;
+  --pf-text: #0f172a;
+  --pf-text-muted: #64748b;
+  --pf-toolbar-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  --pf-input-bg: #f1f5f9;
+  --pf-modal-bg: #ffffff;
+  --pf-overlay: rgba(0, 0, 0, 0.45);
+}
+
+body.dark-theme {
+  color-scheme: dark;
+
+  --app-bg: #0a0a0a;
+  --app-surface: #111111;
+  --app-surface-2: #1a1a1a;
+  --app-border: #2a2a2a;
+  --app-text: #f5f5f5;
+  --app-text-muted: #a3a3a3;
+  --app-text-subtle: #737373;
+
+  --app-header-bg: #111111;
+  --app-header-border: #2a2a2a;
+  --app-header-text: #f5f5f5;
+  --app-header-nav: #a3a3a3;
+  --app-header-nav-hover: #ffffff;
+  --app-header-btn-bg: #1a1a1a;
+  --app-header-btn-border: #2a2a2a;
+  --app-header-btn-hover: #262626;
+
+  --app-footer-bg: #111111;
+  --app-footer-border: #2a2a2a;
+  --app-footer-text: #a3a3a3;
+
+  --pf-bg: #0a0a0a;
+  --pf-surface: #111111;
+  --pf-card: #1a1d27;
+  --pf-card-hover: #1e2130;
+  --pf-stat-bg: #0f1117;
+  --pf-border: #2a2d3a;
+  --pf-text: #f8fafc;
+  --pf-text-muted: #94a3b8;
+  --pf-toolbar-bg: linear-gradient(135deg, #1a1d27 0%, #1e2230 100%);
+  --pf-input-bg: #2a3347;
+  --pf-modal-bg: #1e2433;
+  --pf-overlay: rgba(0, 0, 0, 0.65);
+}
+
+html,
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+body,
+body * {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6 {
+  color: var(--app-text);
+}
+
+/* Homepage */
+body.dark-theme .ticker-section {
+  background: var(--app-surface) !important;
+  border-color: var(--app-border) !important;
+}
+
+body.dark-theme .main-content {
+  background: var(--app-bg) !important;
+}
+
+/* Portfolio pages */
+.portfolio-section {
+  background: var(--pf-bg) !important;
+  color: var(--pf-text) !important;
+}
+
+body.dark-theme .portfolio-header h1,
+body.dark-theme .empty-state h2 {
+  color: var(--pf-text) !important;
+}
+
+body.dark-theme .subtitle,
+body.dark-theme .empty-state,
+body.dark-theme .breadcrumb {
+  color: var(--pf-text-muted) !important;
+}
+
+body.dark-theme .news-card,
+body.dark-theme .top-panel,
+body.dark-theme .analysis-sidebar {
+  background-color: var(--app-surface) !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+
+body.dark-theme .date-heading,
+body.dark-theme .news-excerpt p {
+  color: var(--app-text-muted) !important;
+}

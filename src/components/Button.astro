@@ -1,7 +1,7 @@
 ---
-// Componente de botón mejorado con diferentes variantes
+// Portfolio Button System - Primary interface for user actions
 interface Props {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    variant?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'icon';
     size?: 'sm' | 'md' | 'lg';
     disabled?: boolean;
     loading?: boolean;
@@ -12,6 +12,7 @@ interface Props {
     class?: string;
     type?: 'button' | 'submit' | 'reset';
     onClick?: string;
+    title?: string;
 }
 
 const {
@@ -25,16 +26,17 @@ const {
     target,
     class: className = '',
     type = 'button',
-    onClick
+    onClick,
+    title
 } = Astro.props;
 
 const baseClasses = 'btn';
 const variantClasses = {
     primary: 'btn-primary',
     secondary: 'btn-secondary',
-    outline: 'btn-outline',
+    destructive: 'btn-destructive',
     ghost: 'btn-ghost',
-    danger: 'btn-danger'
+    icon: 'btn-icon-only'
 };
 const sizeClasses = {
     sm: 'btn-sm',
@@ -55,11 +57,12 @@ const Tag = href ? 'a' : 'button';
 const tagProps = href ? { href, target } : { type, disabled: disabled || loading };
 ---
 
-<Tag 
+<Tag
     class={buttonClasses}
     {...tagProps}
     onclick={onClick}
     aria-disabled={disabled || loading}
+    title={title}
 >
     {loading && (
         <span class="btn-spinner" aria-hidden="true">
@@ -90,119 +93,142 @@ const tagProps = href ? { href, target } : { type, disabled: disabled || loading
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
-        font-family: var(--font-body);
-        font-weight: 600;
+        gap: var(--space-xs);
+        font-family: var(--font-family);
+        font-weight: 500;
         text-decoration: none;
         border: none;
-        border-radius: 8px;
+        border-radius: var(--radius-lg);
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         white-space: nowrap;
         user-select: none;
-        outline: none;
+        transition: all var(--duration-normal) var(--ease-out);
+        min-height: 44px;
+        min-width: 44px;
     }
 
     .btn:focus-visible {
-        outline: 2px solid var(--accent);
+        outline: 2px solid var(--color-neutral-text);
         outline-offset: 2px;
     }
 
     .btn:disabled,
     .btn-disabled {
-        opacity: 0.6;
+        opacity: 0.5;
         cursor: not-allowed;
-        pointer-events: none;
     }
 
-    /* Sizes */
+    /* Size variants - all maintain 44px minimum */
     .btn-sm {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-        min-height: 2rem;
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-tight);
+        min-height: 36px;
     }
 
     .btn-md {
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        line-height: 1.5rem;
-        min-height: 2.5rem;
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-normal);
+        min-height: 44px;
     }
 
     .btn-lg {
-        padding: 1rem 1.5rem;
-        font-size: 1.125rem;
-        line-height: 1.75rem;
-        min-height: 3rem;
+        padding: var(--space-md) var(--space-lg);
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-normal);
+        min-height: 48px;
     }
 
-    /* Variants */
+    /* PRIMARY - Solid fill for direct actions (money movements) */
     .btn-primary {
-        background: var(--accent);
-        color: white;
-        box-shadow: 0 2px 4px rgba(13, 71, 161, 0.2);
+        background: var(--color-neutral-text);
+        color: var(--color-neutral-bg);
+        box-shadow: 0 2px 8px rgba(26, 26, 24, 0.15);
     }
 
     .btn-primary:hover:not(:disabled) {
-        background: var(--accent-dark);
+        background: var(--color-neutral-700);
+        box-shadow: 0 4px 12px rgba(26, 26, 24, 0.25);
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(13, 71, 161, 0.3);
     }
 
     .btn-primary:active:not(:disabled) {
         transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(13, 71, 161, 0.2);
+        box-shadow: 0 2px 4px rgba(26, 26, 24, 0.15);
     }
 
+    /* SECONDARY - Bordered for navigation and secondary actions */
     .btn-secondary {
-        background: var(--background-alt);
-        color: var(--text);
-        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--color-neutral-text);
+        border: 1px solid var(--color-neutral-border);
+        box-shadow: none;
     }
 
     .btn-secondary:hover:not(:disabled) {
-        background: var(--border);
+        background: var(--color-neutral-bg);
+        border-color: var(--color-neutral-secondary);
+        box-shadow: 0 2px 6px rgba(26, 26, 24, 0.08);
+    }
+
+    .btn-secondary:active:not(:disabled) {
+        background: var(--color-neutral-50);
+    }
+
+    /* DESTRUCTIVE - For delete/cancel/risky actions */
+    .btn-destructive {
+        background: var(--color-loss);
+        color: var(--color-neutral-bg);
+        box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
+    }
+
+    .btn-destructive:hover:not(:disabled) {
+        background: #A01818;
+        box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25);
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .btn-outline {
-        background: transparent;
-        color: var(--accent);
-        border: 2px solid var(--accent);
+    .btn-destructive:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(185, 28, 28, 0.15);
     }
 
-    .btn-outline:hover:not(:disabled) {
-        background: var(--accent);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(13, 71, 161, 0.3);
-    }
-
+    /* GHOST - Minimal, text-only for tertiary actions */
     .btn-ghost {
         background: transparent;
-        color: var(--text);
+        color: var(--color-neutral-text);
         border: 1px solid transparent;
     }
 
     .btn-ghost:hover:not(:disabled) {
-        background: var(--background-alt);
-        transform: translateY(-1px);
+        background: var(--color-neutral-50);
     }
 
-    .btn-danger {
-        background: var(--accent, #e74c3c);
-        color: white;
-        box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+    .btn-ghost:active:not(:disabled) {
+        background: var(--color-neutral-100);
     }
 
-    .btn-danger:hover:not(:disabled) {
-        background: #c0392b;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    /* ICON-ONLY - Tight 40x40 minimum for close buttons, etc */
+    .btn-icon-only {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        background: transparent;
+        color: var(--color-neutral-text);
+        border: 1px solid transparent;
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    .btn-icon-only:hover:not(:disabled) {
+        background: var(--color-neutral-50);
+    }
+
+    .btn-icon-only:active:not(:disabled) {
+        background: var(--color-neutral-100);
     }
 
     /* Loading state */
@@ -233,51 +259,17 @@ const tagProps = href ? { href, target } : { type, disabled: disabled || loading
     }
 
     .btn-icon-left {
-        margin-right: 0.25rem;
+        margin-right: var(--space-xs);
     }
 
     .btn-icon-right {
-        margin-left: 0.25rem;
+        margin-left: var(--space-xs);
     }
 
     .btn-content {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-    }
-
-    /* Ripple effect */
-    .btn::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .btn:active::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    /* Dark mode adjustments */
-    :global(body.dark-theme) .btn-secondary {
-        background: var(--background-main);
-        color: var(--text);
-        border-color: var(--border);
-    }
-
-    :global(body.dark-theme) .btn-secondary:hover:not(:disabled) {
-        background: var(--background-alt);
-    }
-
-    :global(body.dark-theme) .btn-ghost:hover:not(:disabled) {
-        background: var(--background-alt);
+        gap: var(--space-xs);
     }
 
     @keyframes spin {
@@ -289,19 +281,29 @@ const tagProps = href ? { href, target } : { type, disabled: disabled || loading
         }
     }
 
-    @media (max-width: 768px) {
+    /* Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
         .btn {
-            min-width: 44px;
-            min-height: 44px;
+            transition: none;
         }
-        
+
+        .btn:hover:not(:disabled),
+        .btn:active:not(:disabled) {
+            transform: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(0deg);
+            }
+        }
+    }
+
+    /* Ensure 44px minimum on touch devices */
+    @media (max-width: 768px) {
         .btn-sm {
-            min-height: 36px;
-            padding: 0.5rem;
-        }
-        
-        .btn-lg {
-            min-height: 48px;
+            min-height: 44px;
+            min-width: 44px;
         }
     }
 </style>
