@@ -39,7 +39,7 @@
   --pf-overlay: rgba(0, 0, 0, 0.45);
 }
 
-body.dark-theme {
+:root.dark-theme {
   color-scheme: dark;
 
   --app-bg: #0a0a0a;
@@ -92,22 +92,22 @@ body * {
     box-shadow 0.25s ease;
 }
 
-body.dark-theme h1,
-body.dark-theme h2,
-body.dark-theme h3,
-body.dark-theme h4,
-body.dark-theme h5,
-body.dark-theme h6 {
+:root.dark-theme h1,
+:root.dark-theme h2,
+:root.dark-theme h3,
+:root.dark-theme h4,
+:root.dark-theme h5,
+:root.dark-theme h6 {
   color: var(--app-text);
 }
 
 /* Homepage */
-body.dark-theme .ticker-section {
+:root.dark-theme .ticker-section {
   background: var(--app-surface) !important;
   border-color: var(--app-border) !important;
 }
 
-body.dark-theme .main-content {
+:root.dark-theme .main-content {
   background: var(--app-bg) !important;
 }
 
@@ -117,26 +117,80 @@ body.dark-theme .main-content {
   color: var(--pf-text) !important;
 }
 
-body.dark-theme .portfolio-header h1,
-body.dark-theme .empty-state h2 {
+:root.dark-theme .portfolio-header h1,
+:root.dark-theme .empty-state h2 {
   color: var(--pf-text) !important;
 }
 
-body.dark-theme .subtitle,
-body.dark-theme .empty-state,
-body.dark-theme .breadcrumb {
+:root.dark-theme .subtitle,
+:root.dark-theme .empty-state,
+:root.dark-theme .breadcrumb {
   color: var(--pf-text-muted) !important;
 }
 
-body.dark-theme .news-card,
-body.dark-theme .top-panel,
-body.dark-theme .analysis-sidebar {
+:root.dark-theme .news-card,
+:root.dark-theme .top-panel,
+:root.dark-theme .analysis-sidebar {
   background-color: var(--app-surface) !important;
   border-color: var(--app-border) !important;
   color: var(--app-text) !important;
 }
 
-body.dark-theme .date-heading,
-body.dark-theme .news-excerpt p {
+:root.dark-theme .date-heading,
+:root.dark-theme .news-excerpt p {
   color: var(--app-text-muted) !important;
+}
+
+/* News / analysis widgets that hardcode light colors */
+:root.dark-theme .analysis-widget,
+:root.dark-theme .filters-container {
+  background: var(--app-surface) !important;
+  border-color: var(--app-border) !important;
+  box-shadow: none !important;
+}
+
+:root.dark-theme .widget-header,
+:root.dark-theme .filters-header {
+  background: var(--app-surface-2) !important;
+  border-color: var(--app-border) !important;
+}
+
+:root.dark-theme .widget-title,
+:root.dark-theme .filters-title,
+:root.dark-theme .filter-label {
+  color: var(--app-text) !important;
+}
+
+:root.dark-theme .clear-filters-btn {
+  background: var(--app-surface-2) !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text-muted) !important;
+}
+
+:root.dark-theme .clear-filters-btn:hover {
+  background: #262626 !important;
+  color: var(--app-text) !important;
+}
+
+/* Chips that hardcode dark text */
+:root.dark-theme .sector-chip,
+:root.dark-theme .ticker-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--app-text) !important;
+}
+
+/* Force common hard-coded dark text colors to respect dark mode */
+:root.dark-theme [style*="color: #111827"],
+:root.dark-theme [style*="color:#111827"],
+:root.dark-theme [style*="color: #1a1a1a"],
+:root.dark-theme [style*="color:#1a1a1a"],
+:root.dark-theme [style*="color: #263238"],
+:root.dark-theme [style*="color:#263238"],
+:root.dark-theme [style*="color: #374151"],
+:root.dark-theme [style*="color:#374151"],
+:root.dark-theme [style*="color: #616161"],
+:root.dark-theme [style*="color:#616161"],
+:root.dark-theme [style*="color: #6b7280"],
+:root.dark-theme [style*="color:#6b7280"] {
+  color: var(--app-text) !important;
 }

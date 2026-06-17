@@ -4,9 +4,13 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FormattedDate from "../components/FormattedDate.astro";
+import ThemeInit from "../components/ThemeInit.astro";
 import { getCollection } from 'astro:content';
 import { NewsFilter } from '../utils/newsFilter';
 import { SITE_TITLE } from '../consts';
+import "../styles/theme.css";
+import "../styles/news-variables.css";
+import "../styles/design-tokens.css";
 
 type Props = CollectionEntry<"blog">["data"] & {
   id: string;
@@ -82,20 +86,22 @@ function getSectorChipStyle(sector: string) {
 }
 ---
 
+<!doctype html>
 <html lang="es">
   <head>
+    <ThemeInit />
     <BaseHead title={`${title} - ${SITE_TITLE}`} description={description} />
     <style>
       /* Usar tokens globales de news-variables/design-tokens */
       :root {
-        --bg: var(--background);
-        --page: var(--bg-secondary, var(--background-alt));
-        --text: var(--text);
-        --muted: var(--text-secondary, #6b7280);
-        --border: var(--border-color);
-        --primary: var(--text, #1f2937);
-        --chip-bg: var(--bg-tertiary, #f3f4f6);
-        --chip-fg: var(--text, #374151);
+        --bg: var(--app-bg);
+        --page: var(--app-surface);
+        --text: var(--app-text);
+        --muted: var(--app-text-muted);
+        --border: var(--app-border);
+        --primary: var(--app-text);
+        --chip-bg: var(--app-surface-2);
+        --chip-fg: var(--app-text);
         --accent: var(--accent, #0D47A1);
       }
 
@@ -190,19 +196,20 @@ function getSectorChipStyle(sector: string) {
         font-size: 1.8rem;
         line-height: 1.25;
         letter-spacing: -0.01em;
-        color: #263238; /* gris carbón para menor fatiga visual */
+        color: var(--primary);
       }
 
       .post-meta {
         display: flex;
         gap: 0.75rem;
         flex-wrap: wrap;
-        color: #616161; /* gris con contraste suficiente */
+        color: var(--muted);
         font-size: 0.9rem;
       }
 
       .post-content {
         padding: 1.25rem;
+        color: var(--text);
       }
 
       .post-content :global(h2) {
@@ -213,6 +220,19 @@ function getSectorChipStyle(sector: string) {
 
       .post-content :global(p) {
         line-height: 1.7;
+        color: var(--text);
+      }
+
+      .post-content :global(li) {
+        color: var(--text);
+      }
+
+      .post-content :global(a) {
+        color: var(--accent);
+      }
+
+      .post-content :global(a:hover) {
+        text-decoration: underline;
       }
 
       .share-buttons {
@@ -336,13 +356,6 @@ function getSectorChipStyle(sector: string) {
           <div class="post-content">
             <slot />
           </div>
-
-          <div class="share-buttons">
-            <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(Astro.url.href)}`} class="share-btn share-twitter" target="_blank" rel="noopener">🐦 Compartir</a>
-            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.href)}`} class="share-btn share-linkedin" target="_blank" rel="noopener">💼 LinkedIn</a>
-            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`} class="share-btn share-facebook" target="_blank" rel="noopener">📘 Facebook</a>
-            <button class="share-btn share-copy" onclick="copyToClipboard()">📋 Copiar</button>
-          </div>
         </article>
 
         <aside class="sidebar">
@@ -375,7 +388,8 @@ function getSectorChipStyle(sector: string) {
           notification.textContent = 'Enlace copiado al portapapeles';
           notification.style.cssText = `
             position: fixed; top: 20px; right: 20px;
-            background: #E0E0E0; color: #111827;
+            background: var(--app-surface-2); color: var(--app-text);
+            border: 1px solid var(--app-border);
             padding: 0.75rem 1rem; border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000; font-size: 0.85rem; font-weight: 600;`;
