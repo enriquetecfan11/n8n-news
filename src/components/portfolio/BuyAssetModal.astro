@@ -551,10 +551,20 @@ const { portfolioId } = Astro.props;
       const formData = new FormData(transactionForm);
       const buyType = formData.get('buyType');
 
+      const dateValue = formData.get('date') as string;
+      if (!dateValue) {
+        transactionStatusDiv.textContent = '✗ La fecha es requerida';
+        transactionStatusDiv.className = 'show-error';
+        return;
+      }
+
       let data: any = {
         portfolioId: formData.get('portfolioId'),
+        assetId: null,
         type: 'buy',
-        date: formData.get('date'),
+        date: dateValue,
+        quantity: 0,
+        unitPrice: 0,
         fee: parseFloat(formData.get('fee') as string) || 0,
         notes: formData.get('notes'),
       };
@@ -567,6 +577,13 @@ const { portfolioId } = Astro.props;
         const price = parseFloat(formData.get('investmentUnitPrice') as string);
         data.quantity = investment / price;
         data.unitPrice = price;
+      }
+
+      // Validate required fields
+      if (!data.quantity || isNaN(data.quantity) || !data.unitPrice || isNaN(data.unitPrice)) {
+        transactionStatusDiv.textContent = '✗ Cantidad y precio unitario son requeridos';
+        transactionStatusDiv.className = 'show-error';
+        return;
       }
 
       try {
