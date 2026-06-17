@@ -226,10 +226,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.trading-dashboard * {
-  transition: all 0.2s ease;
-}
-
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;

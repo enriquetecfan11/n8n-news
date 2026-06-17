@@ -1,30 +1,58 @@
-/* App-wide light / dark theme tokens */
-
 :root {
   color-scheme: light;
 
-  --app-bg: #ffffff;
-  --app-surface: #f9fafb;
-  --app-surface-2: #f3f4f6;
-  --app-border: #e5e7eb;
-  --app-text: #111827;
-  --app-text-muted: #6b7280;
-  --app-text-subtle: #9ca3af;
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-2: #f1f5f9;
+  --color-surface-3: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-subtle: #64748b;
+  --color-border: #e2e8f0;
 
-  --app-header-bg: #ffffff;
-  --app-header-border: #e5e7eb;
-  --app-header-text: #111827;
-  --app-header-nav: #6b7280;
-  --app-header-nav-hover: #111827;
-  --app-header-btn-bg: #ffffff;
-  --app-header-btn-border: #e5e7eb;
-  --app-header-btn-hover: #f9fafb;
+  --color-accent: #0d47a1;
+  --color-accent-strong: #002171;
+  --color-accent-soft: #dbeafe;
+  --color-link: #0d47a1;
+  --color-link-hover: #002171;
 
-  --app-footer-bg: #f9fafb;
-  --app-footer-border: #e5e7eb;
-  --app-footer-text: #6b7280;
+  --color-success: #059669;
+  --color-danger: #b91c1c;
+  --color-warning: #b45309;
+  --color-info: #0369a1;
 
-  /* Portfolio surfaces */
+  --color-neutral-50: #fafaf7;
+  --color-neutral-100: #f5f5f2;
+  --color-neutral-200: #e5e5e3;
+  --color-neutral-300: #d8d8d5;
+  --color-neutral-400: #b0b0ad;
+  --color-neutral-500: #6b6b69;
+  --color-neutral-600: #4a4a47;
+  --color-neutral-700: #2f2f2d;
+  --color-neutral-800: #1a1a18;
+  --color-neutral-900: #0d0d0c;
+
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-surface-2: var(--color-surface-2);
+  --app-border: var(--color-border);
+  --app-text: var(--color-text);
+  --app-text-muted: var(--color-text-muted);
+  --app-text-subtle: var(--color-text-subtle);
+
+  --app-header-bg: var(--color-bg);
+  --app-header-border: var(--color-border);
+  --app-header-text: var(--color-text);
+  --app-header-nav: var(--color-text-muted);
+  --app-header-nav-hover: var(--color-text);
+  --app-header-btn-bg: var(--color-bg);
+  --app-header-btn-border: var(--color-border);
+  --app-header-btn-hover: var(--color-surface);
+
+  --app-footer-bg: var(--color-surface);
+  --app-footer-border: var(--color-border);
+  --app-footer-text: var(--color-text-muted);
+
   --pf-bg: #f8fafc;
   --pf-surface: #ffffff;
   --pf-card: #ffffff;
@@ -37,39 +65,73 @@
   --pf-input-bg: #f1f5f9;
   --pf-modal-bg: #ffffff;
   --pf-overlay: rgba(0, 0, 0, 0.45);
-  --pf-page-pad-y: 0.9rem;
-  --pf-page-pad-x: 1rem;
-  --pf-section-gap: 0.85rem;
-  --pf-card-pad: 0.7rem;
-  --pf-table-cell-pad-y: 0.55rem;
-  --pf-table-cell-pad-x: 0.8rem;
-  --pf-control-pad-y: 0.48rem;
-  --pf-control-pad-x: 0.75rem;
+
+  --accent: var(--color-accent);
+  --accent-dark: var(--color-accent-strong);
+  --accent-light: var(--color-accent-soft);
+  --accent-secondary: var(--color-info);
+  --accent-tertiary: var(--color-success);
+  --accent-yellow: var(--color-warning);
+  --color-primary: var(--color-accent);
+  --color-primary-dark: var(--color-accent-strong);
+  --color-primary-light: var(--color-accent-soft);
+  --color-success: #059669;
+  --color-danger: #b91c1c;
+  --text-primary: var(--app-text);
+  --text-secondary: var(--app-text-muted);
+  --text-tertiary: var(--app-text-subtle);
+  --background: var(--app-bg);
+  --background-alt: var(--app-surface);
+  --background-main: var(--app-surface);
+  --text: var(--app-text);
+  --text-light: var(--app-text-muted);
+  --text-lighter: var(--app-text-subtle);
+  --border: var(--app-border);
+  --font-family: var(--font-family-sans);
+  --font-body: var(--font-family-sans);
+  --font-heading: var(--font-family-serif);
 }
 
-:root.dark-theme {
+:root.dark-theme,
+body.dark-theme,
+body.dark-mode {
   color-scheme: dark;
 
-  --app-bg: #0a0a0a;
-  --app-surface: #111111;
-  --app-surface-2: #1a1a1a;
-  --app-border: #2a2a2a;
-  --app-text: #f5f5f5;
-  --app-text-muted: #a3a3a3;
-  --app-text-subtle: #737373;
+  --color-bg: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-2: #1a1a1a;
+  --color-surface-3: #262626;
+  --color-text: #f5f5f5;
+  --color-text-muted: #a3a3a3;
+  --color-text-subtle: #737373;
+  --color-border: #2a2a2a;
 
-  --app-header-bg: #111111;
-  --app-header-border: #2a2a2a;
-  --app-header-text: #f5f5f5;
-  --app-header-nav: #a3a3a3;
-  --app-header-nav-hover: #ffffff;
-  --app-header-btn-bg: #1a1a1a;
-  --app-header-btn-border: #2a2a2a;
-  --app-header-btn-hover: #262626;
+  --color-accent: #60a5fa;
+  --color-accent-strong: #2563eb;
+  --color-accent-soft: rgba(96, 165, 250, 0.14);
+  --color-link: #93c5fd;
+  --color-link-hover: #bfdbfe;
 
-  --app-footer-bg: #111111;
-  --app-footer-border: #2a2a2a;
-  --app-footer-text: #a3a3a3;
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-surface-2: var(--color-surface-2);
+  --app-border: var(--color-border);
+  --app-text: var(--color-text);
+  --app-text-muted: var(--color-text-muted);
+  --app-text-subtle: var(--color-text-subtle);
+
+  --app-header-bg: var(--color-surface);
+  --app-header-border: var(--color-border);
+  --app-header-text: var(--color-text);
+  --app-header-nav: var(--color-text-muted);
+  --app-header-nav-hover: var(--color-text);
+  --app-header-btn-bg: var(--color-surface-2);
+  --app-header-btn-border: var(--color-border);
+  --app-header-btn-hover: var(--color-surface-3);
+
+  --app-footer-bg: var(--color-surface);
+  --app-footer-border: var(--color-border);
+  --app-footer-text: var(--color-text-muted);
 
   --pf-bg: #0a0a0a;
   --pf-surface: #111111;
@@ -83,14 +145,31 @@
   --pf-input-bg: #2a3347;
   --pf-modal-bg: #1e2433;
   --pf-overlay: rgba(0, 0, 0, 0.65);
-  --pf-page-pad-y: 0.9rem;
-  --pf-page-pad-x: 1rem;
-  --pf-section-gap: 0.85rem;
-  --pf-card-pad: 0.7rem;
-  --pf-table-cell-pad-y: 0.55rem;
-  --pf-table-cell-pad-x: 0.8rem;
-  --pf-control-pad-y: 0.48rem;
-  --pf-control-pad-x: 0.75rem;
+
+  --accent: var(--color-accent);
+  --accent-dark: var(--color-accent-strong);
+  --accent-light: var(--color-accent-soft);
+  --accent-secondary: var(--color-info);
+  --accent-tertiary: var(--color-success);
+  --accent-yellow: var(--color-warning);
+  --color-primary: var(--color-accent);
+  --color-primary-dark: var(--color-accent-strong);
+  --color-primary-light: var(--color-accent-soft);
+  --color-success: #10b981;
+  --color-danger: #f87171;
+  --text-primary: var(--app-text);
+  --text-secondary: var(--app-text-muted);
+  --text-tertiary: var(--app-text-subtle);
+  --background: var(--app-bg);
+  --background-alt: var(--app-surface);
+  --background-main: var(--app-surface);
+  --text: var(--app-text);
+  --text-light: var(--app-text-muted);
+  --text-lighter: var(--app-text-subtle);
+  --border: var(--app-border);
+  --font-family: var(--font-family-sans);
+  --font-body: var(--font-family-sans);
+  --font-heading: var(--font-family-serif);
 }
 
 html,
@@ -99,114 +178,28 @@ body {
   color: var(--app-text);
 }
 
-body,
-body * {
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-:root.dark-theme h1,
-:root.dark-theme h2,
-:root.dark-theme h3,
-:root.dark-theme h4,
-:root.dark-theme h5,
-:root.dark-theme h6 {
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
   color: var(--app-text);
 }
 
-/* Homepage */
-:root.dark-theme .ticker-section {
-  background: var(--app-surface) !important;
-  border-color: var(--app-border) !important;
-}
-
-:root.dark-theme .main-content {
-  background: var(--app-bg) !important;
-}
-
-/* Portfolio pages */
 .portfolio-section {
-  background: var(--pf-bg) !important;
-  color: var(--pf-text) !important;
+  background: var(--pf-bg);
+  color: var(--pf-text);
 }
 
-:root.dark-theme .portfolio-header h1,
-:root.dark-theme .empty-state h2 {
-  color: var(--pf-text) !important;
-}
-
-:root.dark-theme .subtitle,
-:root.dark-theme .empty-state,
-:root.dark-theme .breadcrumb {
-  color: var(--pf-text-muted) !important;
-}
-
-:root.dark-theme .news-card,
-:root.dark-theme .top-panel,
-:root.dark-theme .analysis-sidebar {
-  background-color: var(--app-surface) !important;
-  border-color: var(--app-border) !important;
-  color: var(--app-text) !important;
-}
-
-:root.dark-theme .date-heading,
-:root.dark-theme .news-excerpt p {
-  color: var(--app-text-muted) !important;
-}
-
-/* News / analysis widgets that hardcode light colors */
-:root.dark-theme .analysis-widget,
-:root.dark-theme .filters-container {
-  background: var(--app-surface) !important;
-  border-color: var(--app-border) !important;
-  box-shadow: none !important;
-}
-
-:root.dark-theme .widget-header,
-:root.dark-theme .filters-header {
-  background: var(--app-surface-2) !important;
-  border-color: var(--app-border) !important;
-}
-
-:root.dark-theme .widget-title,
-:root.dark-theme .filters-title,
-:root.dark-theme .filter-label {
-  color: var(--app-text) !important;
-}
-
-:root.dark-theme .clear-filters-btn {
-  background: var(--app-surface-2) !important;
-  border-color: var(--app-border) !important;
-  color: var(--app-text-muted) !important;
-}
-
-:root.dark-theme .clear-filters-btn:hover {
-  background: #262626 !important;
-  color: var(--app-text) !important;
-}
-
-/* Chips that hardcode dark text */
-:root.dark-theme .sector-chip,
-:root.dark-theme .ticker-chip {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: var(--app-text) !important;
-}
-
-/* Force common hard-coded dark text colors to respect dark mode */
-:root.dark-theme [style*="color: #111827"],
-:root.dark-theme [style*="color:#111827"],
-:root.dark-theme [style*="color: #1a1a1a"],
-:root.dark-theme [style*="color:#1a1a1a"],
-:root.dark-theme [style*="color: #263238"],
-:root.dark-theme [style*="color:#263238"],
-:root.dark-theme [style*="color: #374151"],
-:root.dark-theme [style*="color:#374151"],
-:root.dark-theme [style*="color: #616161"],
-:root.dark-theme [style*="color:#616161"],
-:root.dark-theme [style*="color: #6b7280"],
-:root.dark-theme [style*="color:#6b7280"] {
-  color: var(--app-text) !important;
+.portfolio-section .subtitle,
+.portfolio-section .empty-state,
+.portfolio-section .breadcrumb {
+  color: var(--pf-text-muted);
 }

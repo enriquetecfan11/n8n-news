@@ -7,7 +7,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import "../styles/tailwind.css";
 import "../styles/design-tokens.css";
 import "../styles/motion.css";
-import "../styles/news-variables.css";
 import "../styles/global.css";
 import "../styles/animations.css";
 import "../styles/portfolio.css";
@@ -22,7 +21,7 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es" class="dark" style="color-scheme: dark;">
+<html lang="es">
     <head>
         <ThemeInit />
         <BaseHead title={title} description={description} />
@@ -30,23 +29,13 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;900&family=Open+Sans:wght@400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;900&family=Geist+Mono:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
-
-        <!-- Styles are imported via Vite (see frontmatter) -->
     </head>
-    <body class="bg-[#0f1117] text-white">
+    <body>
         <Navbar />
         <slot />
-        <!-- El contenido de la página se insertará aquí -->
         <Footer />
     </body>
 </html>
-<style>
-    body {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-</style>

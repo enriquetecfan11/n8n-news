@@ -6,8 +6,10 @@ import ThemeInit from "../components/ThemeInit.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import TradingDashboard from "../components/finance/TradingDashboard.jsx";
 import { getCollection } from 'astro:content';
-import "../styles/news-variables.css";
 import "../styles/global.css";
+import "../styles/design-tokens.css";
+import "../styles/motion.css";
+import "../styles/animations.css";
 import "../styles/theme.css";
 import "../styles/trading-dashboard.css";
 
@@ -22,12 +24,12 @@ const news = (await getCollection('blog'))
 ---
 
 <!doctype html>
-<html lang="es" class="dark" style="color-scheme: dark;">
+<html lang="es">
   <head>
     <ThemeInit />
     <BaseHead title={`Mercados en tiempo real | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
   </head>
-  <body class="bg-[#0f1117] text-white">
+  <body>
     <Navbar />
     <main class="main-content">
       <TradingDashboard client:load news={news} />
@@ -35,7 +37,3 @@ const news = (await getCollection('blog'))
     <Footer />
   </body>
 </html>
-
-<style>
-  .main-content{width:100%;max-width:1680px;margin:0 auto;padding:1rem 1rem 1.5rem}
-</style>

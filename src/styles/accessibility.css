@@ -1,15 +1,10 @@
 /* Estilos de accesibilidad WCAG 2.2 AA */
 
 /* ===== FOCUS MANAGEMENT ===== */
-*:focus-visible {
+:where(a, button, input, textarea, select, summary):focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
-}
-
-/* Remover outline por defecto para elementos con focus-visible */
-*:focus:not(:focus-visible) {
-  outline: none;
 }
 
 /* Skip to main content */
@@ -74,9 +69,9 @@
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :where(a, button, input, textarea, select, summary),
+  :where(a, button, input, textarea, select, summary)::before,
+  :where(a, button, input, textarea, select, summary)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -144,59 +139,61 @@
 }
 
 /* ===== BUTTON ACCESSIBILITY ===== */
-button:disabled {
+.button[disabled],
+button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-button:disabled:focus-visible {
+.button[disabled]:focus-visible,
+button[disabled]:focus-visible {
   outline: 2px solid var(--color-neutral-400);
 }
 
 /* ===== FORM ACCESSIBILITY ===== */
-input:invalid {
+.is-invalid {
   border-color: var(--color-danger);
 }
 
-input:invalid:focus {
+.is-invalid:focus {
   outline-color: var(--color-danger);
 }
 
-input:required {
+.is-required {
   border-left: 3px solid var(--color-primary);
 }
 
 /* ===== LINK ACCESSIBILITY ===== */
-a:not([href]) {
+.is-disabled-link {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-a:not([href]):focus-visible {
+.is-disabled-link:focus-visible {
   outline: 2px solid var(--color-neutral-400);
 }
 
 /* ===== TABLE ACCESSIBILITY ===== */
-table {
+.accessible-table {
   border-collapse: collapse;
   border-spacing: 0;
 }
 
-th {
+.accessible-table th {
   text-align: left;
   font-weight: var(--font-weight-semibold);
 }
 
-th[scope="col"] {
+.accessible-table th[scope="col"] {
   text-align: center;
 }
 
 /* ===== IMAGE ACCESSIBILITY ===== */
-img:not([alt]) {
+.missing-alt {
   border: 2px dashed var(--color-danger);
 }
 
-img[alt=""] {
+.decorative-image {
   border: 2px dashed var(--color-warning);
 }
 
@@ -248,15 +245,11 @@ img[alt=""] {
 }
 
 /* ===== DARK MODE ACCESSIBILITY ===== */
-body.dark-mode {
-  color-scheme: dark;
-}
-
-body.dark-mode *:focus-visible {
+.dark-mode :where(a, button, input, textarea, select, summary):focus-visible {
   outline-color: var(--color-primary-light);
 }
 
-body.dark-mode .skip-to-main {
+.dark-mode .skip-to-main {
   background: var(--color-primary-light);
   color: white;
 }
@@ -269,7 +262,7 @@ body.dark-mode .skip-to-main {
     display: none !important;
   }
 
-  * {
+  :where(*) {
     background: white !important;
     color: black !important;
     box-shadow: none !important;

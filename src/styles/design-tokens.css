@@ -1,21 +1,8 @@
-/* Design Tokens - Portfolio Investment System */
 :root {
-  /* ===== SPACING ===== */
-  --space-2xs: 4px;
-  --space-xs: 8px;
-  --space-sm: 12px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
-  --space-4xl: 96px;
+  --font-family-sans: "Figtree", "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-serif: "Playfair Display", Georgia, serif;
+  --font-family-mono: "Geist Mono", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
 
-  /* ===== TYPOGRAPHY ===== */
-  --font-family: 'Figtree', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-family-mono: 'Geist Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-  
-  /* Escalas fluidas con clamp() para responsividad */
   --font-size-xs: clamp(0.75rem, 1.2vw, 0.875rem);
   --font-size-sm: clamp(0.875rem, 1.5vw, 1rem);
   --font-size-base: clamp(1rem, 1.8vw, 1.125rem);
@@ -23,77 +10,34 @@
   --font-size-xl: clamp(1.25rem, 2.5vw, 1.5rem);
   --font-size-2xl: clamp(1.5rem, 3vw, 2rem);
   --font-size-3xl: clamp(1.875rem, 4vw, 2.5rem);
-  
-  /* Pesos de fuente */
+
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* Line heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
 
-  /* ===== PALETTE (Investment Portfolio) ===== */
-  /* Neutrals - from brief */
-  --color-neutral-bg: #FAFAF7;
-  --color-neutral-text: #1A1A18;
-  --color-neutral-secondary: #6B6B69;
-  --color-neutral-border: #E5E5E3;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
 
-  /* Semantic Colors */
-  --color-gain: #059669;
-  --color-loss: #B91C1C;
-  --color-info: #0369A1;
-  --color-warning: #B45309;
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
 
-  /* Extended palette for flexibility */
-  --color-neutral-50: #FAFAF7;
-  --color-neutral-100: #F5F5F2;
-  --color-neutral-200: #E5E5E3;
-  --color-neutral-300: #D8D8D5;
-  --color-neutral-400: #B0B0AD;
-  --color-neutral-500: #6B6B69;
-  --color-neutral-600: #4A4A47;
-  --color-neutral-700: #2F2F2D;
-  --color-neutral-800: #1A1A18;
-  --color-neutral-900: #0D0D0C;
-
-  /* Sector colors (refined) */
-  --color-sector-tech: #0369A1;
-  --color-sector-finance: #059669;
-  --color-sector-energy: #B45309;
-  --color-sector-health: #B91C1C;
-  --color-sector-consumer: #0369A1;
-  --color-sector-politics: #6B6B69;
-  --color-sector-economy: #B45309;
-  --color-sector-automotive: #B91C1C;
-  --color-sector-trade: #059669;
-
-  /* Impact levels */
-  --color-impact-high: #B91C1C;
-  --color-impact-medium: #B45309;
-  --color-impact-low: #059669;
-
-  /* Sentiment */
-  --color-sentiment-positive: #059669;
-  --color-sentiment-neutral: #6B6B69;
-  --color-sentiment-negative: #B91C1C;
-
-  /* ===== BACKGROUNDS & TEXT ===== */
-  --bg-primary: #FAFAF7;
-  --bg-secondary: #F5F5F2;
-  --bg-tertiary: #E5E5E3;
-  --text-primary: #1A1A18;
-  --text-secondary: #6B6B69;
-  --text-tertiary: #B0B0AD;
-  --border-color: #E5E5E3;
-  --border-color-light: #F5F5F2;
-  --border-color-dark: #D8D8D5;
-
-  /* ===== SOMBRAS ===== */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
@@ -101,22 +45,6 @@
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
 
-  /* ===== BORDER RADIUS ===== */
-  --radius-none: 0;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
-  --radius-full: 9999px;
-
-  /* ===== TRANSICIONES ===== */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 250ms ease-in-out;
-  --transition-slow: 350ms ease-in-out;
-  --transition-all: all var(--transition-normal);
-
-  /* ===== Z-INDEX ===== */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -126,7 +54,6 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
-  /* ===== BREAKPOINTS (para uso en JS) ===== */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
@@ -134,28 +61,6 @@
   --breakpoint-2xl: 1536px;
 }
 
-/* ===== DARK MODE ===== */
-body.dark-mode {
-  --bg-primary: #0D0D0C;
-  --bg-secondary: #1A1A18;
-  --bg-tertiary: #2F2F2D;
-  --text-primary: #FAFAF7;
-  --text-secondary: #B0B0AD;
-  --text-tertiary: #6B6B69;
-  --border-color: #2F2F2D;
-  --border-color-light: #1A1A18;
-  --border-color-dark: #0D0D0C;
-
-  /* Dark mode shadows - more pronounced */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.3);
-  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.6);
-}
-
-/* ===== UTILIDADES DE ACCESIBILIDAD ===== */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -169,22 +74,20 @@ body.dark-mode {
 }
 
 .focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid currentColor;
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-/* ===== MIXINS CSS (para uso con @apply) ===== */
 .btn-base {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
-  font-weight: var(--font-weight-medium);
-  transition: var(--transition-all);
-  cursor: pointer;
   border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
   text-decoration: none;
+  font-weight: var(--font-weight-medium);
 }
 
 .btn-sm {
@@ -203,29 +106,4 @@ body.dark-mode {
   padding: var(--space-md) var(--space-lg);
   font-size: var(--font-size-lg);
   line-height: var(--line-height-normal);
-}
-
-/* ===== RESPONSIVE UTILITIES ===== */
-@media (max-width: 640px) {
-  :root {
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-    --font-size-3xl: 1.875rem;
-  }
-}
-
-@media (min-width: 1536px) {
-  :root {
-    --font-size-xs: 0.875rem;
-    --font-size-sm: 1rem;
-    --font-size-base: 1.125rem;
-    --font-size-lg: 1.25rem;
-    --font-size-xl: 1.5rem;
-    --font-size-2xl: 2rem;
-    --font-size-3xl: 2.5rem;
-  }
 }

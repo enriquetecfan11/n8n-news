@@ -8,8 +8,9 @@ import ThemeInit from "../components/ThemeInit.astro";
 import { getCollection } from 'astro:content';
 import { NewsFilter } from '../utils/newsFilter';
 import { SITE_TITLE } from '../consts';
+import "../styles/global.css";
+import "../styles/motion.css";
 import "../styles/theme.css";
-import "../styles/news-variables.css";
 import "../styles/design-tokens.css";
 
 type Props = CollectionEntry<"blog">["data"] & {
@@ -92,27 +93,9 @@ function getSectorChipStyle(sector: string) {
     <ThemeInit />
     <BaseHead title={`${title} - ${SITE_TITLE}`} description={description} />
     <style>
-      /* Usar tokens globales de news-variables/design-tokens */
-      :root {
-        --bg: var(--app-bg);
-        --page: var(--app-surface);
-        --text: var(--app-text);
-        --muted: var(--app-text-muted);
-        --border: var(--app-border);
-        --primary: var(--app-text);
-        --chip-bg: var(--app-surface-2);
-        --chip-fg: var(--app-text);
-        --accent: var(--accent, #0D47A1);
-      }
-
       body {
-        background-color: var(--page);
-        margin: 0;
-        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        color: var(--text);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
+        background-color: var(--app-bg);
+        color: var(--app-text);
       }
 
       .post-layout {
