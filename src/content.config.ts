@@ -13,18 +13,17 @@ const blog = defineCollection({
 		updatedDate: z.coerce.date().optional(),
 		// Metadatos financieros
 		impact: z
-			.preprocess((val) => {
-				// Many sources write impact: "" → treat as missing
-				if (val === '') return undefined;
-				return val;
-			}, z.union([
+			.union([
 				z.enum(['alto', 'medio', 'bajo']),
 				z.enum(['high', 'medium', 'low']),
 				z.enum(['HIGH', 'MEDIUM', 'LOW']),
 				z.enum(['Alto', 'Medio', 'Bajo']),
 				z.enum(['High', 'Medium', 'Low']),
-			]))
+				z.literal(''),
+			])
 			.transform((val) => {
+				// Allow impact: "" in frontmatter
+				if (val === '') return undefined;
 				const mapping: Record<string, string> = {
 					high: 'alto',
 					medium: 'medio',
@@ -42,18 +41,17 @@ const blog = defineCollection({
 		sectors: z.array(z.string()).optional(),
 		source: z.string().optional(),
 		sentiment: z
-			.preprocess((val) => {
-				// Many sources write sentiment: "" → treat as missing
-				if (val === '') return undefined;
-				return val;
-			}, z.union([
+			.union([
 				z.enum(['positivo', 'neutral', 'negativo']),
 				z.enum(['positive', 'neutral', 'negative']),
 				z.enum(['POSITIVE', 'NEUTRAL', 'NEGATIVE']),
 				z.enum(['Positivo', 'Neutral', 'Negativo']),
 				z.enum(['Positive', 'Neutral', 'Negative']),
-			]))
+				z.literal(''),
+			])
 			.transform((val) => {
+				// Allow sentiment: "" in frontmatter
+				if (val === '') return undefined;
 				const mapping: Record<string, string> = {
 					positive: 'positivo',
 					negative: 'negativo',
