@@ -213,8 +213,47 @@ export async function deleteTransaction(id: string) {
   if (error) throw error;
 }
 
+export async function getUserProfile(userId: string) {
+  const { data, error } = await supabase.from('user_profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertUserProfile(profile: {
+  id: string;
+  nombre?: string | null;
+  divisa_base?: string | null;
+  notificaciones_email?: boolean | null;
+}) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      {
+        id: profile.id,
+        nombre: profile.nombre ?? null,
+        divisa_base: profile.divisa_base ?? 'EUR',
+        notificaciones_email: profile.notificaciones_email ?? true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    )
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 // Auth helper functions
-export async function getCurrentSession() {
+export async function getCurrentSession(accessToken?: string | null) {
+  if (accessToken) {
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    if (error || !data.user) return null;
+    return {
+      user: data.user,
+      access_token: accessToken,
+    };
+  }
+
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error) throw error;
   return session;

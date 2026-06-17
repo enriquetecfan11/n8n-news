@@ -13,10 +13,7 @@ const isActive = href === pathname || href === pathname.replace(/\/$/, "");
 	<slot />
 </a>
 <style>
-	/* Los estilos ahora se manejan desde el Header.astro */
 	a {
-		/* Resetear estilos por defecto */
-		all: unset;
-		display: contents;
+		text-decoration: none;
 	}
 </style>

@@ -2,5 +2,7 @@
 import { supabase } from '../lib/supabase';
 
 await supabase.auth.signOut();
+Astro.cookies.delete('sb-access-token', { path: '/' });
+Astro.cookies.delete('sb-refresh-token', { path: '/' });
 return Astro.redirect('/login');
 ---

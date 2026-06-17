@@ -16,12 +16,12 @@ const WatchlistSidebar = ({ isExpanded, onToggle, isMobile = false }) => {
     script.async = true;
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js';
     script.innerHTML = JSON.stringify({
-      colorTheme: 'light',
+      colorTheme: 'dark',
       dateRange: '1D',
       showChart: true,
       locale: 'es',
       largeChartUrl: '',
-      isTransparent: false,
+      isTransparent: true,
       showSymbolLogo: true,
       showFloatingTooltip: false,
       width: '100%',
@@ -69,8 +69,10 @@ const WatchlistSidebar = ({ isExpanded, onToggle, isMobile = false }) => {
       {isExpanded ? (
         <div className="sidebar-content">
           {/* Widget de TradingView */}
-          <div className="tradingview-widget">
-            <div ref={containerRef} className="tradingview-widget-container"></div>
+          <div className="tradingview-widget-shell">
+            <div className="tradingview-widget">
+              <div ref={containerRef} className="tradingview-widget-container" style={{ background: '#0f1117', colorScheme: 'dark', borderRadius: '12px', overflow: 'hidden' }}></div>
+            </div>
           </div>
         </div>
       ) : (

@@ -3,7 +3,7 @@ import { supabase, getCurrentSession, createAssetForUser, getAssetsByUser } from
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await getCurrentSession();
+    const session = await getCurrentSession(context.cookies.get('sb-access-token')?.value);
     if (!session) {
       return new Response(
         JSON.stringify({ error: 'No autorizado' }),

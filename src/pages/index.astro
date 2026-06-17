@@ -1,194 +1,45 @@
 ---
-import BaseHead from "../components/BaseHead.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import ThemeInit from "../components/ThemeInit.astro";
-import StockTicker from "../components/finance/StockTicker.astro";
-import ProfessionalNewsList from "../components/news/ProfessionalNewsList.astro";
-import QuickAnalysisSidebar from "../components/finance/QuickAnalysisSidebar.astro";
-import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
-import { getCollection, type CollectionEntry } from "astro:content";
-import "../styles/news-variables.css";
-import "../styles/global.css";
-import "../styles/theme.css";
-
-// Obtener las noticias ordenadas por fecha (las más recientes primero)
-const posts = (await getCollection("blog")).sort((a, b) => {
-	// Get dates without time
-	const dateA = new Date(
-		a.data.pubDate.getFullYear(),
-		a.data.pubDate.getMonth(),
-		a.data.pubDate.getDate(),
-	);
-	const dateB = new Date(
-		b.data.pubDate.getFullYear(),
-		b.data.pubDate.getMonth(),
-		b.data.pubDate.getDate(),
-	);
-
-	// Compare dates first (newest day first)
-	const dateCompare = dateB.getTime() - dateA.getTime();
-	if (dateCompare !== 0) return dateCompare;
-
-	// If same date, sort by complete timestamp (newest first)
-	return b.data.pubDate.getTime() - a.data.pubDate.getTime();
-});
-
-// Agrupar noticias por fecha
-const groupedPosts = posts.reduce((groups: Record<string, CollectionEntry<"blog">[]>, post) => {
-	const date = post.data.pubDate.toLocaleDateString("es-ES", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
-
-	if (!groups[date]) {
-		groups[date] = [];
-	}
-
-	groups[date].push(post);
-	return groups;
-}, {} as Record<string, CollectionEntry<"blog">[]>);
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<!doctype html>
-<html lang="es">
-	<head>
-		<ThemeInit />
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-			rel="stylesheet"
-		/>
-	</head>
-	<body>
-		<Header />
+<BaseLayout title="Analiza tus inversiones con Inteligencia Artificial">
+  <main class="landing">
+    <section class="hero">
+      <p class="eyebrow">SaaS financiero</p>
+      <h1>Analiza tus inversiones con Inteligencia Artificial</h1>
+      <p class="lead">Portfolios en tiempo real, noticias filtradas por tus activos y análisis de mercado todo en un solo lugar.</p>
+      <div class="actions">
+        <a class="btn primary" href="/login">Empezar gratis →</a>
+        <a class="btn secondary" href="/mercados">Ver mercados</a>
+      </div>
+    </section>
 
-		<!-- Ticker financiero minimalista -->
-		<section class="ticker-section">
-			<div class="wrapper ticker-container">
-				<StockTicker
-					speed={80}
-					refreshInterval={60000}
-					darkMode={false}
-					data-refresh-interval={60000}
-				/>
-			</div>
-		</section>
+    <section class="features">
+      <article><h2>Portfolio inteligente</h2><p>Visualiza el rendimiento global y cada posición con contexto útil.</p></article>
+      <article><h2>Noticias relevantes</h2><p>Filtra la información por los tickers que realmente te importan.</p></article>
+      <article><h2>Mercados en tiempo real</h2><p>Sigue precios y comportamiento del mercado desde una sola interfaz.</p></article>
+    </section>
 
-		<!-- Layout principal con 2 columnas -->
-		<main class="main-content">
-			<div class="wrapper">
-				<div class="dashboard-layout">
-					<!-- Columna 1: Noticias principales -->
-					<section class="news-column">
-						<ProfessionalNewsList groupedPosts={groupedPosts} />
-					</section>
-
-					<!-- Columna 2: Análisis rápido -->
-					<aside class="analysis-column">
-						<QuickAnalysisSidebar />
-					</aside>
-				</div>
-			</div>
-		</main>
-
-		<Footer />
-	</body>
-</html>
+    <section class="cta">
+      <h2>Únete gratis hoy</h2>
+      <a class="btn primary" href="/login">Crear cuenta →</a>
+    </section>
+  </main>
+</BaseLayout>
 
 <style>
-	/* Ticker financiero */
-	.ticker-section {
-		padding: 1.5rem 0;
-		background: var(--app-surface);
-		border-bottom: 1px solid var(--app-border);
-	}
-
-	.ticker-container {
-		max-width: 1400px;
-	}
-
-
-	/* Layout principal */
-	.main-content {
-		padding: 2rem 0;
-		background: var(--app-bg);
-		min-height: 60vh;
-	}
-
-	.wrapper {
-		max-width: 1400px;
-		margin: 0 auto;
-		padding: 0 2rem;
-	}
-
-	/* Dashboard de 2 columnas */
-	.dashboard-layout {
-		display: grid;
-		grid-template-columns: 1fr 320px;
-		gap: 2rem;
-		align-items: start;
-	}
-
-	/* Columna de noticias */
-	.news-column {
-		min-width: 0; /* Permite que el contenido se ajuste */
-	}
-
-	/* Columna de análisis */
-	.analysis-column {
-		position: sticky;
-		top: 100px;
-		height: fit-content;
-	}
-
-	/* Responsive */
-	@media (max-width: 1200px) {
-		.dashboard-layout {
-			grid-template-columns: 1fr 300px;
-			gap: 1.5rem;
-		}
-	}
-
-	@media (max-width: 1024px) {
-		.dashboard-layout {
-			grid-template-columns: 1fr;
-			gap: 2rem;
-		}
-
-		.analysis-column {
-			position: static;
-		}
-
-		.wrapper {
-			padding: 0 1.5rem;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.main-content {
-			padding: 1.5rem 0;
-		}
-
-		.wrapper {
-			padding: 0 1rem;
-		}
-
-		.dashboard-layout {
-			gap: 1.5rem;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.wrapper {
-			padding: 0 0.75rem;
-		}
-
-		.dashboard-layout {
-			gap: 1rem;
-		}
-	}
+  .landing{max-width:1400px;margin:0 auto;padding:5rem 1.5rem 4rem;color:#e2e8f0}
+  .hero{padding:3rem 0 4rem}
+  h1{font-size:clamp(2.6rem,6vw,5.2rem);line-height:1.02;max-width:12ch;color:#f8fafc}
+  .lead{max-width:58ch;font-size:1.1rem;color:#94a3b8;margin:1rem 0 1.5rem}
+  .eyebrow{color:#7dd3fc;text-transform:uppercase;letter-spacing:.18em;font-size:.8rem}
+  .actions{display:flex;gap:1rem;flex-wrap:wrap}
+  .btn{padding:1rem 1.25rem;border-radius:1rem;text-decoration:none;font-weight:700}
+  .primary{background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white}
+  .secondary{background:rgba(148,163,184,.12);color:#e2e8f0}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1rem 0 4rem}
+  .features article,.cta{background:rgba(15,23,42,.78);border:1px solid rgba(148,163,184,.14);border-radius:1.25rem;padding:1.5rem}
+  .features h2,.cta h2{color:#f8fafc}
+  .cta{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+  @media (max-width:900px){.features,.cta{grid-template-columns:1fr;display:grid}.cta{justify-content:start}}
 </style>

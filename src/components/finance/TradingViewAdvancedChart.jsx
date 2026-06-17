@@ -1,7 +1,7 @@
 // TradingViewAdvancedChart.jsx
 import React, { useEffect, useRef } from 'react';
 
-function TradingViewAdvancedChart() {
+function TradingViewAdvancedChart({ symbol = 'VANTAGE:SP500' }) {
     const containerRef = useRef(null);
     const scriptRef = useRef(null);
 
@@ -16,10 +16,10 @@ function TradingViewAdvancedChart() {
         script.async = true;
         script.innerHTML = JSON.stringify({
             autosize: true,
-            symbol: "VANTAGE:SP500",
+            symbol,
             interval: "1",
             timezone: "Europe/Madrid",
-            theme: "light",
+            theme: "dark",
             style: "1",
             locale: "es",
             allow_symbol_change: true,
@@ -27,7 +27,8 @@ function TradingViewAdvancedChart() {
             hotlist: false,
             calendar: false,
             support_host: "https://www.tradingview.com",
-            toolbar_bg: "#F5F5F5",
+            toolbar_bg: "#0f1117",
+            backgroundColor: "rgba(0,0,0,0)",
             enable_publishing: false,
             hide_side_toolbar: false,
             hide_top_toolbar: false,
@@ -52,19 +53,21 @@ function TradingViewAdvancedChart() {
                 containerRef.current.removeChild(scriptRef.current);
             }
         };
-    }, []); // Array vacío = solo se ejecuta en mount y cleanup en unmount
+    }, [symbol]);
 
     return (
-        <div 
-            className="tradingview-widget-container" 
-            style={{ height: "100%", width: "100%" }}
-        >
-            <div 
-                id="tradingview_chart_container"
-                className="tradingview-widget-container__widget" 
-                ref={containerRef}
-                style={{ height: "100%", width: "100%" }}
-            />
+        <div style={{ background: "#0f1117", borderRadius: "12px", overflow: "hidden", height: "100%", minHeight: "700px", width: "100%" }}>
+            <div
+                className="tradingview-widget-container"
+                style={{ height: "100%", minHeight: "700px", width: "100%", background: "#0f1117", colorScheme: "dark" }}
+            >
+                <div
+                    id="tradingview_chart_container"
+                    className="tradingview-widget-container__widget"
+                    ref={containerRef}
+                    style={{ height: "700px", minHeight: "700px", width: "100%", background: "#0f1117", colorScheme: "dark" }}
+                />
+            </div>
         </div>
     );
 }

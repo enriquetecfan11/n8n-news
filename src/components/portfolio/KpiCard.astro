@@ -3,11 +3,11 @@ interface Props {
   label: string;
   value: string | number;
   change?: number;
-  suffix?: string;
+  context?: string;
   color?: 'default' | 'positive' | 'negative';
 }
 
-const { label, value, change, suffix = '', color = 'default' } = Astro.props;
+const { label, value, change, context = '', color = 'default' } = Astro.props;
 
 const changeClass =
   change !== undefined ? (change >= 0 ? 'positive' : 'negative') : null;
@@ -15,9 +15,8 @@ const changeClass =
 
 <div class="kpi-card">
   <span class="kpi-label">{label}</span>
-  <span class="kpi-value">
-    {value}{suffix && <span style="font-size: 0.6em; margin-left: 0.25em;">{suffix}</span>}
-  </span>
+  <span class="kpi-value">{value}</span>
+  {context && <span class="kpi-context">{context}</span>}
   {change !== undefined && (
     <span class:list={['kpi-change', changeClass]}>
       {change >= 0 ? '+' : ''}{change.toFixed(2)}%
@@ -29,53 +28,62 @@ const changeClass =
   .kpi-card {
     background: var(--pf-card);
     border: 1px solid var(--pf-border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
+    border-radius: var(--radius-2xl);
+    padding: var(--pf-card-pad);
     display: flex;
     flex-direction: column;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    gap: 0.2rem;
   }
 
   .kpi-card:hover {
-    border-color: #6366f1;
     background: var(--pf-card-hover);
   }
 
   .kpi-label {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--pf-text-muted);
-    margin-bottom: var(--space-md);
     text-transform: uppercase;
-    letter-spacing: 0.75px;
+    letter-spacing: 0.08em;
     font-weight: 600;
   }
 
   .kpi-value {
-    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-size: clamp(1.2rem, 2.2vw, 1.65rem);
     font-weight: 700;
     color: var(--pf-text);
-    line-height: 1.1;
+    line-height: 1;
     font-family: var(--font-family-mono);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
   .kpi-change {
-    font-size: 0.875rem;
-    margin-top: var(--space-md);
-    padding: 0.5rem 0.75rem;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.5rem;
     border-radius: var(--radius-md);
     width: fit-content;
     font-family: var(--font-family-mono);
     font-weight: 600;
   }
 
+  .kpi-suffix {
+    font-size: 0.56em;
+    margin-left: 0.25rem;
+    color: var(--pf-text-muted);
+  }
+
+  .kpi-context {
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.1;
+  }
+
   .kpi-change.positive {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    color: #15803d;
   }
 
   .kpi-change.negative {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
   }
 </style>

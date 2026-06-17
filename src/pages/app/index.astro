@@ -1,0 +1,342 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { getHoldings, getPortfolioSummary, getPriceSnapshotsForHoldings, getExchangeRate } from '../../lib/portfolio';
+import { getAssetsByPortfolio, getTransactionsByPortfolio, getPortfoliosByUser } from '../../lib/supabase';
+
+const user = Astro.locals.user as { id: string; email?: string; user_metadata?: { name?: string; full_name?: string } };
+if (!user?.id) {
+  return Astro.redirect('/login');
+}
+const displayName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'inversor';
+
+const hour = new Date().getHours();
+const greeting = hour < 12 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+const now = new Date();
+const weekday = new Intl.DateTimeFormat('es-ES', { weekday: 'long' }).format(now);
+const day = new Intl.DateTimeFormat('es-ES', { day: 'numeric' }).format(now);
+const month = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(now);
+const year = new Intl.DateTimeFormat('es-ES', { year: 'numeric' }).format(now);
+const timeLabel = new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(now);
+
+const portfolios = await getPortfoliosByUser(user.id);
+const enriched = await Promise.all(
+  portfolios.map(async (portfolio) => {
+    const transactions = await getTransactionsByPortfolio(portfolio.id);
+    const assets = await getAssetsByPortfolio(portfolio.id);
+    const holdings = getHoldings(transactions, new Map(assets.map((asset) => [asset.id, asset])));
+    const priceSnapshots = await getPriceSnapshotsForHoldings(holdings);
+
+    const holdingsWithPrices = await Promise.all(
+      holdings.map(async (holding) => {
+        const snapshot = priceSnapshots.get(holding.assetId);
+        const priceActual = snapshot?.price ?? null;
+        const cambio24h = snapshot?.change24h ?? null;
+        const precioEnEUR =
+          priceActual === null || priceActual <= 0
+            ? null
+            : holding.currency === 'USD'
+              ? priceActual * (await getExchangeRate('USD', 'EUR'))
+              : priceActual;
+        const rateUSDToEUR = holding.currency === 'USD' ? await getExchangeRate('USD', 'EUR') : 1;
+        const costeEnEUR = holding.currency === 'USD' ? holding.totalCost * rateUSDToEUR : holding.totalCost;
+        const valorEnEUR = precioEnEUR === null ? 0 : holding.quantity * precioEnEUR;
+
+        return {
+          ...holding,
+          precio_actual: priceActual,
+          precio_actual_eur: precioEnEUR,
+          var24h: cambio24h,
+          valor_actual: priceActual === null ? 0 : holding.quantity * priceActual,
+          valor_eur: valorEnEUR,
+          coste_eur: costeEnEUR,
+          currentPrice: priceActual,
+          currentPriceEur: precioEnEUR,
+          currentValue: priceActual === null ? 0 : holding.quantity * priceActual,
+          currentValueEur: valorEnEUR,
+          totalCost: costeEnEUR,
+          pnlAbsolute: precioEnEUR === null ? 0 : valorEnEUR - costeEnEUR,
+          pnlPercent: costeEnEUR > 0 && precioEnEUR !== null ? ((valorEnEUR - costeEnEUR) / costeEnEUR) * 100 : 0,
+          priceChange24h: cambio24h ?? 0,
+          priceAvailable: priceActual !== null && priceActual > 0,
+        };
+      })
+    );
+
+    const summary = getPortfolioSummary(holdingsWithPrices);
+    const visibleHoldings = holdingsWithPrices.filter((holding) => holding.precio_actual !== null && holding.precio_actual > 0);
+
+    return {
+      ...portfolio,
+      ...summary,
+      holdings: holdingsWithPrices,
+      visibleHoldings,
+    };
+  })
+);
+
+const valorTotalGlobal = enriched
+  .flatMap((portfolio) => portfolio.visibleHoldings)
+  .reduce((acc, holding) => acc + holding.valor_eur, 0);
+
+const costeTotalGlobal = enriched
+  .flatMap((portfolio) => portfolio.visibleHoldings)
+  .reduce((acc, holding) => acc + holding.coste_eur, 0);
+
+const pnlAbsoluto = valorTotalGlobal - costeTotalGlobal;
+const pnlPct = costeTotalGlobal > 0 ? (pnlAbsoluto / costeTotalGlobal) * 100 : 0;
+
+const topAssets = enriched
+  .flatMap((portfolio) => portfolio.visibleHoldings)
+  .reduce((acc, holding) => {
+    const existing = acc.get(holding.assetId);
+    if (existing) {
+      existing.value += holding.valor_eur;
+      existing.pnlAbsolute += holding.pnlAbsolute;
+      existing.totalCost += holding.coste_eur;
+      existing.quantity += holding.quantity;
+      if (holding.precio_actual !== null) {
+        existing.currentPrice = holding.precio_actual;
+      }
+      existing.change24h = holding.var24h;
+      existing.valueDisplay += holding.valor_actual;
+      return acc;
+    }
+
+    acc.set(holding.assetId, {
+      assetId: holding.assetId,
+      assetName: holding.assetName,
+      ticker: holding.ticker,
+      currentPrice: holding.precio_actual,
+      change24h: holding.var24h,
+      value: holding.valor_eur,
+      valueDisplay: holding.valor_actual,
+      pnlAbsolute: holding.pnlAbsolute,
+      totalCost: holding.coste_eur,
+      quantity: holding.quantity,
+      baseCurrency: holding.currency,
+    });
+    return acc;
+  }, new Map<string, {
+    assetId: string;
+    assetName: string;
+    ticker: string;
+    currentPrice: number | null;
+    change24h: number | null;
+    value: number;
+    valueDisplay: number;
+    pnlAbsolute: number;
+    totalCost: number;
+    quantity: number;
+    baseCurrency: string;
+  }>());
+
+const topAssetsList = Array.from(topAssets.values())
+  .sort((a, b) => b.value - a.value)
+  .slice(0, 5)
+  .map((asset) => ({
+    ...asset,
+    pnlPercent: asset.totalCost > 0 ? (asset.pnlAbsolute / asset.totalCost) * 100 : 0,
+  }));
+
+let filteredPosts = [];
+let hasNews = false;
+
+try {
+  const allPosts = await getCollection('blog');
+  filteredPosts = allPosts
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+    .slice(0, 5);
+  hasNews = filteredPosts.length > 0;
+} catch (error) {
+  filteredPosts = [];
+  hasNews = false;
+  console.error('Error loading dashboard news:', error);
+}
+---
+
+<BaseLayout title="Dashboard">
+  <main class="app-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">{greeting}, {displayName}</p>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="hero-right">
+        <p class="date">{weekday}, {day} de {month} de {year}</p>
+        <p class="time">Precios actualizados: {timeLabel}</p>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <article>
+        <p class="label">Valor total</p>
+        <p class="value">{valorTotalGlobal.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+      </article>
+      <article>
+        <p class="label">P&L absoluto</p>
+        <p class={`value ${pnlAbsoluto >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
+          {pnlAbsoluto.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+        </p>
+      </article>
+      <article>
+        <p class="label">P&L %</p>
+        <p class={`value`}>
+          <span class={`pnl-pill ${pnlPct >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>{pnlPct.toFixed(2)}%</span>
+        </p>
+      </article>
+      <article>
+        <p class="label">Portfolios</p>
+        <p class="value">{enriched.length}</p>
+        <p class="subvalue">activos</p>
+      </article>
+    </section>
+
+    <section class="grid">
+      <div class="left">
+        <div>
+          <div class="section-head">
+            <h2>Mis Portfolios</h2>
+            <a href="/app/portfolio" class="section-link">Ver todos →</a>
+          </div>
+          <div class="portfolio-strip">
+            {enriched.map((portfolio) => (
+              <div class="portfolio-mini">
+                <h3>{portfolio.name} <span class="currency">{portfolio.base_currency}</span></h3>
+                <p class="amount">{portfolio.totalValue.toLocaleString('es-ES', { style: 'currency', currency: portfolio.base_currency })}</p>
+                <p class={`value ${portfolio.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
+                  {portfolio.pnlPercent.toFixed(2)}%
+                </p>
+                <a href={`/portfolio/${portfolio.id}`} class="detail">Ver detalle →</a>
+              </div>
+            ))}
+            <a href="/app/portfolio" class="new-portfolio">+ Nuevo portfolio</a>
+          </div>
+        </div>
+
+        <div>
+          <h2 style="margin:0 0 .75rem;color:#f8fafc;font-size:1rem;font-weight:500">Tus activos</h2>
+          <table class="assets-table">
+            <thead>
+              <tr>
+                <th class="text-left">Activo</th>
+                <th class="num-right">Precio</th>
+                <th class="num-right">Var 24h</th>
+                <th class="num-right">Valor</th>
+                <th class="num-right">P&L %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topAssetsList.map((asset) => (
+                <tr>
+                  <td>
+                    <div class="asset-name">
+                      {asset.assetName}
+                      {asset.ticker && <span class="asset-badge">{asset.ticker}</span>}
+                    </div>
+                  </td>
+                  <td class="num-right">
+                    {asset.currentPrice !== null
+                      ? asset.currentPrice.toLocaleString('es-ES', { style: 'currency', currency: asset.baseCurrency })
+                      : '—'}
+                  </td>
+                  <td class={`num-right ${asset.change24h !== null && Math.abs(asset.change24h) > 0.001 ? (asset.change24h >= 0 ? 'pnl-positive' : 'pnl-negative') : 'text-slate-500'}`}>
+                    {typeof asset.change24h === 'number' && Math.abs(asset.change24h) > 0.001
+                      ? `${asset.change24h >= 0 ? '↑ ' : '↓ '}${Math.abs(asset.change24h).toFixed(2)}%`
+                      : '—'}
+                  </td>
+                  <td class="num-right">
+                    {asset.valueDisplay.toLocaleString('es-ES', { style: 'currency', currency: asset.baseCurrency })}
+                  </td>
+                  <td class={`num-right ${asset.pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
+                    <span class={`pnl-pill ${asset.pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
+                      {asset.pnlPercent.toFixed(2)}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="right">
+        <div class="section-head">
+          <h2>Noticias</h2>
+          <span class="sub">Filtradas por tus activos</span>
+        </div>
+        {hasNews ? (
+          <>
+            <div class="news-list">
+              {filteredPosts.map((post) => (
+                <a href={`/blog/${post.slug}`} class="news-item" target="_blank" rel="noreferrer">
+                  <strong class="news-title line-clamp-2">{post.data.title}</strong>
+                  <div class="news-meta">
+                    <span>{post.data.source || 'Fuente desconocida'}</span>
+                    <span>·</span>
+                    <span>{post.data.pubDate.toLocaleDateString('es-ES')}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <a href="/inicio" class="news-all-link">Ver todas las noticias →</a>
+          </>
+        ) : (
+          <p class="news-empty">No hay noticias disponibles en este momento</p>
+        )}
+      </aside>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .app-shell{max-width:1400px;margin:0 auto;padding:1rem 1.5rem 4rem}
+  .hero{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 0}
+  .hero h1{font-size:1.5rem;line-height:1.2;margin:.2rem 0 0;color:#f8fafc}
+  .hero-right{text-align:right}
+  .hero-right .date{color:#94a3b8;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em}
+  .hero-right .time{color:#94a3b8;font-size:.75rem;margin-top:.35rem}
+  .eyebrow,.sub,.right p,.news-item span,.portfolio-card .meta{color:#94a3b8}
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;margin:0 0 1.5rem}
+  .kpis article{background:#111827;border:1px solid #1f2937;border-radius:1rem;padding:.85rem 1rem}
+  .kpis p{margin:0}
+  .kpis .label{color:#94a3b8;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem}
+  .kpis .value{display:block;font-size:1.15rem;font-weight:600;color:#f8fafc}
+  .kpis .subvalue{margin-top:.3rem;font-size:.8rem;color:#94a3b8}
+  .pnl-positive{color:#22c55e}
+  .pnl-negative{color:#ef4444}
+  .pnl-pill{display:inline-flex;padding:.2rem .5rem;border-radius:999px;font-size:.8rem;font-weight:600;background:rgba(255,255,255,.04)}
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start}
+  .left{display:grid;gap:1.5rem}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+  .section-head h2,.right h2{margin:0;color:#f8fafc;font-size:1rem;font-weight:500}
+  .section-link{color:#60a5fa;text-decoration:none;font-size:.875rem}
+  .section-link:hover{color:#93c5fd}
+  .portfolio-strip{display:flex;gap:.75rem;overflow:auto;padding-bottom:.25rem}
+  .portfolio-mini{min-width:240px;background:#111827;border:1px solid #1f2937;border-radius:1rem;padding:1rem}
+  .portfolio-mini h3{margin:0 0 .5rem;color:#f8fafc;font-size:.95rem}
+  .portfolio-mini .currency{display:inline-flex;padding:.15rem .45rem;border-radius:999px;background:#1f2937;color:#cbd5e1;font-size:.72rem;margin-left:.35rem}
+  .portfolio-mini .amount{color:#f8fafc;font-size:1.1rem;font-weight:600;margin:.25rem 0}
+  .portfolio-mini .detail{display:inline-flex;margin-top:.5rem;color:#60a5fa;text-decoration:none;font-size:.875rem}
+  .portfolio-mini .detail:hover{color:#93c5fd}
+  .new-portfolio{display:inline-flex;align-items:center;justify-content:center;min-width:240px;border:1px dashed #334155;border-radius:1rem;padding:1rem;color:#cbd5e1;text-decoration:none;background:transparent}
+  .assets-table{width:100%;border-collapse:collapse}
+  .assets-table th{padding:0 0 .6rem;border-bottom:1px solid #1f2937}
+  .assets-table td{padding:.85rem 0;border-bottom:1px solid #1f2937;color:#cbd5e1;vertical-align:middle}
+  .assets-table th{color:#94a3b8;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+  .asset-name{color:#f8fafc;font-weight:500}
+  .asset-badge{display:inline-flex;margin-left:.4rem;padding:.1rem .4rem;border-radius:999px;background:#1f2937;color:#cbd5e1;font-size:.7rem}
+  .asset-sub{color:#94a3b8;font-size:.78rem;margin-top:.1rem}
+  .num-right{text-align:right}
+  .right{padding:0}
+  .news-list{display:block;margin-top:.25rem}
+  .news-item{display:block;padding:.85rem 0;text-decoration:none;color:inherit;border-bottom:1px solid #1f2937}
+  .news-title{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:2;color:#f8fafc;margin:0}
+  .news-meta{display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.75rem;color:#94a3b8}
+  .news-all-link{display:inline-flex;margin-top:.75rem;color:#60a5fa;text-decoration:none;font-weight:600;font-size:.875rem}
+  .news-all-link:hover{color:#93c5fd}
+  .news-empty{margin:1rem 0 0;text-align:center;color:#64748b;font-size:.875rem}
+  .line-clamp-2{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:2}
+  @media (max-width: 1100px){.grid,.kpis{grid-template-columns:1fr}.hero{flex-direction:column;align-items:flex-start;gap:.75rem}.hero-right{text-align:left}}
+  @media (max-width: 900px){.portfolio-strip{flex-direction:column}.portfolio-mini,.new-portfolio{min-width:0}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+  @media (max-width: 700px){.kpis{grid-template-columns:1fr}}
+</style>

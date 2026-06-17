@@ -11,7 +11,7 @@ import {
 } from '../../../lib/supabase';
 import type { Asset, Transaction } from '../../../lib/portfolio';
 
-const session = await getCurrentSession();
+const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
 if (!session) {
   return Astro.redirect('/login');
 }
@@ -26,6 +26,7 @@ let portfolio = null;
 let transactions: Transaction[] = [];
 let assets: Map<string, Asset> = new Map();
 let filteredTransactions: Transaction[] = [];
+let averageCostByAsset: Map<string, number> = new Map();
 let error: string | null = null;
 
 const typeFilter = new URL(Astro.request.url).searchParams.get('type');
@@ -42,6 +43,22 @@ try {
   assets = new Map(allAssets.map((a: Asset) => [a.id, a]));
 
   transactions = await getTransactionsByPortfolio(id);
+
+  const costAccumulator = new Map<string, { cost: number; quantity: number }>();
+  for (const tx of transactions) {
+    if (tx.type !== 'buy') continue;
+    const current = costAccumulator.get(tx.asset_id) || { cost: 0, quantity: 0 };
+    current.cost += tx.quantity * tx.unit_price + (tx.fee || 0);
+    current.quantity += tx.quantity;
+    costAccumulator.set(tx.asset_id, current);
+  }
+
+  averageCostByAsset = new Map(
+    Array.from(costAccumulator.entries()).map(([assetId, value]) => [
+      assetId,
+      value.quantity > 0 ? value.cost / value.quantity : 0,
+    ])
+  );
 
   // Aplicar filtros
   filteredTransactions = transactions.filter((tx) => {
@@ -125,7 +142,12 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
               <span class="stat">({transactions.length} total)</span>
             )}
           </div>
-          <TransactionsTable transactions={filteredTransactions} assets={assets} showDelete={true} />
+          <TransactionsTable
+            transactions={filteredTransactions}
+            assets={assets}
+            averageCostByAsset={averageCostByAsset}
+            showDelete={true}
+          />
         </section>
       ) : (
         <div class="empty-state">
@@ -144,26 +166,26 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
 <style>
   .main-content {
     flex: 1;
-    padding: var(--space-2xl) 0;
+    padding: var(--pf-page-pad-y) 0;
   }
 
   .wrapper {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 var(--space-lg);
+    padding: 0 var(--pf-page-pad-x);
   }
 
   .page-header {
-    margin-bottom: var(--space-3xl);
+    margin-bottom: var(--pf-section-gap);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: var(--space-lg);
+    gap: 0.75rem;
   }
 
   .btn-sm {
-    padding: var(--space-xs) var(--space-md);
-    font-size: 0.875rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
   }
 
   .btn {
@@ -175,47 +197,47 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
   }
 
   .btn-secondary {
-    background: var(--background-alt);
-    color: var(--text);
-    border: 1px solid var(--border);
+    background: var(--pf-card);
+    color: var(--pf-text);
+    border: 1px solid var(--pf-border);
   }
 
   .btn-secondary:hover {
-    background: var(--border);
+    background: #f8fafc;
   }
 
   .breadcrumb {
     display: inline-block;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
     text-decoration: none;
-    margin-bottom: var(--space-sm);
-    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
     transition: color 0.2s ease;
   }
 
   .breadcrumb:hover {
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .page-header h1 {
     margin: 0;
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.35rem, 2.3vw, 1.85rem);
     font-weight: 700;
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .filters-section {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-2xl);
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    padding: 0.6rem 0.75rem;
+    margin-bottom: var(--pf-section-gap);
   }
 
   .filters-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-lg);
+    gap: 0.45rem;
   }
 
   .filter-group {
@@ -226,62 +248,62 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
   .filter-group label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-light);
-    margin-bottom: 0.5rem;
+    color: var(--pf-text-muted);
+    margin-bottom: 0.25rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
   }
 
   .filter-group select {
-    padding: var(--space-sm) var(--space-md);
-    border: 1px solid var(--border);
+    padding: 0.42rem 0.65rem;
+    border: 1px solid var(--pf-border);
     border-radius: var(--radius-md);
-    background: var(--background);
-    color: var(--text);
-    font-size: 0.95rem;
+    background: #ffffff;
+    color: var(--pf-text);
+    font-size: 0.85rem;
     cursor: pointer;
     transition: border-color 0.2s ease;
   }
 
   .filter-group select:hover {
-    border-color: var(--text-light);
+    border-color: #94a3b8;
   }
 
   .filter-group select:focus {
     outline: none;
-    border-color: var(--text);
+    border-color: #2563eb;
   }
 
   .transactions-section {
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--pf-section-gap);
   }
 
   .stats-summary {
     display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-    font-size: 0.95rem;
-    color: var(--text-light);
+    gap: 0.4rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--pf-text-muted);
   }
 
   .stat {
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--background-alt);
+    padding: 0.2rem 0.45rem;
+    background: #f8fafc;
     border-radius: var(--radius-sm);
   }
 
   .empty-state {
     text-align: center;
-    padding: var(--space-3xl) var(--space-2xl);
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    color: var(--text-light);
+    padding: 0.9rem 0.8rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    color: var(--pf-text-muted);
   }
 
   .empty-state h2 {
-    margin: 0 0 var(--space-md) 0;
-    color: var(--text);
+    margin: 0 0 0.35rem 0;
+    color: var(--pf-text);
   }
 
   @media (max-width: 768px) {

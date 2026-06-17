@@ -1,0 +1,130 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCurrentSession, getUserProfile, supabase } from '../../lib/supabase';
+
+const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
+if (!session?.user?.id) {
+  return Astro.redirect('/login');
+}
+
+const profile = await getUserProfile(session.user.id);
+const email = session.user.email ?? '';
+---
+
+<BaseLayout title="Perfil">
+  <main class="profile-page">
+    <section class="profile-card card">
+      <div class="profile-head">
+        <div>
+          <p class="eyebrow">Cuenta</p>
+          <h1>Perfil</h1>
+        </div>
+        <p class="muted">Gestiona tus datos básicos y preferencias</p>
+      </div>
+
+      <form id="profile-form" class="profile-form">
+        <label>
+          <span>Nombre</span>
+          <input id="nombre" type="text" value={profile?.nombre ?? ''} />
+        </label>
+
+        <label>
+          <span>Divisa base</span>
+          <select id="divisa_base">
+            {['EUR', 'USD', 'GBP'].map((value) => (
+              <option value={value} selected={(profile?.divisa_base ?? 'EUR') === value}>{value}</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="checkbox-row">
+          <input id="notificaciones_email" type="checkbox" checked={profile?.notificaciones_email ?? true} />
+          <span>Notificaciones email</span>
+        </label>
+
+        <label>
+          <span>Email</span>
+          <input type="email" value={email} readonly />
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="button-primary">Guardar</button>
+          <button type="button" id="password-btn" class="button-secondary">Cambiar contraseña</button>
+        </div>
+      </form>
+
+      <p id="toast" class="toast" aria-live="polite"></p>
+    </section>
+  </main>
+</BaseLayout>
+
+<script type="module">
+  import { supabase } from '../../lib/supabase';
+
+  const form = document.getElementById('profile-form');
+  const toast = document.getElementById('toast');
+  const passwordBtn = document.getElementById('password-btn');
+  const nombre = document.getElementById('nombre');
+  const divisaBase = document.getElementById('divisa_base');
+  const notificacionesEmail = document.getElementById('notificaciones_email');
+  const email = {JSON.stringify(email)};
+  const userId = {JSON.stringify(session.user.id)};
+
+  const showToast = (message, type = 'success') => {
+    toast.textContent = message;
+    toast.dataset.state = type;
+  };
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: userId,
+          nombre: nombre.value.trim() || null,
+          divisa_base: divisaBase.value,
+          notificaciones_email: notificacionesEmail.checked,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'No se pudo guardar el perfil');
+      }
+
+      showToast('Perfil guardado correctamente');
+    } catch (error) {
+      showToast(error.message || 'Error al guardar', 'error');
+    }
+  });
+
+  passwordBtn.addEventListener('click', async () => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      showToast(error.message, 'error');
+      return;
+    }
+    showToast('Te hemos enviado un correo para cambiar la contraseña');
+  });
+</script>
+
+<style>
+  .profile-page { padding: 2rem 0; }
+  .profile-card { max-width: 720px; margin: 0 auto; padding: 1.5rem; border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 1.25rem; background: rgba(15, 23, 42, 0.92); }
+  .profile-head { display:flex; justify-content:space-between; gap:1rem; align-items:end; margin-bottom:1.5rem; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; color: #94a3b8; }
+  .muted { color:#94a3b8; }
+  .profile-form { display:grid; gap:1rem; }
+  .profile-form label { display:grid; gap:.45rem; color:#e2e8f0; }
+  .profile-form input, .profile-form select { width:100%; padding:.8rem .9rem; border-radius:.85rem; border:1px solid rgba(148,163,184,.16); background:#0f172a; color:#e2e8f0; }
+  .checkbox-row { grid-template-columns: auto 1fr; align-items:center; }
+  .checkbox-row input { width:auto; }
+  .actions { display:flex; gap:.75rem; flex-wrap:wrap; }
+  .button-primary, .button-secondary { border:0; border-radius:.9rem; padding:.8rem 1rem; cursor:pointer; }
+  .button-primary { background: linear-gradient(135deg, #2563eb, #0ea5e9); color:#fff; }
+  .button-secondary { background: rgba(148, 163, 184, 0.12); color:#e2e8f0; }
+  .toast { min-height:1.5rem; margin-top:1rem; color:#cbd5e1; }
+  .toast[data-state="error"] { color:#fca5a5; }
+</style>

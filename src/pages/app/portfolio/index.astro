@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PortfolioCard from '../../../components/portfolio/PortfolioCard.astro';
+import CreatePortfolioModal from '../../../components/portfolio/CreatePortfolioModal.astro';
+import { getHoldings, getPortfolioSummary } from '../../../lib/portfolio';
+import { getAssetsByPortfolio, getPortfoliosByUser, getTransactionsByPortfolio } from '../../../lib/supabase';
+
+const user = Astro.locals.user as { id: string };
+if (!user?.id) {
+  return Astro.redirect('/login');
+}
+const portfolios = await getPortfoliosByUser(user.id);
+const enriched = await Promise.all(
+  portfolios.map(async (portfolio) => {
+    const transactions = await getTransactionsByPortfolio(portfolio.id);
+    const assets = await getAssetsByPortfolio(portfolio.id);
+    const holdings = getHoldings(transactions, new Map(assets.map((asset) => [asset.id, asset])));
+    const summary = getPortfolioSummary(holdings);
+    return { ...portfolio, ...summary };
+  })
+);
+---
+
+<BaseLayout title="Portfolio">
+  <main class="page">
+    <section class="top">
+      <div>
+        <p class="eyebrow">Portfolio</p>
+        <h1>Gestiona tus portfolios</h1>
+      </div>
+      <button class="cta" onclick="document.getElementById('modal-nuevo-portfolio').classList.remove('hidden')">Crear portfolio</button>
+    </section>
+
+    <section class="cards">
+      {enriched.map((portfolio) => (
+        <PortfolioCard portfolio={portfolio} totalValue={portfolio.totalValue} totalCost={portfolio.totalCost} pnlAbsolute={portfolio.pnlAbsolute} pnlPercent={portfolio.pnlPercent} />
+      ))}
+    </section>
+  </main>
+  <CreatePortfolioModal />
+</BaseLayout>
+
+<style>
+  .page{max-width:1400px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .top{display:flex;justify-content:space-between;gap:1rem;align-items:end;margin-bottom:1.5rem}
+  h1{color:#f8fafc}
+  .eyebrow{color:#94a3b8}
+  .cta{border:0;border-radius:.9rem;padding:.9rem 1rem;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:white;font-weight:700}
+  .cards{display:grid;gap:1rem}
+</style>

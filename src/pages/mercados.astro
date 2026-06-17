@@ -1,0 +1,41 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import ThemeInit from "../components/ThemeInit.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import TradingDashboard from "../components/finance/TradingDashboard.jsx";
+import { getCollection } from 'astro:content';
+import "../styles/news-variables.css";
+import "../styles/global.css";
+import "../styles/theme.css";
+import "../styles/trading-dashboard.css";
+
+const news = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .map((post) => ({
+    title: post.data.title,
+    url: `/blog/${post.slug}`,
+    source: post.data.source || 'Noticias',
+    date: post.data.pubDate.toLocaleDateString('es-ES'),
+  }));
+---
+
+<!doctype html>
+<html lang="es" class="dark" style="color-scheme: dark;">
+  <head>
+    <ThemeInit />
+    <BaseHead title={`Mercados en tiempo real | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body class="bg-[#0f1117] text-white">
+    <Navbar />
+    <main class="main-content">
+      <TradingDashboard client:load news={news} />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .main-content{width:100%;max-width:1680px;margin:0 auto;padding:1rem 1rem 1.5rem}
+</style>

@@ -1,0 +1,145 @@
+---
+import HeaderLink from "./HeaderLink.astro";
+import { SITE_TITLE } from "../consts";
+import { getCurrentSession, getUserProfile } from "../lib/supabase";
+
+const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
+const profile = session?.user?.id ? await getUserProfile(session.user.id) : null;
+---
+
+<header role="banner" class="navbar">
+  <div class="navbar__inner">
+    <a href={session ? "/app" : "/"} class="navbar__brand">
+      <span class="navbar__logo">N</span>
+      <span class="navbar__title">{SITE_TITLE}</span>
+    </a>
+
+    <nav aria-label="Navegación principal" class="navbar__nav">
+      {session ? (
+        <>
+          <HeaderLink href="/app" class="navbar__link">Dashboard</HeaderLink>
+          <HeaderLink href="/mercados" class="navbar__link">Mercados</HeaderLink>
+          <HeaderLink href="/app/portfolio" class="navbar__link">Portfolio</HeaderLink>
+        </>
+      ) : (
+        <>
+          <HeaderLink href="/mercados" class="navbar__link">Mercados</HeaderLink>
+          <HeaderLink href="/mercados" class="navbar__link">Precios</HeaderLink>
+        </>
+      )}
+    </nav>
+
+    <div class="navbar__actions">
+      <button id="theme-toggle" class="p-2 rounded-lg text-slate-400 navbar__theme-button" type="button">
+        <span id="theme-icon">☀️</span>
+      </button>
+      {session ? (
+        <div class="navbar__menu">
+          <button class="navbar__user" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="navbar__avatar">{(profile?.nombre || session.user.email || '?').slice(0, 1).toUpperCase()}</span>
+            <span class="navbar__name">{profile?.nombre || session.user.email?.split('@')[0]}</span>
+          </button>
+          <div class="navbar__dropdown">
+            <a href="/app/perfil">Perfil</a>
+            <a href="/logout">Cerrar sesión</a>
+          </div>
+        </div>
+      ) : (
+        <>
+          <a class="navbar__button navbar__button--ghost" href="/login">Iniciar sesión</a>
+          <a class="navbar__button" href="/register">Registrarse →</a>
+        </>
+      )}
+    </div>
+  </div>
+</header>
+
+<style>
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(7, 10, 18, 0.82);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  }
+  .navbar__inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+  }
+  .navbar__brand, .navbar__link, .navbar__button, .navbar__user { color: inherit; text-decoration: none; }
+  .navbar__link {
+    display: inline-flex;
+    align-items: center;
+  }
+  .navbar__brand { display: flex; align-items: center; gap: .75rem; }
+  .navbar__logo {
+    width: 2rem; height: 2rem; border-radius: .75rem; display: grid; place-items: center;
+    background: linear-gradient(135deg, #2563eb, #0f172a); color: white; font-weight: 800;
+  }
+  .navbar__title { font-weight: 700; color: #f8fafc; }
+  .navbar__nav { display: flex; gap: 1.25rem; }
+  .navbar__link { color: #cbd5e1; }
+  .navbar__actions { display: flex; align-items: center; gap: .75rem; }
+  .navbar__menu { position: relative; }
+  .navbar__user { display: flex; align-items: center; gap: .6rem; color: #e2e8f0; background: transparent; border: 0; padding: 0; cursor: pointer; }
+  .navbar__avatar { width: 2rem; height: 2rem; border-radius: 999px; background: #1e293b; display: grid; place-items: center; }
+  .navbar__button {
+    display: inline-flex; align-items: center; justify-content: center; padding: .7rem 1rem; border-radius: .9rem;
+    background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; font-weight: 600;
+  }
+  .navbar__button--ghost { background: rgba(148, 163, 184, 0.12); color: #e2e8f0; }
+  .navbar__dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + .5rem);
+    min-width: 12rem;
+    padding: .5rem;
+    border-radius: .9rem;
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    display: none;
+    flex-direction: column;
+    gap: .25rem;
+  }
+  .navbar__menu:hover .navbar__dropdown,
+  .navbar__menu:focus-within .navbar__dropdown {
+    display: flex;
+  }
+  .navbar__dropdown a {
+    color: #e2e8f0;
+    padding: .65rem .75rem;
+    border-radius: .7rem;
+  }
+  .navbar__dropdown a:hover {
+    background: rgba(148, 163, 184, 0.12);
+    text-decoration: none;
+  }
+  .navbar__theme-button {
+    background: rgba(148, 163, 184, 0.12);
+    border: 0;
+    color: #e2e8f0;
+    cursor: pointer;
+  }
+  @media (max-width: 900px) {
+    .navbar__nav, .navbar__name { display: none; }
+  }
+</style>
+<script>
+  const btn = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  icon.textContent = saved === 'dark' ? '☀️' : '🌙';
+  btn.onclick = () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    icon.textContent = next === 'dark' ? '☀️' : '🌙';
+  };
+</script>

@@ -80,6 +80,28 @@ export interface Database {
           notes?: string | null;
         };
       };
+      user_profiles: {
+        Row: {
+          id: string;
+          nombre: string | null;
+          divisa_base: string | null;
+          notificaciones_email: boolean | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id: string;
+          nombre?: string | null;
+          divisa_base?: string | null;
+          notificaciones_email?: boolean | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          nombre?: string | null;
+          divisa_base?: string | null;
+          notificaciones_email?: boolean | null;
+          updated_at?: string | null;
+        };
+      };
     };
   };
 }

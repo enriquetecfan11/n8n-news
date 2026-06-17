@@ -4,7 +4,7 @@ import { SITE_TITLE } from "../consts";
 import { getCurrentSession } from "../lib/supabase";
 import Analytics from "@vercel/analytics/astro";
 
-const session = await getCurrentSession();
+const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
 ---
 
 <header role="banner" class="main-header">

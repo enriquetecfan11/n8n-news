@@ -853,3 +853,6 @@ li {
 		min-width: 44px;
 	}
 }
+
+[data-theme="light"] body { background:#f8fafc; color:#0f172a; }
+[data-theme="light"] .card { background:#fff; border-color:#e2e8f0; }

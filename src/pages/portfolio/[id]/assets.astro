@@ -9,11 +9,11 @@ import {
 } from '../../../lib/supabase';
 import {
   getHoldings,
-  getPricesForHoldings,
+  getPriceSnapshotsForHoldings,
 } from '../../../lib/portfolio';
 import type { Asset, Transaction } from '../../../lib/portfolio';
 
-const session = await getCurrentSession();
+const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
 if (!session) {
   return Astro.redirect('/login');
 }
@@ -42,14 +42,23 @@ try {
   holdings = getHoldings(transactions, assetMap);
 
   // Obtener precios actuales
-  const prices = await getPricesForHoldings(holdings);
+  const prices = await getPriceSnapshotsForHoldings(holdings);
   holdings.forEach((h) => {
-    const newPrice = prices.get(h.assetId);
-    if (newPrice) {
-      h.currentPrice = newPrice;
+    const snapshot = prices.get(h.assetId);
+    if (snapshot && snapshot.price > 0) {
+      h.currentPrice = snapshot.price;
       h.currentValue = h.quantity * h.currentPrice;
       h.pnlAbsolute = h.currentValue - h.totalCost;
       h.pnlPercent = (h.pnlAbsolute / h.totalCost) * 100;
+      h.priceChange24h = snapshot.change24h ?? 0;
+      h.priceAvailable = true;
+    } else {
+      h.currentPrice = null;
+      h.currentValue = 0;
+      h.pnlAbsolute = 0;
+      h.pnlPercent = 0;
+      h.priceChange24h = 0;
+      h.priceAvailable = false;
     }
   });
 
@@ -116,7 +125,7 @@ const byType = holdings.reduce(
       {/* Holdings Table */}
       {holdings.length > 0 ? (
         <section class="assets-section">
-          <HoldingsTable holdings={holdings} />
+          <HoldingsTable holdings={holdings} totalValue={totalValue} />
         </section>
       ) : (
         <div class="empty-state">
@@ -126,93 +135,94 @@ const byType = holdings.reduce(
       )}
     </div>
   </main>
+
 </BaseLayout>
 
 <style>
   .main-content {
     flex: 1;
-    padding: var(--space-2xl) 0;
+    padding: var(--pf-page-pad-y) 0;
   }
 
   .wrapper {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 var(--space-lg);
+    padding: 0 var(--pf-page-pad-x);
   }
 
   .page-header {
-    margin-bottom: var(--space-3xl);
+    margin-bottom: var(--pf-section-gap);
   }
 
   .breadcrumb {
     display: inline-block;
-    color: var(--text-light);
+    color: var(--pf-text-muted);
     text-decoration: none;
-    margin-bottom: var(--space-sm);
-    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
     transition: color 0.2s ease;
   }
 
   .breadcrumb:hover {
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .page-header h1 {
     margin: 0;
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.35rem, 2.3vw, 1.85rem);
     font-weight: 700;
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .stats-section {
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--pf-section-gap);
   }
 
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
+    gap: 0.45rem;
   }
 
   .stat-card {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    padding: 0.55rem 0.7rem;
     display: flex;
     flex-direction: column;
   }
 
   .stat-label {
-    font-size: 0.75rem;
-    color: var(--text-light);
+    font-size: 0.68rem;
+    color: var(--pf-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
     margin-bottom: 0.5rem;
   }
 
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--text);
+    color: var(--pf-text);
   }
 
   .assets-section {
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--pf-section-gap);
   }
 
   .empty-state {
     text-align: center;
-    padding: var(--space-3xl) var(--space-2xl);
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    color: var(--text-light);
+    padding: 0.9rem 0.8rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    color: var(--pf-text-muted);
   }
 
   .empty-state h2 {
-    margin: 0 0 var(--space-md) 0;
-    color: var(--text);
+    margin: 0 0 0.35rem 0;
+    color: var(--pf-text);
   }
 
   @media (max-width: 768px) {
