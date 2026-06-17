@@ -4,9 +4,8 @@ import KpiCard from '../../components/portfolio/KpiCard.astro';
 import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
 import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
 import PortfolioToolbar from '../../components/portfolio/PortfolioToolbar.astro';
-import AddTransactionModal from '../../components/portfolio/AddTransactionModal.astro';
 import EditPortfolioModal from '../../components/portfolio/EditPortfolioModal.astro';
-import CreateAssetModal from '../../components/portfolio/CreateAssetModal.astro';
+import BuyAssetModal from '../../components/portfolio/BuyAssetModal.astro';
 import EditTransactionModal from '../../components/portfolio/EditTransactionModal.astro';
 import ImportTransactionsModal from '../../components/portfolio/ImportTransactionsModal.astro';
 import {
@@ -199,17 +198,7 @@ if (error || !portfolio || !summary) {
     </div>
   </main>
 
-  <AddTransactionModal
-    portfolioId={id}
-    assets={await (async () => {
-      try {
-        const assetsList = await getAssets();
-        return assetsList.map((a: Asset) => ({ id: a.id, name: a.name, ticker: a.ticker || '' }));
-      } catch {
-        return [];
-      }
-    })()}
-  />
+  <BuyAssetModal portfolioId={id} />
 
   <EditPortfolioModal
     portfolioId={id}
@@ -217,8 +206,6 @@ if (error || !portfolio || !summary) {
     portfolioDescription={portfolio.description}
     portfolioCurrency={portfolio.base_currency}
   />
-
-  <CreateAssetModal />
 
   <EditTransactionModal />
 
