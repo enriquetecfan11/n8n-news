@@ -5,15 +5,16 @@ interface Props {
   change?: number;
   context?: string;
   color?: 'default' | 'positive' | 'negative';
+  compact?: boolean;
 }
 
-const { label, value, change, context = '', color = 'default' } = Astro.props;
+const { label, value, change, context = '', color = 'default', compact = false } = Astro.props;
 
 const changeClass =
   change !== undefined ? (change >= 0 ? 'positive' : 'negative') : null;
 ---
 
-<div class="kpi-card">
+<div class:list={['kpi-card', compact && 'kpi-card-compact']}>
   <span class="kpi-label">{label}</span>
   <span class="kpi-value">{value}</span>
   {context && <span class="kpi-context">{context}</span>}
@@ -29,18 +30,23 @@ const changeClass =
     background: var(--pf-card);
     border: 1px solid var(--pf-border);
     border-radius: var(--radius-2xl);
-    padding: var(--pf-card-pad);
+    padding: 1rem 1.1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.3rem;
   }
 
   .kpi-card:hover {
     background: var(--pf-card-hover);
   }
 
+  .kpi-card-compact {
+    padding: 0.85rem 0.95rem;
+    gap: 0.2rem;
+  }
+
   .kpi-label {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--pf-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -48,7 +54,7 @@ const changeClass =
   }
 
   .kpi-value {
-    font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
     font-weight: 700;
     color: var(--pf-text);
     line-height: 1;
@@ -57,8 +63,8 @@ const changeClass =
   }
 
   .kpi-change {
-    font-size: 0.72rem;
-    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.55rem;
     border-radius: var(--radius-md);
     width: fit-content;
     font-family: var(--font-family-mono);
@@ -73,8 +79,20 @@ const changeClass =
 
   .kpi-context {
     color: #64748b;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     line-height: 1.1;
+  }
+
+  .kpi-card-compact .kpi-label {
+    font-size: 0.68rem;
+  }
+
+  .kpi-card-compact .kpi-value {
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+  }
+
+  .kpi-card-compact .kpi-context {
+    font-size: 0.78rem;
   }
 
   .kpi-change.positive {

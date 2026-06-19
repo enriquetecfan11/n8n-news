@@ -19,17 +19,22 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
 <div class="holdings-container">
   <table class="holdings-table">
+    <colgroup>
+      <col class="col-asset" />
+      <col class="col-quantity" />
+      <col class="col-price" />
+      <col class="col-value" />
+      <col class="col-pnl" />
+      <col class="col-weight" />
+    </colgroup>
     <thead>
       <tr>
         <th>Activo</th>
         <th>Cantidad</th>
-        <th>Precio Medio</th>
-        <th>Coste Total</th>
         <th>Precio Actual</th>
         <th>Var 24h</th>
         <th>Valor Actual</th>
-        <th>P&L Absoluto</th>
-        <th>P&L %</th>
+        <th>P&L</th>
         <th>Peso</th>
       </tr>
     </thead>
@@ -43,29 +48,30 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
             data-row-id={safeTickerId(holding.ticker)}
             class="holding-row"
           >
-          <td style="color: #ffffff">
+          <td class="asset-cell">
             <div class="holding-name">
+              <span class="holding-logo" aria-hidden="true">
+                {holding.ticker ? holding.ticker.slice(0, 2).toUpperCase() : '•'}
+              </span>
               <span class="holding-name-text" title={holding.assetName}>{getShortName(holding.assetName)}</span>
               <span class:list={['holding-badge', holding.type]}>
                 {holding.ticker}
               </span>
             </div>
           </td>
-          <td style="color: #ffffff">{holding.quantity.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</td>
-          <td style="color: #ffffff">{formatCurrency(holding.averagePrice, holding.currency)}</td>
-          <td style="color: #ffffff">{formatCurrency(holding.quantity * holding.averagePrice, holding.currency)}</td>
-          <td style="color: #ffffff">{holding.priceAvailable ? formatCurrency(holding.currentPrice, holding.currency) : <span class="muted-cell">N/D</span>}</td>
-          <td style="color: #ffffff" class:list={holding.priceAvailable ? [holding.priceChange24h >= 0 ? 'pnl-positive' : 'pnl-negative'] : ['muted-cell']}>
-            {holding.priceAvailable ? `${holding.priceChange24h >= 0 ? '↑' : '↓'} ${formatPercent(Math.abs(holding.priceChange24h))}` : 'N/D'}
+          <td class="num-cell num-cell-strong">{holding.quantity.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</td>
+          <td class="num-cell">{holding.priceAvailable ? formatCurrency(holding.currentPrice, holding.currency) : <span class="muted-cell">N/D</span>}</td>
+          <td class:list={['num-cell', holding.priceAvailable ? (holding.priceChange24h >= 0 ? 'pnl-positive' : 'pnl-negative') : 'muted-cell']}>
+            {holding.priceAvailable ? formatPercent(holding.priceChange24h) : 'N/D'}
           </td>
-          <td style="color: #ffffff">{formatCurrency(holding.currentValue, holding.currency)}</td>
-          <td style="color: #ffffff" class:list={[holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
-            {formatCurrency(holding.pnlAbsolute, holding.currency)}
+          <td class="num-cell num-cell-strong">{formatCurrency(holding.currentValue, holding.currency)}</td>
+          <td class:list={['num-cell', holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+            <div class="pnl-stack">
+              <span class="pnl-abs">{formatCurrency(holding.pnlAbsolute, holding.currency)}</span>
+              <span class="pnl-pct">{formatPercent(holding.pnlPercent)}</span>
+            </div>
           </td>
-          <td style="color: #ffffff" class:list={[holding.pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative']}>
-            {formatPercent(holding.pnlPercent)}
-          </td>
-          <td style="color: #ffffff">
+          <td class="num-cell">
             <div class="weight-cell">
               <span>
                 {totalValue > 0 ? `${((holding.currentValue / totalValue) * 100).toFixed(1)}%` : '0.0%'}
@@ -75,12 +81,14 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
           </td>
           </tr>
           <tr id={`chart-row-${safeTickerId(holding.ticker)}`} class="chart-row hidden">
-            <td colspan="10" class="chart-cell">
+            <td colspan="6" class="chart-cell">
               <div class="chart-panel">
                 <div class="chart-mini-header">
                   <span class="chart-name">{holding.assetName}</span>
                   <span class="chart-ticker">{holding.ticker}</span>
-                  <span class="chart-meta">Gráfico diario · TradingView</span>
+                  <span class="chart-meta">
+                    Valor medio {formatCurrency(holding.averagePrice, holding.currency)} · Coste total {formatCurrency(holding.totalCost, holding.currency)} · 24h {holding.priceAvailable ? formatPercent(holding.priceChange24h) : 'N/D'}
+                  </span>
                 </div>
                 <div id={`tv-${safeTickerId(holding.ticker)}`} class="chart-widget"></div>
               </div>
@@ -103,12 +111,12 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
     border: 1px solid var(--pf-border);
     border-radius: var(--radius-2xl);
     overflow: auto;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
   }
 
   .holdings-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
   }
 
   .holdings-table thead {
@@ -120,33 +128,58 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
   }
 
   .holdings-table th {
-    padding: var(--pf-table-cell-pad-y) var(--pf-table-cell-pad-x);
+    padding: 0.55rem 0.75rem;
     text-align: left;
     font-weight: 600;
     font-size: 0.7rem;
-    color: #ffffff;
+    color: var(--pf-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    background: var(--pf-card);
   }
 
   .holdings-table td {
-    padding: var(--pf-table-cell-pad-y) var(--pf-table-cell-pad-x);
+    padding: 0.48rem 0.75rem;
     border-bottom: 1px solid var(--pf-border);
-    color: #ffffff;
+    color: var(--pf-text);
     vertical-align: middle;
   }
 
   .holdings-table tbody tr {
     background: transparent;
-    border-bottom: 1px solid #2a2d3a;
   }
 
   .holding-row {
     cursor: pointer;
+    transition: background-color 0.16s ease;
+  }
+
+  .holding-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .holding-row.is-open {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .holdings-table thead th:first-child,
+  .holding-row td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--pf-card);
+  }
+
+  .holdings-table thead th:first-child {
+    z-index: 3;
+  }
+
+  .asset-cell {
+    min-width: 260px;
   }
 
   .chart-row {
-    background: #1e2433;
+    background: transparent;
   }
 
   .chart-row.hidden {
@@ -155,13 +188,10 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
   .chart-cell {
     padding: 0;
-    border-bottom: 1px solid #2a2d3a;
   }
 
   .chart-panel {
-    padding: 1rem;
-    background: #1e2433;
-    border-top: 1px solid #2a2d3a;
+    padding: 0.75rem 0.75rem 0.9rem;
   }
 
   .chart-mini-header {
@@ -173,7 +203,7 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
   }
 
   .chart-name {
-    color: #ffffff;
+    color: var(--pf-text);
     font-weight: 600;
     font-size: 0.875rem;
   }
@@ -182,18 +212,18 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
     font-size: 0.75rem;
     padding: 0.15rem 0.5rem;
     border-radius: 999px;
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
   }
 
   .chart-meta {
     margin-left: auto;
-    color: #64748b;
+    color: var(--pf-text-muted);
     font-size: 0.75rem;
   }
 
   .chart-widget {
-    height: 300px;
+    height: 260px;
     width: 100%;
   }
 
@@ -216,7 +246,7 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
   }
 
   .muted-cell {
-    color: #94a3b8;
+    color: var(--pf-text-muted);
   }
 
   .holding-name {
@@ -224,6 +254,21 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
     align-items: center;
     gap: 0.5rem;
     min-width: 0;
+  }
+
+  .holding-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 0.45rem;
+    background: rgba(99, 102, 241, 0.12);
+    color: #c7d2fe;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
   }
 
   .holding-name-text {
@@ -236,9 +281,9 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
   .holding-badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
+    padding: 0.18rem 0.45rem;
     border-radius: var(--radius-md);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -266,13 +311,40 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
   }
 
   .pnl-positive {
-    color: #15803d;
+    color: rgba(34, 197, 94, 0.92);
     font-weight: 600;
   }
 
   .pnl-negative {
-    color: #b91c1c;
+    color: rgba(239, 68, 68, 0.92);
     font-weight: 600;
+  }
+
+  .num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .num-cell-strong {
+    font-weight: 700;
+  }
+
+  .pnl-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.05;
+  }
+
+  .pnl-abs {
+    font-weight: 700;
+  }
+
+  .pnl-pct {
+    margin-top: 0.08rem;
+    font-size: 0.72rem;
+    color: inherit;
+    opacity: 0.8;
   }
 
   .empty-table {
@@ -293,6 +365,10 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
     .holding-name-text {
       max-width: 120px;
+    }
+
+    .asset-cell {
+      min-width: 220px;
     }
   }
 </style>
