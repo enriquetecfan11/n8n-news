@@ -77,7 +77,7 @@ async function searchYahooFinance(ticker: string) {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const session = await getCurrentSession(context.cookies.get('sb-access-token')?.value);
+    const session = await getCurrentSession(request.headers.get('cookie')?.match(/sb-access-token=([^;]+)/)?.[1]);
     if (!session) {
       return new Response(
         JSON.stringify({ error: 'No autorizado' }),
