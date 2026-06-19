@@ -235,7 +235,7 @@
 }
 
 .tradingview-shell--chart {
-  min-height: 840px;
+  min-height: 0;
 }
 
 .tradingview-shell--widget {
