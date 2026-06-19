@@ -5,152 +5,262 @@ import { formatCurrency, formatPercent } from '../../lib/portfolio';
 interface Props {
   holdings: Holding[];
   totalValue: number;
+  portfolioId?: string;
 }
 
-const { holdings, totalValue } = Astro.props;
+const { holdings, totalValue, portfolioId } = Astro.props;
 
 const getShortName = (name: string) => {
   const parts = name.split(' ');
-  return parts.length > 1 && name.length > 18 ? parts[0] : name;
+  return parts.length > 1 && name.length > 22 ? parts[0] : name;
 };
 
 const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+const formatPnlInline = (holding: Holding) => {
+  const abs = formatCurrency(holding.pnlAbsolute, holding.currency);
+  const pct = formatPercent(holding.pnlPercent);
+  return `${abs} · ${pct}`;
+};
+
+const formatWeight = (value: number) => (totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : '0.0');
 ---
 
-<div class="holdings-container">
-  <table class="holdings-table">
-    <colgroup>
-      <col class="col-asset" />
-      <col class="col-quantity" />
-      <col class="col-price" />
-      <col class="col-value" />
-      <col class="col-pnl" />
-      <col class="col-weight" />
-    </colgroup>
-    <thead>
-      <tr>
-        <th>Activo</th>
-        <th>Cantidad</th>
-        <th>Precio Actual</th>
-        <th>Var 24h</th>
-        <th>Valor Actual</th>
-        <th>P&L</th>
-        <th>Peso</th>
-      </tr>
-    </thead>
-    <tbody>
-      {holdings.map((holding) => (
-        <>
-          <tr
-            data-holding-row
-            data-asset-name={holding.assetName}
-            data-ticker={holding.ticker}
-            data-row-id={safeTickerId(holding.ticker)}
-            class="holding-row"
-          >
-          <td class="asset-cell">
-            <div class="holding-name">
-              <span class="holding-logo" aria-hidden="true">
-                {holding.ticker ? holding.ticker.slice(0, 2).toUpperCase() : '•'}
-              </span>
-              <span class="holding-name-text" title={holding.assetName}>{getShortName(holding.assetName)}</span>
-              <span class:list={['holding-badge', holding.type]}>
-                {holding.ticker}
-              </span>
-            </div>
-          </td>
-          <td class="num-cell num-cell-strong">{holding.quantity.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</td>
-          <td class="num-cell">{holding.priceAvailable ? formatCurrency(holding.currentPrice, holding.currency) : <span class="muted-cell">N/D</span>}</td>
-          <td class:list={['num-cell', holding.priceAvailable ? (holding.priceChange24h >= 0 ? 'pnl-positive' : 'pnl-negative') : 'muted-cell']}>
-            {holding.priceAvailable ? formatPercent(holding.priceChange24h) : 'N/D'}
-          </td>
-          <td class="num-cell num-cell-strong">{formatCurrency(holding.currentValue, holding.currency)}</td>
-          <td class:list={['num-cell', holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
-            <div class="pnl-stack">
-              <span class="pnl-abs">{formatCurrency(holding.pnlAbsolute, holding.currency)}</span>
-              <span class="pnl-pct">{formatPercent(holding.pnlPercent)}</span>
-            </div>
-          </td>
-          <td class="num-cell">
-            <div class="weight-cell">
-              <span>
-                {totalValue > 0 ? `${((holding.currentValue / totalValue) * 100).toFixed(1)}%` : '0.0%'}
-              </span>
-              <span class="row-toggle" aria-hidden="true">▸</span>
-            </div>
-          </td>
-          </tr>
-          <tr id={`chart-row-${safeTickerId(holding.ticker)}`} class="chart-row hidden">
-            <td colspan="6" class="chart-cell">
-              <div class="chart-panel">
-                <div class="chart-mini-header">
-                  <span class="chart-name">{holding.assetName}</span>
-                  <span class="chart-ticker">{holding.ticker}</span>
-                  <span class="chart-meta">
-                    Valor medio {formatCurrency(holding.averagePrice, holding.currency)} · Coste total {formatCurrency(holding.totalCost, holding.currency)} · 24h {holding.priceAvailable ? formatPercent(holding.priceChange24h) : 'N/D'}
-                  </span>
-                </div>
-                <div id={`tv-${safeTickerId(holding.ticker)}`} class="chart-widget"></div>
-              </div>
-            </td>
-          </tr>
-        </>
-      ))}
-    </tbody>
-  </table>
-  {holdings.length === 0 && (
-    <div class="empty-table">
-      No hay activos en el portafolio
+<div class="holdings-wrapper" data-holdings-wrapper data-portfolio-id={portfolioId || ''} data-total-value={totalValue}>
+  <div class="holdings-container">
+    <table class="holdings-table">
+      <thead>
+        <tr>
+          <th>Activo</th>
+          <th class="num-header">Valor actual</th>
+          <th class="num-header">P&amp;L</th>
+          <th class="num-header">Peso</th>
+          <th class="actions-header">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {holdings.map((holding) => {
+          const rowId = safeTickerId(holding.ticker);
+          const weight = formatWeight(holding.currentValue);
+          return (
+            <>
+              <tr
+                data-holding-row
+                data-row-id={rowId}
+                data-asset-id={holding.assetId}
+                data-asset-name={holding.assetName}
+                data-ticker={holding.ticker}
+                data-quantity={holding.quantity}
+                data-average-price={holding.averagePrice}
+                data-current-price={holding.currentPrice ?? ''}
+                data-current-value={holding.currentValue}
+                data-total-cost={holding.totalCost}
+                data-pnl-abs={holding.pnlAbsolute}
+                data-pnl-pct={holding.pnlPercent}
+                data-currency={holding.currency}
+                data-weight={weight}
+                data-type={holding.type}
+                data-price-available={holding.priceAvailable ? 'true' : 'false'}
+                class="holding-row"
+              >
+                <td class="asset-cell">
+                  <div class="holding-name">
+                    <span class="holding-ticker-chip">{holding.ticker || '—'}</span>
+                    <span class="holding-name-text" title={holding.assetName}>{getShortName(holding.assetName)}</span>
+                    {holding.type !== 'stock' && (
+                      <span class:list={['holding-type-tag', holding.type]}>{holding.type}</span>
+                    )}
+                  </div>
+                </td>
+                <td class="num-cell num-cell-strong value-cell">
+                  {formatCurrency(holding.currentValue, holding.currency)}
+                </td>
+                <td class:list={['num-cell', 'pnl-cell', holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+                  <span class="pnl-inline">{formatPnlInline(holding)}</span>
+                </td>
+                <td class="num-cell weight-col">
+                  <div class="weight-stack">
+                    <span class="weight-value">{weight}%</span>
+                    <div class="weight-bar" aria-hidden="true">
+                      <span class="weight-bar-fill" style={`width: ${weight}%`}></span>
+                    </div>
+                  </div>
+                  <button type="button" class="row-expand-btn" data-expand-row={rowId} aria-label={`Ver detalle de ${holding.ticker}`}>
+                    <span class="row-toggle" aria-hidden="true">▸</span>
+                  </button>
+                </td>
+                <td class="actions-cell">
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="action-btn action-btn-sell"
+                      data-action="sell-full"
+                      data-locked-guard
+                    >
+                      Vender
+                    </button>
+                    <details class="row-menu">
+                      <summary class="row-menu-trigger" aria-label={`Más acciones para ${holding.ticker}`}>···</summary>
+                      <div class="row-menu-panel">
+                        <button type="button" class="row-menu-item" data-action="buy-more">Comprar más</button>
+                        <button type="button" class="row-menu-item" data-action="view-detail">Ver detalle</button>
+                        <button type="button" class="row-menu-item" data-action="edit-alerts">Editar alertas</button>
+                        <button type="button" class="row-menu-item" data-action="toggle-lock" data-lock-label>
+                          Marcar como bloqueada
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                </td>
+              </tr>
+              <tr id={`chart-row-${rowId}`} class="chart-row hidden">
+                <td colspan="5" class="chart-cell">
+                  <div class="chart-panel">
+                    <div class="chart-panel-header">
+                      <div class="chart-panel-title">
+                        <span class="chart-ticker-lg">{holding.ticker}</span>
+                        <span class="chart-name">{holding.assetName}</span>
+                      </div>
+                      <div class="chart-panel-actions">
+                        <button type="button" class="panel-btn panel-btn-buy" data-action="buy-more" data-locked-guard>Comprar</button>
+                        <button type="button" class="panel-btn panel-btn-sell" data-action="sell-full" data-locked-guard>Vender</button>
+                      </div>
+                    </div>
+
+                    <div class="chart-widget-wrap">
+                      <div class="avg-price-ribbon">
+                        <span>Precio medio</span>
+                        <strong>{formatCurrency(holding.averagePrice, holding.currency)}</strong>
+                        <span class="avg-price-vs">
+                          Actual {holding.priceAvailable ? formatCurrency(holding.currentPrice, holding.currency) : 'N/D'}
+                        </span>
+                      </div>
+                      <div id={`tv-${rowId}`} class="chart-widget"></div>
+                    </div>
+
+                    <div class="position-stats">
+                      <div class="stat-block">
+                        <span class="stat-label">Cantidad</span>
+                        <span class="stat-value">{holding.quantity.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-label">Precio medio</span>
+                        <span class="stat-value">{formatCurrency(holding.averagePrice, holding.currency)}</span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-label">Valor actual</span>
+                        <span class="stat-value">{formatCurrency(holding.currentValue, holding.currency)}</span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-label">P&amp;L</span>
+                        <span class:list={['stat-value', holding.pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+                          {formatPnlInline(holding)}
+                        </span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-label">Peso</span>
+                        <span class="stat-value">{weight}%</span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-label">Coste total</span>
+                        <span class="stat-value">{formatCurrency(holding.totalCost, holding.currency)}</span>
+                      </div>
+                    </div>
+
+                    <div class="partial-sell-section">
+                      <span class="partial-sell-label">Venta parcial</span>
+                      <div class="partial-sell-btns">
+                        <button type="button" class="partial-btn" data-action="sell-partial" data-sell-pct="25" data-locked-guard>25%</button>
+                        <button type="button" class="partial-btn" data-action="sell-partial" data-sell-pct="50" data-locked-guard>50%</button>
+                        <button type="button" class="partial-btn" data-action="sell-partial" data-sell-pct="100" data-locked-guard>100%</button>
+                      </div>
+                      <p class="partial-sell-hint" data-partial-hint></p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </>
+          );
+        })}
+      </tbody>
+    </table>
+    {holdings.length === 0 && (
+      <div class="empty-table">No hay activos en el portafolio</div>
+    )}
+  </div>
+
+  <div id="holding-alert-modal" class="holding-modal" data-open="false" aria-hidden="true">
+    <div class="holding-modal-overlay"></div>
+    <div class="holding-modal-content" role="dialog" aria-labelledby="holding-alert-title">
+      <h3 id="holding-alert-title">Alertas de precio</h3>
+      <p class="holding-modal-subtitle" data-alert-asset></p>
+      <label class="holding-modal-field">
+        <span>Alerta si sube/baja (%)</span>
+        <input type="number" step="0.1" min="0.1" placeholder="ej. 5" data-alert-threshold />
+      </label>
+      <p class="holding-modal-note">Las alertas se guardan localmente hasta integrar notificaciones.</p>
+      <div class="holding-modal-actions">
+        <button type="button" class="holding-modal-cancel">Cancelar</button>
+        <button type="button" class="holding-modal-save" data-alert-save>Guardar alerta</button>
+      </div>
     </div>
-  )}
+  </div>
 </div>
 
 <style>
+  .holdings-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
   .holdings-container {
     background: var(--pf-card);
     border: 1px solid var(--pf-border);
     border-radius: var(--radius-2xl);
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .holdings-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
   }
 
   .holdings-table thead {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    background: var(--pf-stat-bg);
     border-bottom: 1px solid var(--pf-border);
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 2;
   }
 
   .holdings-table th {
-    padding: 0.55rem 0.75rem;
+    padding: 0.9rem 1.15rem;
     text-align: left;
     font-weight: 600;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     color: var(--pf-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    background: var(--pf-card);
+    background: var(--pf-stat-bg);
+  }
+
+  .holdings-table th.num-header,
+  .holdings-table td.num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
   .holdings-table td {
-    padding: 0.48rem 0.75rem;
+    padding: 0.9rem 1.15rem;
     border-bottom: 1px solid var(--pf-border);
     color: var(--pf-text);
     vertical-align: middle;
-  }
-
-  .holdings-table tbody tr {
-    background: transparent;
+    font-size: 1.05rem;
   }
 
   .holding-row {
-    cursor: pointer;
     transition: background-color 0.16s ease;
   }
 
@@ -159,27 +269,233 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
   }
 
   .holding-row.is-open {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(99, 102, 241, 0.06);
   }
 
-  .holdings-table thead th:first-child,
-  .holding-row td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 2;
-    background: var(--pf-card);
-  }
-
-  .holdings-table thead th:first-child {
-    z-index: 3;
+  .holding-row.is-locked .action-btn-sell,
+  .holding-row.is-locked .panel-btn-sell,
+  .holding-row.is-locked .partial-btn {
+    opacity: 0.45;
+    pointer-events: none;
   }
 
   .asset-cell {
-    min-width: 260px;
+    min-width: 200px;
   }
 
-  .chart-row {
+  .holding-name {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .holding-ticker-chip {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.18);
+    border: 1px solid rgba(129, 140, 248, 0.35);
+    color: #c7d2fe;
+  }
+
+  .holding-name-text {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+    color: var(--pf-text-muted);
+    font-size: 1.05rem;
+  }
+
+  .holding-type-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    color: var(--pf-text-muted);
+    background: var(--pf-stat-bg);
+    border: 1px solid var(--pf-border);
+  }
+
+  .value-cell {
+    font-size: 1.15rem;
+  }
+
+  .pnl-inline {
+    font-weight: 700;
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .pnl-positive {
+    color: #4ade80;
+  }
+
+  .pnl-negative {
+    color: #f87171;
+  }
+
+  .weight-col {
+    min-width: 130px;
+    position: relative;
+  }
+
+  .weight-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    padding-right: 1.6rem;
+  }
+
+  .weight-value {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--pf-text);
+  }
+
+  .weight-bar {
+    width: 100px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--pf-stat-bg);
+    overflow: hidden;
+  }
+
+  .weight-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+  }
+
+  .row-expand-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
     background: transparent;
+    color: var(--pf-text-muted);
+    cursor: pointer;
+    padding: 0.2rem;
+    line-height: 1;
+  }
+
+  .row-toggle {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    font-size: 0.9rem;
+  }
+
+  .holding-row.is-open .row-toggle {
+    transform: rotate(90deg);
+    color: #a5b4fc;
+  }
+
+  .actions-header {
+    width: 120px;
+    text-align: center;
+  }
+
+  .actions-cell {
+    text-align: right;
+  }
+
+  .row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+
+  .action-btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.95rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .action-btn-sell {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+
+  .action-btn-sell:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+
+  .row-menu {
+    position: relative;
+    display: inline-block;
+  }
+
+  .row-menu-trigger {
+    list-style: none;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-sm);
+    background: var(--pf-stat-bg);
+    color: var(--pf-text-muted);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .row-menu-trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .row-menu-trigger:hover,
+  .row-menu[open] .row-menu-trigger {
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(129, 140, 248, 0.45);
+    color: #c7d2fe;
+  }
+
+  .row-menu-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 30;
+    min-width: 180px;
+    background: var(--pf-modal-bg, var(--pf-card));
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row-menu-item {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    color: var(--pf-text);
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .row-menu-item:hover {
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .chart-row.hidden {
@@ -188,163 +504,272 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
   .chart-cell {
     padding: 0;
+    background: var(--pf-stat-bg);
   }
 
   .chart-panel {
-    padding: 0.75rem 0.75rem 0.9rem;
+    padding: 0.85rem 0.85rem 1rem;
+    border-top: 1px solid var(--pf-border);
   }
 
-  .chart-mini-header {
+  .chart-panel-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: space-between;
+    gap: 0.75rem;
     margin-bottom: 0.75rem;
     flex-wrap: wrap;
   }
 
-  .chart-name {
-    color: var(--pf-text);
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-
-  .chart-ticker {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    background: rgba(99, 102, 241, 0.1);
-    color: #818cf8;
-  }
-
-  .chart-meta {
-    margin-left: auto;
-    color: var(--pf-text-muted);
-    font-size: 0.75rem;
-  }
-
-  .chart-widget {
-    height: 260px;
-    width: 100%;
-  }
-
-  .weight-cell {
+  .chart-panel-title {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .row-toggle {
-    color: #64748b;
-    transition: transform 0.2s ease;
-    font-size: 0.9rem;
-    line-height: 1;
-  }
-
-  .holding-row.is-open .row-toggle {
-    transform: rotate(90deg);
-  }
-
-  .muted-cell {
-    color: var(--pf-text-muted);
-  }
-
-  .holding-name {
-    display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 0.5rem;
     min-width: 0;
   }
 
-  .holding-logo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.45rem;
-    height: 1.45rem;
-    border-radius: 0.45rem;
-    background: rgba(99, 102, 241, 0.12);
+  .chart-ticker-lg {
+    font-size: 1.15rem;
+    font-weight: 800;
     color: #c7d2fe;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
+    letter-spacing: 0.04em;
   }
 
-  .holding-name-text {
-    font-weight: 600;
+  .chart-name {
+    color: var(--pf-text-muted);
+    font-size: 0.95rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 180px;
   }
 
-  .holding-badge {
-    display: inline-block;
-    padding: 0.18rem 0.45rem;
+  .chart-panel-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .panel-btn {
+    border: none;
     border-radius: var(--radius-md);
-    font-size: 0.65rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1;
+    cursor: pointer;
   }
 
-  .holding-badge.stock {
-    background: rgba(37, 99, 235, 0.08);
-    color: #1d4ed8;
+  .panel-btn-buy {
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.28);
   }
 
-  .holding-badge.etf {
-    background: rgba(16, 185, 129, 0.08);
-    color: #047857;
+  .panel-btn-sell {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.28);
   }
 
-  .holding-badge.crypto {
-    background: rgba(245, 158, 11, 0.1);
-    color: #b45309;
+  .chart-widget-wrap {
+    position: relative;
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
   }
 
-  .holding-badge.cash {
-    background: rgba(100, 116, 139, 0.08);
-    color: #475569;
+  .avg-price-ribbon {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-bottom: 1px solid var(--pf-border);
+    font-size: 0.78rem;
+    color: var(--pf-text-muted);
+    flex-wrap: wrap;
   }
 
-  .pnl-positive {
-    color: rgba(34, 197, 94, 0.92);
-    font-weight: 600;
-  }
-
-  .pnl-negative {
-    color: rgba(239, 68, 68, 0.92);
-    font-weight: 600;
-  }
-
-  .num-cell {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .num-cell-strong {
+  .avg-price-ribbon strong {
+    color: #c7d2fe;
     font-weight: 700;
   }
 
-  .pnl-stack {
+  .avg-price-vs {
+    margin-left: auto;
+    color: var(--pf-text-muted);
+  }
+
+  .chart-widget {
+    height: 280px;
+    width: 100%;
+  }
+
+  .position-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stat-block {
+    padding: 0.55rem 0.65rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    line-height: 1.05;
+    gap: 0.15rem;
   }
 
-  .pnl-abs {
-    font-weight: 700;
-  }
-
-  .pnl-pct {
-    margin-top: 0.08rem;
+  .stat-label {
     font-size: 0.72rem;
-    color: inherit;
-    opacity: 0.8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--pf-text-muted);
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--pf-text);
+  }
+
+  .partial-sell-section {
+    padding: 0.65rem 0.75rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-md);
+  }
+
+  .partial-sell-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--pf-text-muted);
+    margin-bottom: 0.45rem;
+  }
+
+  .partial-sell-btns {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .partial-btn {
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .partial-btn:hover {
+    background: rgba(239, 68, 68, 0.18);
+  }
+
+  .partial-sell-hint {
+    margin: 0.45rem 0 0;
+    font-size: 0.78rem;
+    color: var(--pf-text-muted);
+    min-height: 1.1rem;
+  }
+
+  .holding-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .holding-modal[data-open='true'] {
+    display: flex;
+  }
+
+  .holding-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--pf-overlay);
+    backdrop-filter: blur(3px);
+  }
+
+  .holding-modal-content {
+    position: relative;
+    width: min(400px, 92vw);
+    background: var(--pf-modal-bg, var(--pf-card));
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .holding-modal-content h3 {
+    margin: 0 0 0.25rem;
+    color: var(--pf-text);
+    font-size: 1.05rem;
+  }
+
+  .holding-modal-subtitle {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: var(--pf-text-muted);
+  }
+
+  .holding-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--pf-text-muted);
+  }
+
+  .holding-modal-field input {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-md);
+    background: var(--pf-input-bg);
+    color: var(--pf-text);
+  }
+
+  .holding-modal-note {
+    margin: 0 0 1rem;
+    font-size: 0.78rem;
+    color: var(--pf-text-muted);
+  }
+
+  .holding-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .holding-modal-cancel,
+  .holding-modal-save {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .holding-modal-cancel {
+    background: var(--pf-stat-bg);
+    color: var(--pf-text);
+    border: 1px solid var(--pf-border);
+  }
+
+  .holding-modal-save {
+    background: #6366f1;
+    color: #fff;
   }
 
   .empty-table {
@@ -355,50 +780,132 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
 
   @media (max-width: 768px) {
     .holdings-table {
-      font-size: 0.875rem;
+      font-size: 0.82rem;
     }
 
-    .holdings-table th,
-    .holdings-table td {
-      padding: 0.5rem 0.65rem;
+    .row-actions {
+      flex-direction: column;
+      align-items: flex-end;
     }
 
     .holding-name-text {
-      max-width: 120px;
-    }
-
-    .asset-cell {
-      min-width: 220px;
+      max-width: 90px;
     }
   }
 </style>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-  const initHoldingsCharts = () => {
-    const rows = Array.from(document.querySelectorAll('[data-holding-row]'));
-    const state = new Map();
+  function initHoldingsTable() {
+    const wrapper = document.querySelector('[data-holdings-wrapper]');
+    if (!wrapper) return;
+
+    const portfolioId = wrapper.getAttribute('data-portfolio-id') || 'default';
+    const totalValue = parseFloat(wrapper.getAttribute('data-total-value') || '0');
+    const chartState = new Map();
     let openRowId = null;
+    let alertAssetId = null;
+
+    const alertModal = document.getElementById('holding-alert-modal');
+    const alertAssetEl = alertModal?.querySelector('[data-alert-asset]');
+    const alertThresholdInput = alertModal?.querySelector('[data-alert-threshold]');
+
+    const today = () => new Date().toISOString().split('T')[0];
+
+    const lockKey = (assetId) => `pf-locked-${portfolioId}-${assetId}`;
+    const alertKey = (assetId) => `pf-alert-${portfolioId}-${assetId}`;
+
+    const isLocked = (assetId) => localStorage.getItem(lockKey(assetId)) === '1';
+
+    const getRow = (el) => el.closest('[data-holding-row]');
+    const getChartRow = (rowId) => document.querySelector(`#chart-row-${CSS.escape(rowId)}`);
+
+    const closeAllMenus = () => {
+      wrapper.querySelectorAll('.row-menu[open]').forEach((m) => m.removeAttribute('open'));
+    };
+
+    const applyLockState = (row) => {
+      const assetId = row.getAttribute('data-asset-id');
+      if (!assetId) return;
+      const locked = isLocked(assetId);
+      row.classList.toggle('is-locked', locked);
+      const lockBtn = row.querySelector('[data-lock-label]');
+      if (lockBtn) {
+        lockBtn.textContent = locked ? 'Desbloquear posición' : 'Marcar como bloqueada';
+      }
+    };
+
+    wrapper.querySelectorAll('[data-holding-row]').forEach(applyLockState);
+
+    const formatMoney = (value, currency) =>
+      value.toLocaleString('es-ES', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const openSell = (row, pct = 100) => {
+      const assetId = row.getAttribute('data-asset-id');
+      const quantity = parseFloat(row.getAttribute('data-quantity') || '0');
+      const ticker = row.getAttribute('data-ticker');
+      const assetName = row.getAttribute('data-asset-name');
+      const currency = row.getAttribute('data-currency') || 'EUR';
+      const currentPrice = row.getAttribute('data-current-price');
+      if (!assetId || quantity <= 0 || isLocked(assetId)) return;
+
+      const sellQty = pct === 100 ? quantity : quantity * (pct / 100);
+      const estimated = currentPrice ? sellQty * parseFloat(currentPrice) : null;
+
+      if (window.openAddTransactionModal) {
+        window.openAddTransactionModal({
+          assetId,
+          type: 'sell',
+          quantity: String(sellQty),
+          unitPrice: currentPrice || '',
+          fee: '0',
+          date: today(),
+          title: pct === 100 ? 'Vender posición' : `Vender ${pct}%`,
+          positionSummary: estimated
+            ? `${assetName} (${ticker}) · ${sellQty.toLocaleString('es-ES', { maximumFractionDigits: 8 })} uds. · ~${formatMoney(estimated, currency)}`
+            : `${assetName} (${ticker}) · ${sellQty.toLocaleString('es-ES', { maximumFractionDigits: 8 })} uds.`,
+        });
+      }
+    };
+
+    const openBuyMore = (row) => {
+      const assetId = row.getAttribute('data-asset-id');
+      const ticker = row.getAttribute('data-ticker');
+      const assetName = row.getAttribute('data-asset-name');
+      const currentPrice = row.getAttribute('data-current-price') || '';
+      if (!assetId || !window.openAddTransactionModal) return;
+
+      window.openAddTransactionModal({
+        assetId,
+        type: 'buy',
+        quantity: '',
+        unitPrice: currentPrice,
+        fee: '0',
+        date: today(),
+        title: 'Comprar más',
+        positionSummary: `${assetName} (${ticker})`,
+      });
+    };
 
     const closeRow = (rowId) => {
-      const row = document.querySelector(`#chart-row-${CSS.escape(rowId)}`);
-      const holdingRow = document.querySelector(`[data-row-id="${rowId}"]`);
-      if (row) row.classList.add('hidden');
-      if (holdingRow) holdingRow.classList.remove('is-open');
+      const chartRow = getChartRow(rowId);
+      const holdingRow = wrapper.querySelector(`[data-row-id="${rowId}"]`);
+      chartRow?.classList.add('hidden');
+      holdingRow?.classList.remove('is-open');
       if (openRowId === rowId) openRowId = null;
     };
 
-    const openRow = (rowId, ticker, assetName) => {
-      const row = document.querySelector(`#chart-row-${CSS.escape(rowId)}`);
-      const holdingRow = document.querySelector(`[data-row-id="${rowId}"]`);
+    const openRow = (rowId, ticker) => {
+      const chartRow = getChartRow(rowId);
+      const holdingRow = wrapper.querySelector(`[data-row-id="${rowId}"]`);
       const chartEl = document.getElementById(`tv-${rowId}`);
-      if (!row || !holdingRow || !chartEl) return;
+      if (!chartRow || !holdingRow || !chartEl || !ticker) return;
 
-      row.classList.remove('hidden');
+      chartRow.classList.remove('hidden');
       holdingRow.classList.add('is-open');
       openRowId = rowId;
 
-      if (!state.get(rowId) && window.TradingView) {
+      if (!chartState.get(rowId) && window.TradingView) {
         chartEl.innerHTML = '';
         new window.TradingView.widget({
           container_id: `tv-${rowId}`,
@@ -412,34 +919,160 @@ const safeTickerId = (ticker: string) => ticker.toLowerCase().replace(/[^a-z0-9]
           enable_publishing: false,
           hide_side_toolbar: true,
           allow_symbol_change: false,
-          height: 300,
+          height: 280,
           width: '100%',
         });
-        state.set(rowId, true);
+        chartState.set(rowId, true);
+      }
+
+      updatePartialHint(holdingRow, chartRow);
+    };
+
+    const updatePartialHint = (row, chartRow) => {
+      const hint = chartRow?.querySelector('[data-partial-hint]');
+      if (!hint) return;
+      const qty = parseFloat(row.getAttribute('data-quantity') || '0');
+      const price = parseFloat(row.getAttribute('data-current-price') || '0');
+      const currency = row.getAttribute('data-currency') || 'EUR';
+      const weight = row.getAttribute('data-weight') || '0';
+      if (price > 0) {
+        hint.textContent = `Posición actual: ${qty.toLocaleString('es-ES', { maximumFractionDigits: 8 })} uds. · Peso ${weight}%`;
+      } else {
+        hint.textContent = `Posición: ${qty.toLocaleString('es-ES', { maximumFractionDigits: 8 })} uds.`;
       }
     };
 
-    rows.forEach((row) => {
-      row.addEventListener('click', () => {
-        const rowId = row.getAttribute('data-row-id') || '';
-        const ticker = row.getAttribute('data-ticker') || '';
-        const assetName = row.getAttribute('data-asset-name') || '';
-        if (!rowId || !ticker) return;
+    wrapper.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
 
+      const expandBtn = target.closest('[data-expand-row]');
+      if (expandBtn) {
+        e.stopPropagation();
+        const rowId = expandBtn.getAttribute('data-expand-row') || '';
+        const holdingRow = wrapper.querySelector(`[data-row-id="${rowId}"]`);
+        const ticker = holdingRow?.getAttribute('data-ticker') || '';
+        if (!rowId) return;
         if (openRowId === rowId) {
           closeRow(rowId);
+        } else {
+          if (openRowId) closeRow(openRowId);
+          openRow(rowId, ticker);
+        }
+        return;
+      }
+
+      const actionBtn = target.closest('[data-action]');
+      if (actionBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAllMenus();
+
+        const row = getRow(actionBtn) || wrapper.querySelector(`[data-row-id="${openRowId}"]`);
+        if (!row) return;
+
+        const action = actionBtn.getAttribute('data-action');
+
+        if (action === 'sell-full') {
+          openSell(row, 100);
           return;
         }
 
-        if (openRowId) closeRow(openRowId);
-        openRow(rowId, ticker, assetName);
-      });
+        if (action === 'sell-partial') {
+          const pct = parseFloat(actionBtn.getAttribute('data-sell-pct') || '100');
+          openSell(row, pct);
+          const chartRow = openRowId ? getChartRow(openRowId) : null;
+          if (chartRow) {
+            const hint = chartRow.querySelector('[data-partial-hint]');
+            const qty = parseFloat(row.getAttribute('data-quantity') || '0');
+            const price = parseFloat(row.getAttribute('data-current-price') || '0');
+            const currency = row.getAttribute('data-currency') || 'EUR';
+            const sellQty = qty * (pct / 100);
+            const est = price > 0 ? sellQty * price : null;
+            const newWeight =
+              totalValue > 0 && price > 0
+                ? (((qty - sellQty) * price) / totalValue * 100).toFixed(1)
+                : null;
+            if (hint) {
+              hint.textContent = est
+                ? `Venta ${pct}%: ~${formatMoney(est, currency)}${newWeight ? ` · Nuevo peso ~${newWeight}%` : ''}`
+                : `Venta ${pct}%: ${sellQty.toLocaleString('es-ES', { maximumFractionDigits: 8 })} uds.`;
+            }
+          }
+          return;
+        }
+
+        if (action === 'buy-more') {
+          openBuyMore(row);
+          return;
+        }
+
+        if (action === 'view-detail') {
+          const rowId = row.getAttribute('data-row-id') || '';
+          const ticker = row.getAttribute('data-ticker') || '';
+          if (openRowId !== rowId) {
+            if (openRowId) closeRow(openRowId);
+            openRow(rowId, ticker);
+          }
+          return;
+        }
+
+        if (action === 'edit-alerts') {
+          alertAssetId = row.getAttribute('data-asset-id');
+          const ticker = row.getAttribute('data-ticker');
+          const assetName = row.getAttribute('data-asset-name');
+          if (alertAssetEl) alertAssetEl.textContent = `${assetName} (${ticker})`;
+          const saved = alertAssetId ? localStorage.getItem(alertKey(alertAssetId)) : null;
+          if (alertThresholdInput instanceof HTMLInputElement) {
+            alertThresholdInput.value = saved || '';
+          }
+          alertModal?.setAttribute('data-open', 'true');
+          alertModal?.setAttribute('aria-hidden', 'false');
+          return;
+        }
+
+        if (action === 'toggle-lock') {
+          const assetId = row.getAttribute('data-asset-id');
+          if (!assetId) return;
+          const locked = isLocked(assetId);
+          if (locked) localStorage.removeItem(lockKey(assetId));
+          else localStorage.setItem(lockKey(assetId), '1');
+          applyLockState(row);
+          return;
+        }
+      }
+
+      if (!target.closest('.row-menu') && !target.closest('.row-actions')) {
+        closeAllMenus();
+      }
     });
-  };
+
+    wrapper.querySelectorAll('.row-menu-trigger, .action-btn, .partial-btn, .panel-btn').forEach((el) => {
+      el.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    const closeAlertModal = () => {
+      alertModal?.setAttribute('data-open', 'false');
+      alertModal?.setAttribute('aria-hidden', 'true');
+      alertAssetId = null;
+    };
+
+    alertModal?.querySelector('.holding-modal-cancel')?.addEventListener('click', closeAlertModal);
+    alertModal?.querySelector('.holding-modal-overlay')?.addEventListener('click', closeAlertModal);
+    alertModal?.querySelector('[data-alert-save]')?.addEventListener('click', () => {
+      if (!alertAssetId || !(alertThresholdInput instanceof HTMLInputElement)) return;
+      if (alertThresholdInput.value) {
+        localStorage.setItem(alertKey(alertAssetId), alertThresholdInput.value);
+      } else {
+        localStorage.removeItem(alertKey(alertAssetId));
+      }
+      closeAlertModal();
+    });
+  }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHoldingsCharts);
+    document.addEventListener('DOMContentLoaded', initHoldingsTable);
   } else {
-    initHoldingsCharts();
+    initHoldingsTable();
   }
 </script>

@@ -13,6 +13,11 @@ const { portfolioId, assets = [] } = Astro.props;
   <form id="transaction-form" class="space-y-4">
     <input type="hidden" name="portfolioId" value={portfolioId} />
 
+    <div id="sell-position-banner" class="hidden sell-position-banner">
+      <span class="sell-position-label">Venta desde posición</span>
+      <span id="sell-position-summary" class="sell-position-summary"></span>
+    </div>
+
     <div>
       <label for="transaction-asset" class="block text-sm font-medium text-slate-300 mb-1.5">
         Activo <span class="text-red-500">*</span>
@@ -139,8 +144,60 @@ const { portfolioId, assets = [] } = Astro.props;
     const modal = document.getElementById('modal-registrar-transaccion');
     const form = document.getElementById('transaction-form');
     const statusDiv = document.getElementById('transaction-status');
+    const banner = document.getElementById('sell-position-banner');
+    const bannerSummary = document.getElementById('sell-position-summary');
+    const modalTitle = modal?.querySelector('.modal-title');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     if (!modal || !form) return;
+
+    const today = () => new Date().toISOString().split('T')[0];
+
+    const resetBanner = () => {
+      if (!banner) return;
+      banner.classList.add('hidden');
+      if (bannerSummary) bannerSummary.textContent = '';
+    };
+
+    window.openAddTransactionModal = (prefill) => {
+      const assetSelect = document.getElementById('transaction-asset') as HTMLSelectElement | null;
+      const typeSelect = document.getElementById('transaction-type') as HTMLSelectElement | null;
+      const quantityInput = document.getElementById('transaction-quantity') as HTMLInputElement | null;
+      const priceInput = document.getElementById('transaction-price') as HTMLInputElement | null;
+      const feeInput = document.getElementById('transaction-fee') as HTMLInputElement | null;
+      const dateInput = document.getElementById('transaction-date') as HTMLInputElement | null;
+      const notesInput = document.getElementById('transaction-notes') as HTMLTextAreaElement | null;
+
+      if (assetSelect) assetSelect.value = prefill?.assetId || '';
+      if (typeSelect) typeSelect.value = prefill?.type || 'buy';
+      if (quantityInput) quantityInput.value = prefill?.quantity || '';
+      if (priceInput) priceInput.value = prefill?.unitPrice || '';
+      if (feeInput) feeInput.value = prefill?.fee || '0';
+      if (dateInput) dateInput.value = prefill?.date || today();
+      if (notesInput) notesInput.value = prefill?.notes || '';
+
+      if (modalTitle) {
+        modalTitle.textContent = prefill?.title || 'Registrar Transacción';
+      }
+
+      if (submitBtn) {
+        submitBtn.textContent =
+          prefill?.type === 'sell' ? 'Registrar venta' : prefill?.duplicate ? 'Duplicar orden' : 'Registrar Transacción';
+      }
+
+      if (banner && bannerSummary && prefill?.positionSummary) {
+        bannerSummary.textContent = prefill.positionSummary;
+        banner.classList.remove('hidden');
+      } else {
+        resetBanner();
+      }
+
+      if (statusDiv) {
+        statusDiv.textContent = '';
+        statusDiv.className = 'hidden';
+      }
+      modal.classList.remove('hidden');
+    };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -193,6 +250,30 @@ const { portfolioId, assets = [] } = Astro.props;
 </script>
 
 <style>
+  .sell-position-banner {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .sell-position-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f87171;
+  }
+
+  .sell-position-summary {
+    font-size: 0.875rem;
+    color: var(--pf-text, #e2e8f0);
+    line-height: 1.45;
+  }
+
   #transaction-status.show-error {
     display: block !important;
     background: rgba(239, 68, 68, 0.1);

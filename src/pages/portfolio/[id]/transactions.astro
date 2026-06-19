@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import TransactionsTable from '../../../components/portfolio/TransactionsTable.astro';
-import EditTransactionModal from '../../../components/portfolio/EditTransactionModal.astro';
+import AddTransactionModal from '../../../components/portfolio/AddTransactionModal.astro';
 import ImportTransactionsModal from '../../../components/portfolio/ImportTransactionsModal.astro';
 import {
   getCurrentSession,
@@ -9,6 +9,7 @@ import {
   getTransactionsByPortfolio,
   getAssets,
 } from '../../../lib/supabase';
+import { getHoldings } from '../../../lib/portfolio';
 import type { Asset, Transaction } from '../../../lib/portfolio';
 
 const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
@@ -27,10 +28,8 @@ let transactions: Transaction[] = [];
 let assets: Map<string, Asset> = new Map();
 let filteredTransactions: Transaction[] = [];
 let averageCostByAsset: Map<string, number> = new Map();
+let holdingsByAsset: Map<string, number> = new Map();
 let error: string | null = null;
-
-const typeFilter = new URL(Astro.request.url).searchParams.get('type');
-const assetFilter = new URL(Astro.request.url).searchParams.get('asset');
 
 try {
   portfolio = await getPortfolioById(id);
@@ -60,12 +59,10 @@ try {
     ])
   );
 
-  // Aplicar filtros
-  filteredTransactions = transactions.filter((tx) => {
-    if (typeFilter && tx.type !== typeFilter) return false;
-    if (assetFilter && tx.asset_id !== assetFilter) return false;
-    return true;
-  });
+  const holdings = getHoldings(transactions, assets);
+  holdingsByAsset = new Map(holdings.map((h) => [h.assetId, h.quantity]));
+
+  filteredTransactions = transactions;
 } catch (err) {
   console.error('Error loading transactions:', err);
   error = 'Error al cargar las transacciones.';
@@ -75,9 +72,11 @@ if (!portfolio) {
   return Astro.redirect('/portfolio');
 }
 
-// Get unique types and assets for filters
-const types = Array.from(new Set(transactions.map((t) => t.type)));
-const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
+const assetOptions = Array.from(assets.values()).map((a) => ({
+  id: a.id,
+  name: a.name,
+  ticker: a.ticker || '',
+}));
 ---
 
 <BaseLayout
@@ -94,69 +93,21 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
         <button class="btn btn-secondary btn-sm" data-open-import-modal style="align-self: flex-start;">📥 Importar CSV</button>
       </section>
 
-      {/* Filters */}
-      {(types.length > 0 || assetIds.length > 0) && (
-        <section class="filters-section">
-          <div class="filters-grid">
-            {types.length > 0 && (
-              <div class="filter-group">
-                <label htmlFor="type-filter">Tipo de Transacción:</label>
-                <select id="type-filter" onchange="window.location.href = this.value">
-                  <option value={`/portfolio/${id}/transactions`}>Todos</option>
-                  {types.map((type) => (
-                    <option value={`/portfolio/${id}/transactions?type=${type}`} selected={typeFilter === type}>
-                      {type === 'buy' ? 'Compras' : type === 'sell' ? 'Ventas' : type === 'dividend' ? 'Dividendos' : 'Comisiones'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {assetIds.length > 0 && (
-              <div class="filter-group">
-                <label htmlFor="asset-filter">Activo:</label>
-                <select id="asset-filter" onchange="window.location.href = this.value">
-                  <option value={`/portfolio/${id}/transactions`}>Todos</option>
-                  {assetIds.map((assetId) => {
-                    const asset = assets.get(assetId);
-                    if (!asset) return null;
-                    return (
-                      <option value={`/portfolio/${id}/transactions?asset=${assetId}`} selected={assetFilter === assetId}>
-                        {asset.name} ({asset.ticker})
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Transactions Table */}
       {filteredTransactions.length > 0 ? (
         <section class="transactions-section">
-          <div class="stats-summary">
-            <span class="stat">{filteredTransactions.length} transacciones</span>
-            {filteredTransactions.length !== transactions.length && (
-              <span class="stat">({transactions.length} total)</span>
-            )}
-          </div>
           <TransactionsTable
             transactions={filteredTransactions}
             assets={assets}
             averageCostByAsset={averageCostByAsset}
-            showDelete={true}
+            holdingsByAsset={holdingsByAsset}
+            showActions={true}
+            showToolbar={true}
           />
         </section>
       ) : (
         <div class="empty-state">
           <h2>No hay transacciones</h2>
-          {typeFilter || assetFilter ? (
-            <p>No se encontraron transacciones con los filtros aplicados.</p>
-          ) : (
-            <p>Este portafolio aún no tiene transacciones registradas.</p>
-          )}
+          <p>Este portafolio aún no tiene transacciones registradas.</p>
         </div>
       )}
     </div>
@@ -226,70 +177,8 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
     color: var(--pf-text);
   }
 
-  .filters-section {
-    background: var(--pf-card);
-    border: 1px solid var(--pf-border);
-    border-radius: var(--radius-xl);
-    padding: 0.6rem 0.75rem;
-    margin-bottom: var(--pf-section-gap);
-  }
-
-  .filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.45rem;
-  }
-
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .filter-group label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--pf-text-muted);
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .filter-group select {
-    padding: 0.42rem 0.65rem;
-    border: 1px solid var(--pf-border);
-    border-radius: var(--radius-md);
-    background: #ffffff;
-    color: var(--pf-text);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-  }
-
-  .filter-group select:hover {
-    border-color: #94a3b8;
-  }
-
-  .filter-group select:focus {
-    outline: none;
-    border-color: #2563eb;
-  }
-
   .transactions-section {
     margin-bottom: var(--pf-section-gap);
-  }
-
-  .stats-summary {
-    display: flex;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-    font-size: 0.8rem;
-    color: var(--pf-text-muted);
-  }
-
-  .stat {
-    padding: 0.2rem 0.45rem;
-    background: #f8fafc;
-    border-radius: var(--radius-sm);
   }
 
   .empty-state {
@@ -305,15 +194,9 @@ const assetIds = Array.from(new Set(transactions.map((t) => t.asset_id)));
     margin: 0 0 0.35rem 0;
     color: var(--pf-text);
   }
-
-  @media (max-width: 768px) {
-    .filters-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
-<EditTransactionModal />
+<AddTransactionModal portfolioId={id} assets={assetOptions} />
 
 <ImportTransactionsModal portfolioId={id} />
 

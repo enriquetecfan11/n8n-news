@@ -15,121 +15,193 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
 
 <a href={`/portfolio/${portfolio.id}`} class="portfolio-card">
   <div class="portfolio-card-header">
-    <div>
+    <div class="portfolio-card-copy">
+      <span class="portfolio-card-eyebrow">Cartera</span>
       <h3 class="portfolio-card-title">{portfolio.name}</h3>
       {portfolio.description && <p class="portfolio-card-subtitle">{portfolio.description}</p>}
     </div>
     <span class="currency-badge">{portfolio.base_currency}</span>
   </div>
 
-  <div class="portfolio-stats">
-    <div class="stat-item">
-      <span class="stat-label">Valor Total</span>
-      <span class="stat-value">{formatCurrency(totalValue, portfolio.base_currency)}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Coste Base</span>
-      <span class="stat-value">{formatCurrency(totalCost, portfolio.base_currency)}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">P&L Absoluto</span>
-      <span class:list={['stat-value', pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+  <div class="portfolio-card-highlight">
+    <div>
+      <span class="stat-label">P&amp;L neto</span>
+      <span class:list={['portfolio-card-pnl', pnlAbsolute >= 0 ? 'pnl-positive' : 'pnl-negative']}>
         {formatCurrency(pnlAbsolute, portfolio.base_currency)}
       </span>
     </div>
+    <span class:list={['portfolio-card-pill', pnlPercent >= 0 ? 'is-positive' : 'is-negative']}>
+      {formatPercent(pnlPercent)}
+    </span>
+  </div>
+
+  <div class="portfolio-stats">
     <div class="stat-item">
-      <span class="stat-label">P&L %</span>
-      <span class:list={['stat-value', pnlPercent >= 0 ? 'pnl-positive' : 'pnl-negative']}>
-        {formatPercent(pnlPercent)}
-      </span>
+      <span class="stat-label">Valor actual</span>
+      <span class="stat-value">{formatCurrency(totalValue, portfolio.base_currency)}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Invertido</span>
+      <span class="stat-value">{formatCurrency(totalCost, portfolio.base_currency)}</span>
     </div>
   </div>
 
-  <span class="card-link-hint">Ver detalle →</span>
+  <div class="portfolio-card-footer">
+    <span class="card-link-hint">Abrir cartera →</span>
+  </div>
 </a>
 
 <style>
   .portfolio-card {
     display: block;
-    background: var(--pf-card);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--pf-border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-2xl);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: 1rem;
+    padding: 0.9rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
     cursor: pointer;
     text-decoration: none;
     color: inherit;
   }
 
   .portfolio-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.15);
-    border-color: #6366f1;
+    transform: translateY(-3px);
+    border-color: rgba(99, 102, 241, 0.55);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .portfolio-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--space-lg);
-    gap: var(--space-md);
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .portfolio-card-copy {
+    min-width: 0;
+  }
+
+  .portfolio-card-eyebrow {
+    display: inline-flex;
+    margin-bottom: 0.25rem;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--pf-text-muted);
+    font-weight: 700;
   }
 
   .portfolio-card-title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 0.96rem;
     font-weight: 700;
     color: var(--pf-text);
+    line-height: 1.2;
   }
 
   .portfolio-card-subtitle {
-    margin: 0.5rem 0 0;
-    font-size: 0.875rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.76rem;
     color: var(--pf-text-muted);
+    line-height: 1.45;
   }
 
   .currency-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 0.75rem;
-    background: #6366f1;
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
+    padding: 0.34rem 0.55rem;
+    background: rgba(99, 102, 241, 0.16);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 999px;
+    font-size: 0.64rem;
     font-weight: 700;
-    color: white;
+    color: var(--pf-text);
     text-transform: uppercase;
-    letter-spacing: 0.75px;
+    letter-spacing: 0.1em;
+  }
+
+  .portfolio-card-highlight {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin-bottom: 0.7rem;
+    padding: 0.65rem 0.7rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pf-border);
+  }
+
+  .portfolio-card-pnl {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 1.25rem;
+    font-family: var(--font-family-mono);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .portfolio-card-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.28rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .portfolio-card-pill.is-positive {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+  }
+
+  .portfolio-card-pill.is-negative {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
   }
 
   .portfolio-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
-    margin: var(--space-lg) 0;
+    gap: 0.5rem;
   }
 
   .stat-item {
-    padding: var(--space-md);
-    border-radius: var(--radius-lg);
-    background: var(--pf-stat-bg);
+    padding: 0.6rem 0.65rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--pf-border);
   }
 
   .stat-label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.6rem;
     color: var(--pf-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.75px;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
   }
 
   .stat-value {
     display: block;
-    font-size: 1.1rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: var(--pf-text);
+    font-family: var(--font-family-mono);
+    letter-spacing: -0.03em;
+  }
+
+  .portfolio-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.65rem;
   }
 
   .pnl-positive {
@@ -141,9 +213,8 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
   }
 
   .card-link-hint {
-    display: inline-block;
-    margin-top: var(--space-md);
-    font-size: 0.875rem;
+    display: inline-flex;
+    font-size: 0.72rem;
     color: var(--pf-text-muted);
     transition: color 0.2s ease;
     font-weight: 500;
@@ -156,6 +227,11 @@ const { portfolio, totalValue = 0, totalCost = 0, pnlAbsolute = 0, pnlPercent = 
   @media (max-width: 480px) {
     .portfolio-card-header {
       flex-direction: column;
+    }
+
+    .portfolio-card-highlight {
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     .portfolio-stats {

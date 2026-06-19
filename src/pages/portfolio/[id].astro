@@ -7,7 +7,7 @@ import HoldingsTable from '../../components/portfolio/HoldingsTable.astro';
 import TransactionsTable from '../../components/portfolio/TransactionsTable.astro';
 import EditPortfolioModal from '../../components/portfolio/EditPortfolioModal.astro';
 import BuyAssetModal from '../../components/portfolio/BuyAssetModal.astro';
-import EditTransactionModal from '../../components/portfolio/EditTransactionModal.astro';
+import AddTransactionModal from '../../components/portfolio/AddTransactionModal.astro';
 import ImportTransactionsModal from '../../components/portfolio/ImportTransactionsModal.astro';
 import {
   getCurrentSession,
@@ -22,7 +22,7 @@ import {
   formatPercent,
   getPriceSnapshotsForHoldings,
 } from '../../lib/portfolio';
-import type { Asset, Transaction } from '../../lib/portfolio';
+import type { Asset, Holding, Portfolio, PortfolioSummary, Transaction } from '../../lib/portfolio';
 
 const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
 if (!session) {
@@ -35,20 +35,22 @@ if (!id) {
   return Astro.redirect('/portfolio');
 }
 
-let portfolio = null;
-let holdings = [];
-let summary = null;
+let portfolio!: Portfolio;
+let holdings: Holding[] = [];
+let summary!: PortfolioSummary;
 let allTransactions: Transaction[] = [];
 let assets: Asset[] = [];
 let error: string | null = null;
-let holdingsByPnL = [];
-let bestPosition = null;
-let worstPosition = null;
+let holdingsByPnL: Holding[] = [];
+let bestPosition: Holding | null = null;
+let worstPosition: Holding | null = null;
 let positivePositions = 0;
 let negativePositions = 0;
-let topPositionByWeight = null;
+let topPositionByWeight: Holding | null = null;
 let dividendTransactions: Transaction[] = [];
 let totalDividendAmount = 0;
+let averageCostByAsset: Map<string, number> = new Map();
+let holdingsByAsset: Map<string, number> = new Map();
 const typeColors: Record<string, string> = {
   stock: '#6366f1',
   etf: '#8b5cf6',
@@ -60,7 +62,7 @@ const serverTime = new Intl.DateTimeFormat('es-ES', {
   minute: '2-digit',
   hour12: false,
 }).format(new Date());
-let distributionChartData: Array<{ type: string; value: number; color: string }> = [];
+let distributionChartData: Array<{ type: string; value: number; color: string; pct: string }> = [];
 let pnlChartData: Array<{ name: string; ticker: string; pnl: number }> = [];
 let weightChartData: Array<{ name: string; ticker: string; weight: number }> = [];
 let hasDistributionData = false;
@@ -73,19 +75,36 @@ try {
     return Astro.redirect('/portfolio');
   }
 
-  const transactions = await getTransactionsByPortfolio(id);
+  const transactions: Transaction[] = await getTransactionsByPortfolio(id);
   allTransactions = transactions;
   assets = await getAssets();
   const assetMap = new Map(assets.map((a: Asset) => [a.id, a]));
 
   holdings = getHoldings(transactions, assetMap);
+  holdingsByAsset = new Map(holdings.map((h) => [h.assetId, h.quantity]));
+
+  const costAccumulator = new Map<string, { cost: number; quantity: number }>();
+  for (const tx of transactions) {
+    if (tx.type !== 'buy') continue;
+    const current = costAccumulator.get(tx.asset_id) || { cost: 0, quantity: 0 };
+    current.cost += tx.quantity * tx.unit_price + (tx.fee || 0);
+    current.quantity += tx.quantity;
+    costAccumulator.set(tx.asset_id, current);
+  }
+  averageCostByAsset = new Map(
+    Array.from(costAccumulator.entries()).map(([assetId, value]) => [
+      assetId,
+      value.quantity > 0 ? value.cost / value.quantity : 0,
+    ])
+  );
+
   summary = getPortfolioSummary(holdings);
 
   // Obtener precios actuales (server-side)
   const prices = await getPriceSnapshotsForHoldings(holdings);
   holdings.forEach((h) => {
     const snapshot = prices.get(h.assetId);
-    if (snapshot && snapshot.price > 0) {
+    if (snapshot && typeof snapshot.price === 'number' && snapshot.price > 0) {
       h.currentPrice = snapshot.price;
       h.currentValue = h.quantity * h.currentPrice;
       h.pnlAbsolute = h.currentValue - h.totalCost;
@@ -143,24 +162,68 @@ try {
 if (error || !portfolio || !summary) {
   return Astro.redirect('/portfolio');
 }
+
+const assetOptions = assets.map((a) => ({
+  id: a.id,
+  name: a.name,
+  ticker: a.ticker || '',
+}));
 ---
 
 <BaseLayout title={portfolio.name} description={portfolio.description || 'Detalle del portafolio'}>
   <main class="main-content portfolio-section">
     <div class="wrapper">
-      <section class="portfolio-header">
-        <div>
+      <section class="portfolio-hero">
+        <div class="portfolio-hero-copy">
           <a href="/portfolio" class="breadcrumb">← Portafolios</a>
-          <h1>{portfolio.name}</h1>
-          {portfolio.description && <p class="subtitle">{portfolio.description}</p>}
+          <div class="portfolio-hero-title-row">
+            <div>
+              <h1>{portfolio.name}</h1>
+              {portfolio.description && <p class="subtitle">{portfolio.description}</p>}
+            </div>
+            <span class="currency-badge">{portfolio.base_currency}</span>
+          </div>
+          <div class="portfolio-hero-tags">
+            <span class="hero-tag">{holdings.length} activos</span>
+            <span class="hero-tag">{positivePositions} en verde</span>
+            <span class="hero-tag">{negativePositions} en rojo</span>
+            <span class="hero-tag">{dividendTransactions.length} dividendos</span>
+          </div>
+        </div>
+
+        <div class="portfolio-hero-panel">
+          <div class="hero-panel-top">
+            <span class="hero-panel-label">Ganancia neta</span>
+            <span class="hero-panel-time">Actualizado {serverTime}</span>
+          </div>
+          <div class:list={['hero-panel-value', summary.pnlAbsolute >= 0 ? 'is-positive' : 'is-negative']}>
+            {formatCurrency(summary.pnlAbsolute, portfolio.base_currency)}
+          </div>
+          <div class="hero-panel-subvalue">
+            {formatPercent(summary.pnlPercent)} sobre {formatCurrency(summary.totalCost, portfolio.base_currency)}
+          </div>
+          <div class="hero-metrics">
+            <div class="hero-metric">
+              <span class="hero-metric-label">Valor actual</span>
+              <span class="hero-metric-value">{formatCurrency(summary.totalValue, portfolio.base_currency)}</span>
+            </div>
+            <div class="hero-metric">
+              <span class="hero-metric-label">Coste base</span>
+              <span class="hero-metric-value">{formatCurrency(summary.totalCost, portfolio.base_currency)}</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="portfolio-bar" aria-label="Resumen y acciones del portafolio">
-        <div class="portfolio-bar-left">
-          <span class="currency-badge">{portfolio.base_currency}</span>
+      <section class="portfolio-actions" aria-label="Acciones del portafolio">
+        <div class="portfolio-actions-left">
+          <span class="actions-note">Capital en {portfolio.base_currency}</span>
+          <span class="actions-separator">·</span>
+          <span class="actions-note">Precios sincronizados a las {serverTime}</span>
+        </div>
+        <div class="portfolio-actions-right">
           <button class="bar-btn bar-btn-primary" onclick="document.getElementById('modal-comprar-activo').classList.remove('hidden')" title="Comprar activo">
-            Comprar Activo
+            Comprar activo
           </button>
           <details class="bar-menu">
             <summary class="bar-btn bar-btn-secondary" title="Más acciones">Acciones</summary>
@@ -174,79 +237,30 @@ if (error || !portfolio || !summary) {
         </div>
       </section>
 
-      {/* Distribution by Type */}
-      {hasDistributionData && (
-        <section class="distribution-section">
-          <div class="section-header">
-            <h2>Distribución</h2>
-            <span class="section-meta">
-              {formatCurrency(summary.totalCost, portfolio.base_currency)} invertidos · {holdings.length} activos
-            </span>
-          </div>
-          {singleDistributionType ? (
-            <div class="summary-single-distribution">
-              <div class="summary-single-distribution-row">
-                <span class="summary-single-distribution-label">Tipo dominante</span>
-                <span class="summary-single-distribution-value">{singleDistributionType[0].charAt(0).toUpperCase() + singleDistributionType[0].slice(1)}</span>
-                <span class="summary-single-distribution-amount">{formatCurrency(summary.totalCost, portfolio.base_currency)}</span>
-              </div>
-              <div class="summary-single-distribution-row summary-single-distribution-row-foot">
-                <span>{singleDistributionType[1].percent.toFixed(1)}% de la cartera</span>
-                <span>{holdings.length} activo{holdings.length === 1 ? '' : 's'}</span>
-              </div>
-            </div>
-          ) : (
-            <div class="distribution-items">
-              {Object.entries(summary.byType).map(([type, data]) => (
-                <div class="distribution-item">
-                  <div class="distribution-item-info">
-                    <span class="distribution-label-type">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                    <div class="distribution-bar">
-                      <div
-                        class="distribution-fill"
-                        style={`width: ${data.percent}%; background: ${
-                          type === 'stock'
-                            ? '#2563eb'
-                            : type === 'etf'
-                              ? '#0f766e'
-                              : type === 'crypto'
-                                ? '#d97706'
-                                : '#64748b'
-                        }`}
-                      ></div>
-                    </div>
-                  </div>
-                  <div class="distribution-stats">
-                    <span class="distribution-count">{formatCurrency(data.value, portfolio.base_currency)}</span>
-                    <span class="distribution-value">{data.percent.toFixed(1)}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       <section class="tabs-section">
         <div class="tabs-header">
           <nav class="tabs-nav" aria-label="Secciones del portafolio">
-            <button data-tab="resumen" class="tab-btn tab-active">
-              Resumen
+            <button type="button" data-tab="resumen" class="tab-btn tab-active">
+              <span class="tab-label">Resumen</span>
             </button>
-            <button data-tab="posiciones" class="tab-btn">
-              Posiciones <span class="tab-badge">{holdings.length}</span>
+            <button type="button" data-tab="posiciones" class="tab-btn">
+              <span class="tab-label">Posiciones</span>
+              <span class="tab-badge">{holdings.length}</span>
             </button>
-            <button data-tab="transacciones" class="tab-btn">
-              Transacciones <span class="tab-badge">{allTransactions.length}</span>
+            <button type="button" data-tab="transacciones" class="tab-btn">
+              <span class="tab-label">Transacciones</span>
+              <span class="tab-badge">{allTransactions.length}</span>
             </button>
-            <button data-tab="activos" class="tab-btn">
-              Activos <span class="tab-badge">{assets.length}</span>
+            <button type="button" data-tab="activos" class="tab-btn">
+              <span class="tab-label">Activos</span>
+              <span class="tab-badge">{assets.length}</span>
             </button>
-            <button data-tab="analisis" class="tab-btn">
-              Análisis
+            <button type="button" data-tab="analisis" class="tab-btn">
+              <span class="tab-label">Análisis</span>
             </button>
-            <button data-tab="dividendos" class="tab-btn">
-              Dividendos <span class="tab-badge">{dividendTransactions.length}</span>
+            <button type="button" data-tab="dividendos" class="tab-btn">
+              <span class="tab-label">Dividendos</span>
+              <span class="tab-badge">{dividendTransactions.length}</span>
             </button>
           </nav>
         </div>
@@ -254,9 +268,9 @@ if (error || !portfolio || !summary) {
         <div data-panel="resumen" class="tab-panel">
           <div class="summary-topline">
             <div class="summary-title-wrap">
-              <h2 class="summary-title">Resumen</h2>
+              <h2 class="summary-title">Resumen de cartera</h2>
               <div class="summary-meta-line">
-                <span class="summary-inverted">{formatCurrency(summary.totalCost, portfolio.base_currency)} invertidos</span>
+                <span>{formatCurrency(summary.totalCost, portfolio.base_currency)} invertidos</span>
                 <span class="summary-dot">·</span>
                 <span>{holdings.length} activos</span>
               </div>
@@ -271,21 +285,25 @@ if (error || !portfolio || !summary) {
           <div class="summary-layout">
             <div class="summary-left">
               <section class="summary-section summary-strip">
+                <div class="summary-metric summary-metric-featured">
+                  <span class="summary-metric-label">P&amp;L absoluto</span>
+                  <span class:list={['summary-metric-value', 'summary-metric-large', summary.pnlAbsolute >= 0 ? 'is-positive' : 'is-negative']}>{formatCurrency(summary.pnlAbsolute, portfolio.base_currency)}</span>
+                  <span class:list={['summary-metric-foot', summary.pnlPercent >= 0 ? 'is-positive' : 'is-negative']}>{formatPercent(summary.pnlPercent)} de rentabilidad</span>
+                </div>
                 <div class="summary-metric">
-                  <span class="summary-metric-label">Valor total</span>
+                  <span class="summary-metric-label">Valor actual</span>
                   <span class="summary-metric-value">{formatCurrency(summary.totalValue, portfolio.base_currency)}</span>
+                  <span class="summary-metric-foot">Precio de mercado</span>
                 </div>
                 <div class="summary-metric">
                   <span class="summary-metric-label">Coste base</span>
                   <span class="summary-metric-value">{formatCurrency(summary.totalCost, portfolio.base_currency)}</span>
+                  <span class="summary-metric-foot">Capital aportado</span>
                 </div>
-                <div class="summary-metric summary-metric-positive">
-                  <span class="summary-metric-label">P&amp;L</span>
-                  <span class="summary-metric-value">{formatCurrency(summary.pnlAbsolute, portfolio.base_currency)}</span>
-                </div>
-                <div class="summary-metric summary-metric-positive">
-                  <span class="summary-metric-label">P&amp;L %</span>
-                  <span class="summary-metric-value">{formatPercent(summary.pnlPercent)}</span>
+                <div class="summary-metric">
+                  <span class="summary-metric-label">Cobertura</span>
+                  <span class="summary-metric-value">{positivePositions + negativePositions}</span>
+                  <span class="summary-metric-foot">{positivePositions} verdes · {negativePositions} rojas</span>
                 </div>
               </section>
 
@@ -343,6 +361,27 @@ if (error || !portfolio || !summary) {
                   )}
                 </div>
               </section>
+
+              <section class="summary-section summary-insight-card">
+                <div class="section-header">
+                  <h2>Lectura rápida</h2>
+                  <span class="section-meta">Ganancias y riesgo</span>
+                </div>
+                <div class="insight-list">
+                  <div class="insight-row">
+                    <span class="insight-label">Posiciones ganadoras</span>
+                    <span class="insight-value is-positive">{positivePositions}</span>
+                  </div>
+                  <div class="insight-row">
+                    <span class="insight-label">Posiciones perdedoras</span>
+                    <span class="insight-value is-negative">{negativePositions}</span>
+                  </div>
+                  <div class="insight-row">
+                    <span class="insight-label">Dividendos</span>
+                    <span class="insight-value">{formatCurrency(totalDividendAmount, portfolio.base_currency)}</span>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -350,7 +389,7 @@ if (error || !portfolio || !summary) {
         <div data-panel="posiciones" class="tab-panel hidden">
           {holdings.length > 0 ? (
             <section class="holdings-section">
-              <HoldingsTable holdings={holdings} totalValue={summary.totalValue} />
+              <HoldingsTable holdings={holdings} totalValue={summary.totalValue} portfolioId={id} />
             </section>
           ) : (
             <div class="empty-state">
@@ -366,7 +405,10 @@ if (error || !portfolio || !summary) {
               <TransactionsTable
                 transactions={allTransactions}
                 assets={new Map(assets.map((a: Asset) => [a.id, a]))}
-                showDelete={true}
+                averageCostByAsset={averageCostByAsset}
+                holdingsByAsset={holdingsByAsset}
+                showActions={true}
+                showToolbar={true}
               />
             </section>
           ) : (
@@ -501,14 +543,16 @@ if (error || !portfolio || !summary) {
 
   <BuyAssetModal portfolioId={id} />
 
+  <AddTransactionModal portfolioId={id} assets={assetOptions} />
+
   <EditPortfolioModal
     portfolioId={id}
     portfolioName={portfolio.name}
-    portfolioDescription={portfolio.description}
+    portfolioDescription={portfolio.description || undefined}
     portfolioCurrency={portfolio.base_currency}
   />
 
-  <EditTransactionModal />
+  <AddTransactionModal portfolioId={id} assets={assetOptions} />
 
   <ImportTransactionsModal portfolioId={id} />
 </BaseLayout>
@@ -589,7 +633,9 @@ if (error || !portfolio || !summary) {
 
 <style>
   .portfolio-section {
-    background: var(--pf-bg);
+    background:
+      radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.96));
     color: var(--pf-text);
   }
 
@@ -599,9 +645,187 @@ if (error || !portfolio || !summary) {
   }
 
   .wrapper {
-    max-width: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: 0 var(--pf-page-pad-x);
+  }
+
+  .portfolio-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 0.9rem;
+  }
+
+  .portfolio-hero-copy,
+  .portfolio-hero-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pf-border);
+    border-radius: 1.2rem;
+    padding: 0.8rem 0.85rem;
+  }
+
+  .portfolio-hero-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.9rem;
+  }
+
+  .portfolio-hero-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .portfolio-hero-title-row h1 {
+    margin: 0;
+    font-size: clamp(1.2rem, 1.8vw, 1.8rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--pf-text);
+  }
+
+  .subtitle {
+    margin: 0;
+    max-width: 56ch;
+    font-size: 0.8rem;
+    color: var(--pf-text-muted);
+    line-height: 1.45;
+  }
+
+  .portfolio-hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--pf-border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--pf-text-muted);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .portfolio-hero-panel {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .hero-panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-panel-label {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--pf-text-muted);
+    font-weight: 700;
+  }
+
+  .hero-panel-time {
+    color: var(--pf-text-muted);
+    font-size: 0.68rem;
+  }
+
+  .hero-panel-value {
+    font-size: clamp(1.9rem, 3vw, 2.5rem);
+    line-height: 0.95;
+    font-family: var(--font-family-mono);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+  }
+
+  .hero-panel-value.is-positive,
+  .summary-metric-value.is-positive,
+  .summary-metric-foot.is-positive,
+  .insight-value.is-positive {
+    color: #22c55e;
+  }
+
+  .hero-panel-value.is-negative,
+  .summary-metric-value.is-negative,
+  .summary-metric-foot.is-negative,
+  .insight-value.is-negative {
+    color: #ef4444;
+  }
+
+  .hero-panel-subvalue {
+    color: var(--pf-text-muted);
+    font-size: 0.72rem;
+    font-family: var(--font-family-mono);
+  }
+
+  .hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .hero-metric {
+    padding: 0.6rem 0.7rem;
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pf-border);
+  }
+
+  .hero-metric-label {
+    display: block;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--pf-text-muted);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .hero-metric-value {
+    display: block;
+    font-size: 0.9rem;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    color: var(--pf-text);
+  }
+
+  .portfolio-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.55rem 0.75rem;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--pf-border);
+    border-radius: 1rem;
+  }
+
+  .portfolio-actions-left,
+  .portfolio-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .actions-note {
+    color: var(--pf-text-muted);
+    font-size: 0.68rem;
+  }
+
+  .actions-separator {
+    color: var(--pf-text-muted);
   }
 
   .portfolio-header {
@@ -656,13 +880,13 @@ if (error || !portfolio || !summary) {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.4rem;
     gap: 0.75rem;
   }
 
   .summary-updated {
     color: #64748b;
-    font-size: 0.74rem;
+    font-size: 0.95rem;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
@@ -684,7 +908,7 @@ if (error || !portfolio || !summary) {
 
   .summary-title {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: 1.45rem;
     font-weight: 700;
     color: var(--pf-text);
   }
@@ -694,7 +918,7 @@ if (error || !portfolio || !summary) {
     align-items: center;
     gap: 0.35rem;
     color: #64748b;
-    font-size: 0.74rem;
+    font-size: 0.95rem;
   }
 
   .summary-dot {
@@ -703,8 +927,8 @@ if (error || !portfolio || !summary) {
 
   .summary-layout {
     display: grid;
-    grid-template-columns: 3fr 2fr;
-    gap: 0.65rem;
+    grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.9fr);
+    gap: 1rem;
   }
 
   .summary-left,
@@ -720,17 +944,17 @@ if (error || !portfolio || !summary) {
     display: block;
     margin-top: 0.28rem;
     color: #64748b;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 500;
     font-family: var(--font-family-sans);
   }
 
   .summary-section {
-    background: var(--pf-card);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--pf-border);
     border-radius: 1rem;
-    padding: 0.65rem 0.7rem;
-    margin-bottom: 0.55rem;
+    padding: 1.15rem 1.25rem;
+    margin-bottom: 1rem;
   }
 
   .summary-distribution {
@@ -742,41 +966,37 @@ if (error || !portfolio || !summary) {
 
   .summary-strip {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
-    padding: 0.55rem 0.6rem;
+    grid-template-columns: 1.35fr 1fr 1fr 0.9fr;
+    gap: 0.5rem;
+    padding: 0;
     align-items: center;
   }
 
   .summary-metric {
     display: flex;
     flex-direction: column;
-    gap: 0.12rem;
+    gap: 0.35rem;
     min-width: 0;
-    padding-right: 0.7rem;
-    position: relative;
+    padding: 1rem 1.1rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--pf-border);
   }
 
-  .summary-metric:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0.15rem;
-    bottom: 0.15rem;
-    width: 1px;
-    background: var(--pf-border);
+  .summary-metric-featured {
+    background: rgba(34, 197, 94, 0.06);
   }
 
   .summary-metric-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--pf-text-muted);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .summary-metric-value {
-    font-size: 1.05rem;
+    font-size: 1.35rem;
     line-height: 1.05;
     font-family: var(--font-family-mono);
     font-weight: 700;
@@ -787,8 +1007,15 @@ if (error || !portfolio || !summary) {
     text-overflow: ellipsis;
   }
 
-  .summary-metric-positive .summary-metric-value {
-    color: #22c55e;
+  .summary-metric-large {
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+  }
+
+  .summary-metric-foot {
+    font-size: 0.92rem;
+    color: var(--pf-text-muted);
+    font-weight: 600;
   }
 
   .legend-label,
@@ -810,16 +1037,17 @@ if (error || !portfolio || !summary) {
   .analysis-row {
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 0.75rem;
+    gap: 0.85rem;
     align-items: center;
-    padding: 0.55rem 0.65rem;
+    padding: 0.9rem 1.05rem;
     border: 1px solid var(--pf-border);
     border-radius: var(--radius-lg);
     background: rgba(255, 255, 255, 0.02);
+    font-size: 1.05rem;
   }
 
   .analysis-head {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     color: var(--pf-text-muted);
     text-transform: uppercase;
   }
@@ -842,14 +1070,14 @@ if (error || !portfolio || !summary) {
   .best-worst-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.45rem;
-    margin-top: 0.45rem;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
   }
 
   .position-line {
-    padding: 0.55rem 0.65rem;
+    padding: 1rem 1.1rem;
     border-radius: 0.9rem;
-    border-left-width: 2px;
+    border-left-width: 3px;
   }
 
   .position-line-positive {
@@ -861,11 +1089,11 @@ if (error || !portfolio || !summary) {
   }
 
   .position-line-label {
-    font-size: 0.62rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--pf-text-muted);
-    margin-bottom: 0.28rem;
+    margin-bottom: 0.4rem;
   }
 
   .position-line-body {
@@ -876,15 +1104,15 @@ if (error || !portfolio || !summary) {
   }
 
   .position-line-name {
-    font-size: 0.92rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--pf-text);
-    line-height: 1.15;
+    line-height: 1.2;
   }
 
   .position-line-ticker {
-    margin-top: 0.1rem;
-    font-size: 0.68rem;
+    margin-top: 0.15rem;
+    font-size: 0.9rem;
     color: var(--pf-text-muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -896,7 +1124,7 @@ if (error || !portfolio || !summary) {
   }
 
   .position-line-pnl {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -911,10 +1139,43 @@ if (error || !portfolio || !summary) {
   }
 
   .position-line-eur {
-    margin-top: 0.08rem;
-    font-size: 0.76rem;
+    margin-top: 0.12rem;
+    font-size: 0.92rem;
     color: var(--pf-text-muted);
     font-family: var(--font-family-mono);
+  }
+
+  .summary-insight-card {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .insight-list {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .insight-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--pf-border);
+  }
+
+  .insight-label {
+    font-size: 1rem;
+    color: var(--pf-text-muted);
+  }
+
+  .insight-value {
+    font-family: var(--font-family-mono);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pf-text);
   }
 
   .portfolio-bar-left,
@@ -1062,14 +1323,14 @@ if (error || !portfolio || !summary) {
 
   .distribution-section h2 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.28rem;
     color: var(--pf-text);
     font-weight: 700;
   }
 
   .section-meta {
     color: var(--pf-text-muted);
-    font-size: 0.68rem;
+    font-size: 0.95rem;
     text-align: right;
     white-space: nowrap;
   }
@@ -1083,7 +1344,7 @@ if (error || !portfolio || !summary) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.32rem 0.5rem;
+    padding: 0.55rem 0.75rem;
     border-radius: var(--radius-xl);
     background: var(--pf-card);
     border: 1px solid var(--pf-border);
@@ -1101,12 +1362,12 @@ if (error || !portfolio || !summary) {
     font-weight: 600;
     min-width: 64px;
     color: var(--pf-text);
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
 
   .distribution-bar {
     flex: 1;
-    height: 5px;
+    height: 6px;
     background: #e2e8f0;
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -1126,7 +1387,7 @@ if (error || !portfolio || !summary) {
   }
 
   .distribution-count {
-    font-size: 0.66rem;
+    font-size: 0.8rem;
     color: var(--pf-text-muted);
   }
 
@@ -1136,19 +1397,19 @@ if (error || !portfolio || !summary) {
     text-align: right;
     color: var(--pf-text);
     font-family: var(--font-family-mono);
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
 
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
   }
 
   .section-header h2 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 1.28rem;
     color: var(--pf-text);
     font-weight: 700;
   }
@@ -1156,7 +1417,7 @@ if (error || !portfolio || !summary) {
   .view-link {
     color: var(--pf-text-muted);
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     transition: color 0.2s ease;
     font-weight: 500;
   }
@@ -1186,18 +1447,18 @@ if (error || !portfolio || !summary) {
   .summary-single-distribution-row-foot {
     padding-bottom: 0;
     color: var(--pf-text-muted);
-    font-size: 0.72rem;
+    font-size: 0.875rem;
   }
 
   .summary-single-distribution-value {
     margin-left: auto;
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--pf-text);
   }
 
   .summary-single-distribution-amount {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--pf-text);
     font-family: var(--font-family-mono);
@@ -1205,7 +1466,7 @@ if (error || !portfolio || !summary) {
   }
 
   .summary-single-distribution-label {
-    font-size: 0.64rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--pf-text-muted);
@@ -1227,103 +1488,100 @@ if (error || !portfolio || !summary) {
 
   .empty-state {
     text-align: center;
-    padding: 0.75rem 0.7rem;
+    padding: 1.5rem 1.25rem;
     color: var(--pf-text-muted);
+    font-size: 1rem;
   }
 
   .empty-state h2 {
     margin: 0 0 var(--space-md) 0;
     color: var(--pf-text);
+    font-size: 1.2rem;
   }
 
   .tabs-section {
-    margin-top: 0.15rem;
+    margin-top: 0.35rem;
   }
 
   .tabs-header {
-    border-bottom: 1px solid var(--pf-border);
-    margin-bottom: 0.6rem;
-  }
-
-  .tabs-nav {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: -1px;
+    margin-bottom: 1.15rem;
+    padding: 0.35rem;
+    background: var(--pf-stat-bg);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .tabs-nav::-webkit-scrollbar {
+  .tabs-header::-webkit-scrollbar {
     display: none;
+  }
+
+  .tabs-nav {
+    display: flex;
+    gap: 0.2rem;
+    min-width: min-content;
   }
 
   .tab-btn {
     appearance: none;
     background: transparent;
-    border: 0;
-    border-bottom: 2px solid transparent;
+    border: none;
     color: var(--pf-text-muted);
     cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 500;
-    padding: 0.6rem 0.1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.72rem 1.15rem;
+    border-radius: calc(var(--radius-xl) - 4px);
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     white-space: nowrap;
-    transition: color 0.2s ease, border-color 0.2s ease;
+    transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
   }
 
   .tab-btn:hover {
     color: var(--pf-text);
-    border-color: var(--pf-text-muted);
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .tab-active {
     color: var(--pf-text);
-    border-color: var(--pf-text);
+    background: var(--pf-card);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .tab-label {
+    line-height: 1.2;
   }
 
   .tab-badge {
-    font-size: 0.68rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     line-height: 1;
-    background: var(--pf-stat-bg);
-    color: var(--pf-text-muted);
-    padding: 0.18rem 0.45rem;
+    min-width: 1.35rem;
+    text-align: center;
+    padding: 0.28rem 0.5rem;
     border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--pf-text-muted);
   }
 
-  :root.dark-theme .tabs-header {
-    border-bottom-color: #ffffff;
-  }
-
-  :root.dark-theme .tab-btn {
-    color: #ffffff;
-  }
-
-  :root.dark-theme .tab-btn:hover {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.7);
-  }
-
-  :root.dark-theme .tab-active {
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
-  :root.dark-theme .tab-badge {
-    background: #000000;
-    color: #ffffff;
+  .tab-active .tab-badge {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
   }
 
   .tab-panel {
     min-height: 0;
+    font-size: 1.0625rem;
   }
 
   .assets-list-section {
-    background: var(--pf-card);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--pf-border);
-    border-radius: var(--radius-2xl);
+    border-radius: 1rem;
     overflow: hidden;
   }
 
@@ -1335,8 +1593,8 @@ if (error || !portfolio || !summary) {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.55rem 0.75rem;
+    gap: 1.15rem;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--pf-border);
   }
 
@@ -1352,28 +1610,77 @@ if (error || !portfolio || !summary) {
   }
 
   .asset-row-title {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--pf-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 240px;
+    max-width: 380px;
   }
 
   .asset-row-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1.15rem;
     color: var(--pf-text-muted);
     font-family: var(--font-family-mono);
-    font-size: 0.8rem;
+    font-size: 1.05rem;
     white-space: nowrap;
   }
 
+  .holding-badge {
+    display: inline-block;
+    padding: 0.32rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(129, 140, 248, 0.3);
+  }
+
+  .analysis-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .analysis-ticker {
+    font-size: 0.9rem;
+    color: var(--pf-text-muted);
+  }
+
+  .summary-key {
+    font-size: 1rem;
+    color: var(--pf-text-muted);
+  }
+
+  .summary-val {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
   @media (max-width: 768px) {
-    .portfolio-header {
+    .portfolio-hero,
+    .summary-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .portfolio-actions {
       flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .portfolio-actions-right {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .hero-metrics,
+    .summary-strip,
+    .best-worst-grid {
+      grid-template-columns: 1fr;
     }
 
     .distribution-item {
@@ -1383,23 +1690,6 @@ if (error || !portfolio || !summary) {
 
     .distribution-item-info {
       width: 100%;
-    }
-
-    .distribution-bar {
-      width: 100%;
-    }
-
-    .distribution-stats {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .summary-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .best-worst-grid {
-      grid-template-columns: 1fr;
     }
   }
 </style>

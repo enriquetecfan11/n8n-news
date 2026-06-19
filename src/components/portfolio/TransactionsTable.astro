@@ -1,16 +1,27 @@
 ---
 import type { Transaction, Asset } from '../../lib/portfolio';
-import { formatCurrency } from '../../lib/portfolio';
+import { formatCurrency, formatPercent } from '../../lib/portfolio';
 
 interface Props {
   transactions: Transaction[];
   assets: Map<string, Asset>;
   averageCostByAsset?: Map<string, number>;
+  holdingsByAsset?: Map<string, number>;
   limit?: number;
-  showDelete?: boolean;
+  showActions?: boolean;
+  showToolbar?: boolean;
 }
 
-const { transactions, assets, averageCostByAsset = new Map(), limit, showDelete = false } = Astro.props;
+const {
+  transactions,
+  assets,
+  averageCostByAsset = new Map(),
+  holdingsByAsset = new Map(),
+  limit,
+  showActions = false,
+  showToolbar = !limit,
+} = Astro.props;
+
 const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
 
 const typeLabels: Record<string, string> = {
@@ -59,115 +70,328 @@ const formatQuantity = (value: number, assetId: string) => {
   });
 };
 
-const formatMoney = (value: number, currency: string) => {
-  return formatCurrency(value, currency);
-};
+const formatMoney = (value: number, currency: string) => formatCurrency(value, currency);
 ---
 
-<div class="transactions-container">
-  <table class="transactions-table">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Tipo</th>
-        <th>Activo</th>
-        <th>Cantidad</th>
-        <th>Precio Unitario</th>
-        <th>Comisión</th>
-        <th>Total</th>
-        <th>P&L realizado</th>
-        {showDelete && <th style="width: 64px;">Acciones</th>}
-      </tr>
-    </thead>
-    <tbody>
-      {displayTransactions.map((tx) => {
-        const currency = getAssetCurrency(tx.asset_id);
-        const assetName = getAssetName(tx.asset_id);
-        const ticker = getAssetTicker(tx.asset_id);
-        const total = tx.quantity * tx.unit_price + (tx.fee || 0);
-        const averageCost = averageCostByAsset.get(tx.asset_id) || 0;
-        const realizedPnL =
-          tx.type === 'sell' ? (tx.unit_price - averageCost) * tx.quantity : null;
-        return (
-          <tr data-tradingview-open data-asset-name={assetName} data-ticker={ticker} class="transaction-row">
-            <td>
-              {new Date(tx.date).toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </td>
-            <td>
-              <span class:list={['transaction-type', getTypeClass(tx.type)]}>
-                {typeLabels[tx.type]}
-              </span>
-            </td>
-            <td>
-              <div class="asset-name">
-                <span title={assetName}>{getShortName(assetName)}</span>
-                <span class="asset-ticker">{getAssetTicker(tx.asset_id)}</span>
-              </div>
-            </td>
-            <td>{formatQuantity(tx.quantity, tx.asset_id)}</td>
-            <td>{formatMoney(tx.unit_price, currency)}</td>
-            <td>
-              {tx.fee && tx.fee !== 0 ? formatMoney(tx.fee, currency) : <span class="muted-cell">-</span>}
-            </td>
-            <td class="total-cell">{formatMoney(total, currency)}</td>
-            <td
-              class:list={[
-                realizedPnL === null
-                  ? 'muted-cell'
-                  : realizedPnL >= 0
-                    ? 'pnl-positive'
-                    : 'pnl-negative',
-              ]}
-            >
-              {realizedPnL === null ? '-' : formatMoney(realizedPnL, currency)}
-            </td>
-            {showDelete && (
-              <td class="actions-cell">
-                <button
-                  class="edit-btn"
-                  data-edit-transaction={tx.id}
-                  data-type={tx.type}
-                  data-quantity={tx.quantity}
-                  data-price={tx.unit_price}
-                  data-date={tx.date}
-                  data-fee={tx.fee}
-                  data-notes={tx.notes}
-                  title="Editar transacción"
-                >
-                  ✏️
-                </button>
-                <button
-                  class="delete-btn"
-                  data-transaction-id={tx.id}
-                  title="Eliminar transacción"
-                >
-                  ✕
-                </button>
-              </td>
-            )}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  {displayTransactions.length === 0 && (
-    <div class="empty-table">
-      No hay transacciones
+<div class="transactions-wrapper" data-transactions-wrapper>
+  {showToolbar && (
+    <div class="transactions-toolbar">
+      <div class="filter-chips" role="group" aria-label="Filtros rápidos">
+        <button type="button" class="filter-chip is-active" data-filter="all">Todos</button>
+        <button type="button" class="filter-chip" data-filter="today">Hoy</button>
+        <button type="button" class="filter-chip" data-filter="week">Esta semana</button>
+        <button type="button" class="filter-chip" data-filter="month">Este mes</button>
+        <button type="button" class="filter-chip" data-filter="buy">Solo compras</button>
+        <button type="button" class="filter-chip" data-filter="sell">Solo ventas</button>
+      </div>
+      <div class="toolbar-right">
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Buscar ticker o activo..."
+          aria-label="Buscar por ticker o activo"
+        />
+        <span class="visible-count" data-visible-count>{displayTransactions.length} transacciones</span>
+      </div>
     </div>
   )}
+
+  <div class="transactions-container">
+    <table class="transactions-table">
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="date">
+            <span>Fecha</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable" data-sort="type">
+            <span>Tipo</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable" data-sort="asset">
+            <span>Activo</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="quantity">
+            <span>Cantidad</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="unit_price">
+            <span>Precio Unit.</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="fee">
+            <span>Comisión</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="total">
+            <span>Total</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="pnl">
+            <span>P&L realizado</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          {showActions && <th class="actions-header">Acciones</th>}
+        </tr>
+      </thead>
+      <tbody data-transactions-body>
+        {displayTransactions.map((tx) => {
+          const currency = getAssetCurrency(tx.asset_id);
+          const assetName = getAssetName(tx.asset_id);
+          const ticker = getAssetTicker(tx.asset_id);
+          const total = tx.quantity * tx.unit_price + (tx.fee || 0);
+          const averageCost = averageCostByAsset.get(tx.asset_id) || 0;
+          const realizedPnL =
+            tx.type === 'sell' ? (tx.unit_price - averageCost) * tx.quantity : null;
+          const pnlPercent =
+            realizedPnL !== null && total > 0 ? (realizedPnL / total) * 100 : null;
+          const holdingQty = holdingsByAsset.get(tx.asset_id) || 0;
+          const canSell = holdingQty > 0;
+          const dateIso = new Date(tx.date).toISOString();
+
+          return (
+            <tr
+              class="transaction-row"
+              data-date={dateIso}
+              data-type={tx.type}
+              data-asset={ticker.toLowerCase()}
+              data-asset-name-lower={assetName.toLowerCase()}
+              data-quantity={tx.quantity}
+              data-unit-price={tx.unit_price}
+              data-fee={tx.fee || 0}
+              data-total={total}
+              data-pnl={realizedPnL ?? ''}
+              data-tx-id={tx.id}
+              data-asset-id={tx.asset_id}
+              data-ticker={ticker}
+              data-asset-name={assetName}
+              data-notes={tx.notes || ''}
+              data-holding-qty={holdingQty}
+              data-currency={currency}
+              data-can-sell={canSell ? 'true' : 'false'}
+              data-formatted-date={new Date(tx.date).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+              data-formatted-quantity={formatQuantity(tx.quantity, tx.asset_id)}
+              data-formatted-price={formatMoney(tx.unit_price, currency)}
+              data-formatted-fee={tx.fee && tx.fee !== 0 ? formatMoney(tx.fee, currency) : '-'}
+              data-formatted-total={formatMoney(total, currency)}
+              data-formatted-pnl={realizedPnL !== null ? formatMoney(realizedPnL, currency) : '-'}
+              data-formatted-pnl-pct={pnlPercent !== null ? formatPercent(pnlPercent) : ''}
+            >
+              <td class="date-cell">
+                {new Date(tx.date).toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </td>
+              <td>
+                <span class:list={['transaction-type', getTypeClass(tx.type)]}>
+                  {tx.type === 'buy' && (
+                    <svg class="type-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M8 3v10M4 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  )}
+                  {tx.type === 'sell' && (
+                    <svg class="type-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M8 13V3M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  )}
+                  {tx.type === 'dividend' && (
+                    <svg class="type-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M8 5.5v5M6 8h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                  {tx.type === 'fee' && (
+                    <svg class="type-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4 8h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  )}
+                  {typeLabels[tx.type]}
+                </span>
+              </td>
+              <td>
+                <div class="asset-name">
+                  <span title={assetName}>{getShortName(assetName)}</span>
+                  <span class="asset-ticker">{ticker}</span>
+                </div>
+              </td>
+              <td class="num-cell">{formatQuantity(tx.quantity, tx.asset_id)}</td>
+              <td class="num-cell">{formatMoney(tx.unit_price, currency)}</td>
+              <td class="num-cell">
+                {tx.fee && tx.fee !== 0 ? formatMoney(tx.fee, currency) : <span class="muted-cell">-</span>}
+              </td>
+              <td class="num-cell total-cell">{formatMoney(total, currency)}</td>
+              <td class="num-cell">
+                {realizedPnL === null ? (
+                  <span class="muted-cell">-</span>
+                ) : (
+                  <div class:list={['pnl-stack', realizedPnL >= 0 ? 'pnl-positive' : 'pnl-negative']}>
+                    <span class="pnl-amount">{formatMoney(realizedPnL, currency)}</span>
+                    {pnlPercent !== null && (
+                      <span class:list={['pnl-badge', realizedPnL >= 0 ? 'is-positive' : 'is-negative']}>
+                        {formatPercent(pnlPercent)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </td>
+              {showActions && (
+                <td class="actions-cell">
+                  <details class="row-menu">
+                    <summary class="row-menu-trigger" aria-label="Acciones de la transacción">···</summary>
+                    <div class="row-menu-panel">
+                      <button
+                        type="button"
+                        class="row-menu-item"
+                        data-action="view"
+                      >
+                        Ver
+                      </button>
+                      {canSell && (
+                        <button
+                          type="button"
+                          class="row-menu-item row-menu-item-sell"
+                          data-action="sell"
+                          data-asset-id={tx.asset_id}
+                          data-holding-qty={holdingQty}
+                          data-ticker={ticker}
+                          data-asset-name={assetName}
+                        >
+                          Vender
+                        </button>
+                      )}
+                    </div>
+                  </details>
+                </td>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+    {displayTransactions.length === 0 && (
+      <div class="empty-table">No hay transacciones</div>
+    )}
+  </div>
+
+  <div id="view-tx-modal" class="tx-detail-modal" data-open="false" aria-hidden="true">
+    <div class="tx-detail-overlay"></div>
+    <div class="tx-detail-content" role="dialog" aria-labelledby="view-tx-title">
+      <div class="tx-detail-header">
+        <div>
+          <h3 id="view-tx-title">Detalle de la operación</h3>
+          <p class="tx-detail-subtitle" data-view-subtitle></p>
+        </div>
+        <button type="button" class="tx-detail-close" aria-label="Cerrar">✕</button>
+      </div>
+      <dl class="tx-detail-grid" data-view-details></dl>
+      <div class="tx-detail-notes hidden" data-view-notes-wrap>
+        <span class="tx-detail-notes-label">Notas</span>
+        <p data-view-notes></p>
+      </div>
+      <div class="tx-detail-actions">
+        <button type="button" class="tx-detail-close-btn">Cerrar</button>
+        <button type="button" class="tx-detail-sell-btn hidden">Vender</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
+  .transactions-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .transactions-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+  }
+
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .filter-chip {
+    border: 1px solid var(--pf-border);
+    background: var(--pf-stat-bg);
+    color: var(--pf-text-muted);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+
+  .filter-chip:hover {
+    border-color: rgba(99, 102, 241, 0.45);
+    color: var(--pf-text);
+    background: var(--pf-card-hover);
+  }
+
+  .filter-chip.is-active {
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(129, 140, 248, 0.55);
+    color: #a5b4fc;
+  }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-left: auto;
+  }
+
+  .search-input {
+    min-width: 260px;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--pf-border);
+    border-radius: 999px;
+    background: var(--pf-input-bg);
+    color: var(--pf-text);
+    font-size: 1rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .search-input::placeholder {
+    color: var(--pf-text-muted);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.55);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+
+  .visible-count {
+    font-size: 0.95rem;
+    color: var(--pf-text-muted);
+    white-space: nowrap;
+  }
+
   .transactions-container {
     background: var(--pf-card);
     border: 1px solid var(--pf-border);
     border-radius: var(--radius-2xl);
-    overflow: auto;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .transactions-table {
@@ -176,73 +400,153 @@ const formatMoney = (value: number, currency: string) => {
   }
 
   .transactions-table thead {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    background: var(--pf-stat-bg);
     border-bottom: 1px solid var(--pf-border);
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 2;
   }
 
   .transactions-table th {
-    padding: 0.55rem 0.75rem;
+    padding: 0.9rem 1.15rem;
     text-align: left;
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--pf-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    white-space: nowrap;
+    background: var(--pf-stat-bg);
+  }
+
+  .transactions-table th.num-header,
+  .transactions-table td.num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+  }
+
+  .sortable:hover {
+    color: var(--pf-text);
+  }
+
+  .sortable span:first-child {
+    margin-right: 0.2rem;
+  }
+
+  .sort-icon {
+    opacity: 0.4;
+    font-size: 0.7rem;
+  }
+
+  .sortable.is-sorted-asc .sort-icon::before {
+    content: '↑';
+  }
+
+  .sortable.is-sorted-desc .sort-icon {
+    opacity: 1;
+    color: #818cf8;
+  }
+
+  .sortable.is-sorted-desc .sort-icon::before {
+    content: '↓';
+  }
+
+  .sortable.is-sorted-asc .sort-icon {
+    opacity: 1;
+    color: #818cf8;
+  }
+
+  .sortable.is-sorted-asc .sort-icon,
+  .sortable.is-sorted-desc .sort-icon {
+    font-size: 0;
+  }
+
+  .sortable.is-sorted-asc .sort-icon::before,
+  .sortable.is-sorted-desc .sort-icon::before {
+    font-size: 0.75rem;
   }
 
   .transactions-table td {
-    padding: 0.55rem 0.75rem;
+    padding: 0.9rem 1.15rem;
     border-bottom: 1px solid var(--pf-border);
     color: var(--pf-text);
     vertical-align: middle;
+    font-size: 1.05rem;
   }
 
-  .transactions-table tbody tr {
-    background: transparent;
-    border-bottom: 1px solid #2a2d3a;
+  .date-cell {
+    color: var(--pf-text-muted);
+    font-size: 0.95rem;
+    white-space: nowrap;
   }
 
   .transaction-row {
     cursor: pointer;
+    transition: background 0.12s ease;
+  }
+
+  .transaction-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .transaction-row.is-hidden {
+    display: none;
   }
 
   .transaction-type {
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-md);
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
     width: fit-content;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    border: 1px solid transparent;
+  }
+
+  .type-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex-shrink: 0;
   }
 
   .transaction-type.buy {
-    background: rgba(34, 197, 94, 0.08);
-    color: #15803d;
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.22);
+    color: #4ade80;
   }
 
   .transaction-type.sell {
-    background: rgba(239, 68, 68, 0.08);
-    color: #b91c1c;
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.22);
+    color: #f87171;
   }
 
   .transaction-type.dividend {
-    background: rgba(37, 99, 235, 0.08);
-    color: #1d4ed8;
+    background: rgba(124, 58, 237, 0.14);
+    border-color: rgba(167, 139, 250, 0.28);
+    color: #c4b5fd;
   }
 
   .transaction-type.fee {
-    background: rgba(148, 163, 184, 0.12);
-    color: #475569;
+    background: rgba(148, 163, 184, 0.1);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
   }
 
   .asset-name {
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.45rem;
     min-width: 0;
   }
 
@@ -250,74 +554,162 @@ const formatMoney = (value: number, currency: string) => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 180px;
+    max-width: 220px;
     display: inline-block;
+    font-weight: 600;
+    font-size: 1.05rem;
   }
 
   .asset-ticker {
     font-size: 0.8rem;
-    color: var(--pf-text-muted);
-    font-weight: 500;
-    background: #eef2ff;
-    border-radius: var(--radius-md);
-    padding: 0.2rem 0.45rem;
+    color: #a5b4fc;
+    font-weight: 700;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 999px;
+    padding: 0.25rem 0.5rem;
     line-height: 1;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
   }
 
   .total-cell {
     font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--pf-text);
   }
 
   .muted-cell {
-    color: #64748b;
+    color: var(--pf-text-muted);
+  }
+
+  .pnl-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+
+  .pnl-amount {
+    font-weight: 700;
+  }
+
+  .pnl-positive .pnl-amount {
+    color: #4ade80;
+  }
+
+  .pnl-negative .pnl-amount {
+    color: #f87171;
+  }
+
+  .pnl-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    line-height: 1.2;
+  }
+
+  .pnl-badge.is-positive {
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+  }
+
+  .pnl-badge.is-negative {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+  }
+
+  .actions-header {
+    width: 52px;
+    text-align: center;
   }
 
   .actions-cell {
-    display: flex;
-    gap: 0.45rem;
-    align-items: center;
+    text-align: center;
+    width: 52px;
+    position: relative;
   }
 
-  .edit-btn {
-    background: #f8fafc;
+  .row-menu {
+    position: relative;
+    display: inline-block;
+  }
+
+  .row-menu-trigger {
+    list-style: none;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--pf-border);
-    color: #475569;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: var(--radius-sm);
-    transition: all 0.2s ease;
-  }
-
-  .edit-btn:hover {
-    background: #eef2ff;
-    color: #1d4ed8;
-  }
-
-  .delete-btn {
-    background: #fff1f2;
-    border: 1px solid #fecdd3;
-    color: #b91c1c;
+    background: var(--pf-stat-bg);
+    color: var(--pf-text-muted);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
 
-  .delete-btn:hover {
-    background: #ffe4e6;
-    color: #991b1b;
+  .row-menu-trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .row-menu-trigger:hover,
+  .row-menu[open] .row-menu-trigger {
+    background: rgba(99, 102, 241, 0.14);
+    border-color: rgba(129, 140, 248, 0.45);
+    color: #c7d2fe;
+  }
+
+  .row-menu-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 30;
+    min-width: 200px;
+    background: var(--pf-modal-bg, var(--pf-card));
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    padding: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .row-menu-item {
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--pf-text);
+    cursor: pointer;
+    transition: background 0.12s ease;
+    width: 100%;
+  }
+
+  .row-menu-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .row-menu-item-sell {
+    color: #fca5a5;
+    font-weight: 600;
+    margin-top: 0.1rem;
+    border-top: 1px solid var(--pf-border);
+    padding-top: 0.6rem;
+  }
+
+  .row-menu-item-sell:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
   }
 
   .empty-table {
@@ -327,79 +719,499 @@ const formatMoney = (value: number, currency: string) => {
     font-size: 0.9rem;
   }
 
+  .tx-detail-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tx-detail-modal[data-open='true'] {
+    display: flex;
+  }
+
+  .tx-detail-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--pf-overlay);
+    backdrop-filter: blur(3px);
+  }
+
+  .tx-detail-content {
+    position: relative;
+    width: min(440px, 92vw);
+    background: var(--pf-modal-bg, var(--pf-card));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--pf-border);
+    padding: 1.25rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .tx-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .tx-detail-header h3 {
+    margin: 0 0 0.2rem;
+    font-size: 1.1rem;
+    color: var(--pf-text);
+  }
+
+  .tx-detail-subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--pf-text-muted);
+  }
+
+  .tx-detail-close {
+    border: none;
+    background: var(--pf-stat-bg);
+    color: var(--pf-text-muted);
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tx-detail-close:hover {
+    color: var(--pf-text);
+    background: var(--pf-card-hover);
+  }
+
+  .tx-detail-grid {
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--pf-stat-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--pf-border);
+  }
+
+  .tx-detail-grid div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .tx-detail-grid dt {
+    color: var(--pf-text-muted);
+    font-weight: 500;
+  }
+
+  .tx-detail-grid dd {
+    margin: 0;
+    font-weight: 600;
+    color: var(--pf-text);
+    text-align: right;
+  }
+
+  .tx-detail-notes {
+    margin-top: 0.85rem;
+    padding: 0.75rem;
+    background: var(--pf-stat-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--pf-border);
+  }
+
+  .tx-detail-notes.hidden {
+    display: none;
+  }
+
+  .tx-detail-notes-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pf-text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .tx-detail-notes p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--pf-text);
+    line-height: 1.45;
+  }
+
+  .tx-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
+  .tx-detail-close-btn,
+  .tx-detail-sell-btn {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .tx-detail-close-btn {
+    background: var(--pf-stat-bg);
+    color: var(--pf-text);
+    border: 1px solid var(--pf-border);
+  }
+
+  .tx-detail-close-btn:hover {
+    background: var(--pf-card-hover);
+  }
+
+  .tx-detail-sell-btn {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .tx-detail-sell-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+  }
+
+  .tx-detail-sell-btn.hidden {
+    display: none;
+  }
+
   @media (max-width: 768px) {
     .transactions-table {
-      font-size: 0.875rem;
+      font-size: 0.82rem;
     }
 
     .transactions-table th,
     .transactions-table td {
-      padding: 0.55rem 0.75rem;
+      padding: 0.5rem 0.65rem;
     }
 
+    .toolbar-right {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+    }
   }
 </style>
+
 <script>
-  function initTransactionButtons() {
-    const editButtons = document.querySelectorAll('[data-edit-transaction]');
-    const deleteButtons = document.querySelectorAll('[data-transaction-id]');
-    const actionButtons = document.querySelectorAll('.edit-btn, .delete-btn');
+  function initTransactionsTable() {
+    const wrapper = document.querySelector('[data-transactions-wrapper]');
+    if (!wrapper) return;
 
-    actionButtons.forEach((btn) => {
-      btn.addEventListener('click', (e) => e.stopPropagation());
-    });
+    const tbody = wrapper.querySelector('[data-transactions-body]');
+    const rows = () => Array.from(wrapper.querySelectorAll('.transaction-row'));
+    const visibleCountEl = wrapper.querySelector('[data-visible-count]');
+    const viewModal = document.getElementById('view-tx-modal');
+    const viewDetails = viewModal?.querySelector('[data-view-details]');
+    const viewSubtitle = viewModal?.querySelector('[data-view-subtitle]');
+    const viewNotesWrap = viewModal?.querySelector('[data-view-notes-wrap]');
+    const viewNotes = viewModal?.querySelector('[data-view-notes]');
+    const viewSellBtn = viewModal?.querySelector('.tx-detail-sell-btn');
+    const viewCloseBtns = viewModal?.querySelectorAll('.tx-detail-close, .tx-detail-close-btn');
+    const viewOverlay = viewModal?.querySelector('.tx-detail-overlay');
 
-    editButtons.forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
+    let activeFilter = 'all';
+    let searchQuery = '';
+    let sortKey = 'date';
+    let sortDir = 'desc';
+    let activeRow = null;
 
-        const txId = btn.getAttribute('data-edit-transaction');
-        const type = btn.getAttribute('data-type');
-        const quantity = btn.getAttribute('data-quantity');
-        const price = btn.getAttribute('data-price');
-        const date = btn.getAttribute('data-date');
-        const fee = btn.getAttribute('data-fee');
-        const notes = btn.getAttribute('data-notes');
+    const typeLabels = { buy: 'Compra', sell: 'Venta', dividend: 'Dividendo', fee: 'Comisión' };
 
-        if (window.openEditTransactionModal) {
-          window.openEditTransactionModal(txId, type, quantity, price, date, fee, notes);
+    const today = () => new Date().toISOString().split('T')[0];
+
+    const closeAllMenus = () => {
+      wrapper.querySelectorAll('.row-menu[open]').forEach((menu) => menu.removeAttribute('open'));
+    };
+
+    const openSellFromRow = (row) => {
+      const assetId = row.getAttribute('data-asset-id');
+      const holdingQty = row.getAttribute('data-holding-qty');
+      const ticker = row.getAttribute('data-ticker');
+      const assetName = row.getAttribute('data-asset-name');
+      if (!assetId || !holdingQty || !window.openAddTransactionModal) return;
+
+      window.openAddTransactionModal({
+        assetId,
+        type: 'sell',
+        quantity: holdingQty,
+        unitPrice: '',
+        fee: '0',
+        date: today(),
+        title: 'Vender activo',
+        positionSummary: `${assetName} (${ticker}) · Posición disponible: ${holdingQty} uds.`,
+      });
+    };
+
+    const openViewModal = (row) => {
+      if (!viewModal || !viewDetails) return;
+
+      activeRow = row;
+      const type = row.getAttribute('data-type') || '';
+      const ticker = row.getAttribute('data-ticker') || '';
+      const assetName = row.getAttribute('data-asset-name') || '';
+      const canSell = row.getAttribute('data-can-sell') === 'true';
+      const notes = row.getAttribute('data-notes') || '';
+      const pnlPct = row.getAttribute('data-formatted-pnl-pct') || '';
+
+      if (viewSubtitle) {
+        viewSubtitle.textContent = `${assetName} · ${typeLabels[type] || type}`;
+      }
+
+      const rows = [
+        ['Fecha', row.getAttribute('data-formatted-date') || '-'],
+        ['Activo', `${assetName} (${ticker})`],
+        ['Tipo', typeLabels[type] || type],
+        ['Cantidad', row.getAttribute('data-formatted-quantity') || '-'],
+        ['Precio unitario', row.getAttribute('data-formatted-price') || '-'],
+        ['Comisión', row.getAttribute('data-formatted-fee') || '-'],
+        ['Total', row.getAttribute('data-formatted-total') || '-'],
+      ];
+
+      if (type === 'sell') {
+        rows.push(['P&L realizado', `${row.getAttribute('data-formatted-pnl') || '-'}${pnlPct ? ` (${pnlPct})` : ''}`]);
+      }
+
+      viewDetails.innerHTML = rows
+        .map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`)
+        .join('');
+
+      if (viewNotesWrap && viewNotes) {
+        if (notes.trim()) {
+          viewNotes.textContent = notes;
+          viewNotesWrap.classList.remove('hidden');
+        } else {
+          viewNotes.textContent = '';
+          viewNotesWrap.classList.add('hidden');
         }
+      }
+
+      if (viewSellBtn) {
+        viewSellBtn.classList.toggle('hidden', !canSell);
+      }
+
+      viewModal.setAttribute('data-open', 'true');
+      viewModal.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeViewModal = () => {
+      viewModal?.setAttribute('data-open', 'false');
+      viewModal?.setAttribute('aria-hidden', 'true');
+      activeRow = null;
+    };
+
+    const updateVisibleCount = () => {
+      if (!visibleCountEl) return;
+      const visible = rows().filter((row) => !row.classList.contains('is-hidden')).length;
+      const total = rows().length;
+      visibleCountEl.textContent =
+        visible === total ? `${total} transacciones` : `${visible} de ${total} transacciones`;
+    };
+
+    const matchesDateFilter = (dateIso, filter) => {
+      const txDate = new Date(dateIso);
+      const now = new Date();
+      const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+      if (filter === 'today') {
+        return startOfDay(txDate).getTime() === startOfDay(now).getTime();
+      }
+      if (filter === 'week') {
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return txDate >= weekAgo;
+      }
+      if (filter === 'month') {
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(now.getMonth() - 1);
+        return txDate >= monthAgo;
+      }
+      return true;
+    };
+
+    const applyFilters = () => {
+      const q = searchQuery.trim().toLowerCase();
+
+      rows().forEach((row) => {
+        const type = row.getAttribute('data-type') || '';
+        const ticker = row.getAttribute('data-asset') || '';
+        const assetName = row.getAttribute('data-asset-name-lower') || '';
+        const dateIso = row.getAttribute('data-date') || '';
+
+        let visible = true;
+
+        if (activeFilter === 'buy' || activeFilter === 'sell') {
+          visible = type === activeFilter;
+        } else if (activeFilter !== 'all') {
+          visible = matchesDateFilter(dateIso, activeFilter);
+        }
+
+        if (visible && q) {
+          visible = ticker.includes(q) || assetName.includes(q);
+        }
+
+        row.classList.toggle('is-hidden', !visible);
+      });
+
+      updateVisibleCount();
+    };
+
+    const getSortValue = (row, key) => {
+      switch (key) {
+        case 'date':
+          return new Date(row.getAttribute('data-date') || 0).getTime();
+        case 'type':
+          return row.getAttribute('data-type') || '';
+        case 'asset':
+          return row.getAttribute('data-asset') || '';
+        case 'quantity':
+          return parseFloat(row.getAttribute('data-quantity') || '0');
+        case 'unit_price':
+          return parseFloat(row.getAttribute('data-unit-price') || '0');
+        case 'fee':
+          return parseFloat(row.getAttribute('data-fee') || '0');
+        case 'total':
+          return parseFloat(row.getAttribute('data-total') || '0');
+        case 'pnl': {
+          const pnl = row.getAttribute('data-pnl');
+          return pnl === '' || pnl === null ? -Infinity : parseFloat(pnl);
+        }
+        default:
+          return 0;
+      }
+    };
+
+    const applySort = () => {
+      if (!tbody) return;
+
+      const sorted = rows()
+        .filter((row) => !row.classList.contains('is-hidden'))
+        .sort((a, b) => {
+          const aVal = getSortValue(a, sortKey);
+          const bVal = getSortValue(b, sortKey);
+          if (typeof aVal === 'string') {
+            const cmp = aVal.localeCompare(bVal);
+            return sortDir === 'asc' ? cmp : -cmp;
+          }
+          return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        });
+
+      const hidden = rows().filter((row) => row.classList.contains('is-hidden'));
+      [...sorted, ...hidden].forEach((row) => tbody.appendChild(row));
+    };
+
+    const updateSortHeaders = () => {
+      wrapper.querySelectorAll('.sortable').forEach((th) => {
+        const key = th.getAttribute('data-sort');
+        th.classList.remove('is-sorted-asc', 'is-sorted-desc');
+        if (key === sortKey) {
+          th.classList.add(sortDir === 'asc' ? 'is-sorted-asc' : 'is-sorted-desc');
+        }
+      });
+    };
+
+    wrapper.querySelectorAll('.filter-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        wrapper.querySelectorAll('.filter-chip').forEach((c) => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        activeFilter = chip.getAttribute('data-filter') || 'all';
+        applyFilters();
+        applySort();
       });
     });
 
-    deleteButtons.forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
+    const searchInput = wrapper.querySelector('.search-input');
+    searchInput?.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      applyFilters();
+      applySort();
+    });
 
-        if (!confirm('¿Eliminar esta transacción?')) {
+    wrapper.querySelectorAll('.sortable').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort');
+        if (!key) return;
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortKey = key;
+          sortDir = key === 'date' ? 'desc' : 'asc';
+        }
+        updateSortHeaders();
+        applySort();
+      });
+    });
+
+    updateSortHeaders();
+    applySort();
+
+    wrapper.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+
+      const menuItem = target.closest('[data-action]');
+      if (menuItem) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAllMenus();
+
+        const action = menuItem.getAttribute('data-action');
+        const row = menuItem.closest('.transaction-row');
+
+        if (action === 'view' && row) {
+          openViewModal(row);
           return;
         }
 
-        const transactionId = btn.getAttribute('data-transaction-id');
-
-        try {
-          const response = await fetch('/api/transaction/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: transactionId }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error desconocido');
-          }
-
-          window.location.reload();
-        } catch (error) {
-          alert(`Error: ${error instanceof Error ? error.message : 'Error al eliminar'}`);
+        if (action === 'sell' && row) {
+          openSellFromRow(row);
+          return;
         }
-      });
+        return;
+      }
+
+      const row = target.closest('.transaction-row');
+      if (row && !target.closest('.row-menu')) {
+        openViewModal(row);
+        return;
+      }
+
+      if (!target.closest('.row-menu')) {
+        closeAllMenus();
+      }
+    });
+
+    viewCloseBtns?.forEach((btn) => btn.addEventListener('click', closeViewModal));
+    viewOverlay?.addEventListener('click', closeViewModal);
+
+    viewSellBtn?.addEventListener('click', () => {
+      if (!activeRow) return;
+      closeViewModal();
+      openSellFromRow(activeRow);
+    });
+
+    wrapper.querySelectorAll('.row-menu-trigger').forEach((trigger) => {
+      trigger.addEventListener('click', (e) => e.stopPropagation());
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTransactionButtons);
+    document.addEventListener('DOMContentLoaded', initTransactionsTable);
   } else {
-    initTransactionButtons();
+    initTransactionsTable();
   }
 </script>
