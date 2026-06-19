@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import TradingViewAdvancedChart from './TradingViewAdvancedChart';
 
 const TABS = [
@@ -18,6 +18,22 @@ const TICKER_SYMBOLS = [
   { proName: 'NASDAQ:AAPL', title: 'Apple' },
 ];
 
+const MARKET_REFRESH_MS = 45_000;
+
+const STOCK_GRADIENTS = [
+  'from-sky-500/25 to-blue-600/10 text-sky-300 ring-sky-500/25',
+  'from-violet-500/25 to-purple-600/10 text-violet-300 ring-violet-500/25',
+  'from-emerald-500/25 to-teal-600/10 text-emerald-300 ring-emerald-500/25',
+  'from-amber-500/25 to-orange-600/10 text-amber-300 ring-amber-500/25',
+];
+
+const CRYPTO_GRADIENTS = [
+  'from-orange-500/25 to-amber-600/10 text-orange-300 ring-orange-500/25',
+  'from-indigo-500/25 to-blue-600/10 text-indigo-300 ring-indigo-500/25',
+  'from-cyan-500/25 to-sky-600/10 text-cyan-300 ring-cyan-500/25',
+  'from-rose-500/25 to-pink-600/10 text-rose-300 ring-rose-500/25',
+];
+
 function getTheme() {
   return 'dark';
 }
@@ -34,32 +50,207 @@ function loadTradingViewWidget(containerId, scriptSrc, config) {
   container.appendChild(script);
 }
 
-function normalizeText(value) {
-  return String(value || '').trim();
+function formatPrice(price, currency = 'USD') {
+  if (price == null) return '—';
+  const fractionDigits = price < 1 ? 4 : price < 100 ? 2 : 2;
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: fractionDigits,
+  }).format(price);
 }
 
-const TradingDashboard = ({ news = [] }) => {
-  const [activeTab, setActiveTab] = useState('chart');
-  const [theme, setTheme] = useState(getTheme);
-  const [marketSnapshotAt, setMarketSnapshotAt] = useState(new Date());
+function formatChange(change) {
+  if (change == null) return '—';
+  const sign = change > 0 ? '+' : '';
+  return `${sign}${change.toFixed(2)}%`;
+}
 
-  const marketTime = marketSnapshotAt.toLocaleString('es-ES', {
+function formatSyncTime(value) {
+  if (!value) return '—';
+  return new Date(value).toLocaleString('es-ES', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hour12: false,
   });
+}
+
+function countMovers(rows) {
+  const withChange = rows.filter((row) => row.change24h != null);
+  const gainers = withChange.filter((row) => row.change24h > 0).length;
+  const losers = withChange.filter((row) => row.change24h < 0).length;
+  return { gainers, losers, flat: withChange.length - gainers - losers };
+}
+
+function MarketStat({ label, value, tone = 'neutral' }) {
+  const toneClass =
+    tone === 'up'
+      ? 'text-emerald-400'
+      : tone === 'down'
+        ? 'text-rose-400'
+        : 'text-white';
+
+  return (
+    <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-gray-500">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold tabular-nums ${toneClass}`}>{value}</p>
+    </div>
+  );
+}
+
+function AssetRow({ row, gradientClass, loading }) {
+  const isPositive = row.change24h != null && row.change24h >= 0;
+  const changeTone = row.change24h == null ? 'neutral' : isPositive ? 'up' : 'down';
+
+  return (
+    <div
+      className={[
+        'grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl border border-white/5 px-3 py-3 transition-all duration-200',
+        loading ? 'animate-pulse bg-white/[0.02]' : 'bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]',
+      ].join(' ')}
+    >
+      <div
+        className={[
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-[0.7rem] font-bold ring-1',
+          gradientClass,
+        ].join(' ')}
+      >
+        {row.symbol?.slice(0, 3) || '—'}
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-sm font-semibold text-white">{row.symbol || '—'}</span>
+          {row.exchange && (
+            <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-[0.62rem] font-medium uppercase tracking-wide text-gray-500">
+              {row.exchange}
+            </span>
+          )}
+        </div>
+        <p className="truncate text-sm text-gray-400">{row.name || '—'}</p>
+      </div>
+
+      <div className="text-right">
+        <p className="font-mono text-sm font-semibold tabular-nums text-white">
+          {loading ? '···' : formatPrice(row.price, row.currency)}
+        </p>
+        <span
+          className={[
+            'mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
+            changeTone === 'up' && 'bg-emerald-500/15 text-emerald-400',
+            changeTone === 'down' && 'bg-rose-500/15 text-rose-400',
+            changeTone === 'neutral' && 'bg-white/5 text-gray-500',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {loading ? '···' : formatChange(row.change24h)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AssetPanel({ title, subtitle, rows, gradients, loading, emptyMessage }) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#11141b]/90 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+      <header className="flex items-start justify-between gap-3 border-b border-white/8 px-4 py-4 sm:px-5">
+        <div>
+          <h3 className="text-base font-semibold text-white">{title}</h3>
+          <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>
+        </div>
+        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-gray-400">
+          {loading ? '···' : `${rows.length} activos`}
+        </span>
+      </header>
+
+      <div className="space-y-2 p-3 sm:p-4">
+        {loading && rows.length === 0
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <AssetRow
+                key={`skeleton-${index}`}
+                row={{ symbol: '···', name: 'Cargando datos en vivo', change24h: null }}
+                gradientClass={gradients[index % gradients.length]}
+                loading
+              />
+            ))
+          : rows.map((row, index) => (
+              <AssetRow
+                key={row.symbol}
+                row={row}
+                gradientClass={gradients[index % gradients.length]}
+                loading={false}
+              />
+            ))}
+
+        {!loading && rows.length === 0 && (
+          <p className="rounded-xl border border-dashed border-white/10 px-4 py-8 text-center text-sm text-gray-500">
+            {emptyMessage}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const TradingDashboard = ({ news = [] }) => {
+  const [activeTab, setActiveTab] = useState('chart');
+  const [theme, setTheme] = useState(getTheme);
+  const [marketTables, setMarketTables] = useState({
+    stocks: [],
+    cryptos: [],
+    updatedAt: null,
+    loading: true,
+    error: null,
+  });
+
+  const loadMarketTables = useCallback(async (options = { silent: false }) => {
+    if (!options.silent) {
+      setMarketTables((current) => ({ ...current, loading: true, error: null }));
+    }
+
+    try {
+      const response = await fetch('/api/markets', { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Markets API failed: ${response.status}`);
+
+      const data = await response.json();
+      setMarketTables({
+        stocks: data.stocks || [],
+        cryptos: data.cryptos || [],
+        updatedAt: data.updatedAt || null,
+        loading: false,
+        error: null,
+      });
+    } catch {
+      setMarketTables((current) => ({
+        ...current,
+        loading: false,
+        error: options.silent
+          ? current.error || 'No se pudieron actualizar los datos.'
+          : 'No se pudieron cargar los datos gratuitos del mercado.',
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     setTheme('dark');
-    setMarketSnapshotAt(new Date());
   }, []);
 
-  const refreshMarketSnapshot = () => {
-    setMarketSnapshotAt(new Date());
-  };
+  useEffect(() => {
+    if (activeTab !== 'market') return undefined;
+
+    loadMarketTables();
+
+    const interval = window.setInterval(() => {
+      loadMarketTables({ silent: true });
+    }, MARKET_REFRESH_MS);
+
+    return () => window.clearInterval(interval);
+  }, [activeTab, loadMarketTables]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -103,56 +294,14 @@ const TradingDashboard = ({ news = [] }) => {
           symbols: [{ s: 'NASDAQ:NVDA' }, { s: 'NASDAQ:AAPL' }, { s: 'NASDAQ:MSFT' }, { s: 'NASDAQ:AMZN' }, { s: 'NASDAQ:META' }],
         });
       }
-
-      if (activeTab === 'market') {
-        loadTradingViewWidget('tv-market-overview', 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js', {
-          colorTheme: 'dark',
-          dateRange: '12M',
-          showChart: true,
-          locale: 'es',
-          largeChartUrl: '',
-          isTransparent: true,
-          showSymbolLogo: true,
-          showFloatingTooltip: false,
-          width: '100%',
-          height: '660',
-          tabs: [
-            {
-              title: 'Índices',
-              symbols: [{ s: 'FOREXCOM:SPXUSD', d: 'S&P 500 Index' }],
-              originalTitle: 'Indices',
-            },
-            {
-              title: 'Forex',
-              symbols: [{ s: 'FX_IDC:EURUSD', d: 'EUR to USD' }],
-              originalTitle: 'Forex',
-            },
-            {
-              title: 'Crypto',
-              symbols: [
-                { s: 'BITSTAMP:BTCUSD', d: 'Bitcoin' },
-                { s: 'BITSTAMP:ETHUSD', d: 'Ethereum' },
-              ],
-            },
-            {
-              title: 'Tech',
-              symbols: [
-                { s: 'NASDAQ:META', d: 'Meta' },
-                { s: 'NASDAQ:GOOGL', d: 'Google' },
-                { s: 'NASDAQ:NVDA', d: 'NVIDIA' },
-                { s: 'NASDAQ:AAPL', d: 'Apple' },
-                { s: 'NASDAQ:TSLA', d: 'Tesla' },
-                { s: 'NASDAQ:MSFT', d: 'Microsoft' },
-                { s: 'NASDAQ:INTC', d: 'Intel' },
-              ],
-            },
-          ],
-        });
-      }
     }, 25);
 
     return () => clearTimeout(timer);
   }, [activeTab, theme]);
+
+  const allRows = [...marketTables.stocks, ...marketTables.cryptos];
+  const movers = countMovers(allRows);
+  const syncLabel = formatSyncTime(marketTables.updatedAt);
 
   return (
     <section className={`market-shell ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
@@ -160,25 +309,38 @@ const TradingDashboard = ({ news = [] }) => {
         <div id="tv-ticker-tape" className="widget-slot widget-slot-tape" />
       </div>
 
-      <nav className="market-tabs" aria-label="Secciones del mercado">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            className={`market-tab ${activeTab === tab.id ? 'is-active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-          >
-            <span>{tab.label}</span>
-          </button>
-        ))}
+      <nav
+        className="mb-4 flex items-center gap-1 overflow-x-auto rounded-xl border border-white/10 bg-[#0f1219] p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label="Secciones del mercado"
+      >
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.id)}
+              className={[
+                'rounded-lg px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-all duration-200',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+                isActive
+                  ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-gray-200',
+              ].join(' ')}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </nav>
 
       <div className="tab-stage">
         {activeTab === 'chart' && (
           <section className="full-bleed-panel">
-            <TradingViewAdvancedChart symbol="BLACKBULL:BRENT" height={790} />
+            <TradingViewAdvancedChart symbol="BLACKBULL:BRENT" height={700} />
           </section>
         )}
 
@@ -189,39 +351,71 @@ const TradingDashboard = ({ news = [] }) => {
         )}
 
         {activeTab === 'market' && (
-          <div className="market-view">
-            <header className="market-header panel">
-              <div className="market-header__status">
-                <span className="market-status-dot" aria-hidden="true" />
-                <div>
-                  <strong>Mercado en vivo</strong>
-                  <span>Widgets de TradingView y noticias publicadas</span>
+          <div className="space-y-4">
+            <header className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#12151d] via-[#11141b] to-[#0d1017] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-3">
+                  <span className="relative mt-1 flex h-3 w-3 shrink-0" aria-hidden="true">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/90">En vivo</p>
+                    <h2 className="mt-1 text-xl font-semibold text-white sm:text-2xl">Mercado en tiempo real</h2>
+                    <p className="mt-1 max-w-2xl text-sm text-gray-400">
+                      Acciones vía Yahoo Finance y cripto vía CoinGecko. Se actualiza cada 45 segundos.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-gray-400">
+                    Sincronizado: <span className="font-medium text-gray-200">{syncLabel}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => loadMarketTables()}
+                    disabled={marketTables.loading}
+                    className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-300 transition hover:border-blue-400/50 hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <span className={marketTables.loading ? 'inline-block animate-spin' : ''}>↻</span>
+                    Actualizar
+                  </button>
                 </div>
               </div>
 
-              <div className="market-header__meta">
-                <div>
-                  <span>Última actualización</span>
-                  <strong>{marketTime}</strong>
-                </div>
-                <div>
-                  <span>Noticias publicadas</span>
-                  <strong>{news.length}</strong>
-                </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <MarketStat label="Activos" value={allRows.length} />
+                <MarketStat label="Al alza" value={movers.gainers} tone="up" />
+                <MarketStat label="A la baja" value={movers.losers} tone="down" />
+                <MarketStat label="Noticias" value={news.length} />
               </div>
-
-              <button type="button" className="market-refresh" onClick={refreshMarketSnapshot} aria-label="Actualizar datos del mercado">
-                ↻ Actualizar vista
-              </button>
             </header>
 
-            <section className="panel panel-overview">
-              <div className="panel-title-row">
-                <h3>Vista general de mercado</h3>
-                <span className="panel-subtitle">Datos del proveedor externo</span>
+            {marketTables.error && (
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+                {marketTables.error}
               </div>
-              <div className="widget-slot widget-slot-overview" id="tv-market-overview" />
-            </section>
+            )}
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <AssetPanel
+                title="Acciones"
+                subtitle="Mega caps tecnológicas de EE. UU."
+                rows={marketTables.stocks}
+                gradients={STOCK_GRADIENTS}
+                loading={marketTables.loading && marketTables.stocks.length === 0}
+                emptyMessage="No hay cotizaciones de acciones disponibles en este momento."
+              />
+              <AssetPanel
+                title="Criptomonedas"
+                subtitle="Principales activos por capitalización"
+                rows={marketTables.cryptos}
+                gradients={CRYPTO_GRADIENTS}
+                loading={marketTables.loading && marketTables.cryptos.length === 0}
+                emptyMessage="No hay cotizaciones de cripto disponibles en este momento."
+              />
+            </div>
           </div>
         )}
 

@@ -7,6 +7,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import TradingDashboard from "../components/finance/TradingDashboard.jsx";
 import { getCollection } from 'astro:content';
 import "../styles/global.css";
+import "../styles/tailwind.css";
 import "../styles/design-tokens.css";
 import "../styles/motion.css";
 import "../styles/animations.css";
@@ -83,7 +84,6 @@ const news = (await getCollection('blog'))
     width: 100%;
   }
 
-  .market-tab,
   .panel {
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: #11141b;
@@ -101,38 +101,6 @@ const news = (await getCollection('blog'))
 
   .panel-heading h3 {
     margin: 0.15rem 0 0;
-  }
-
-  .market-tabs {
-    display: flex;
-    align-items: end;
-    overflow-x: auto;
-    gap: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-    margin-bottom: 1rem;
-  }
-
-  .market-tab {
-    position: relative;
-    padding: 0.85rem 1rem 0.95rem;
-    white-space: nowrap;
-    border-radius: 0;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    font-weight: 600;
-    color: rgba(229, 231, 235, 0.68);
-  }
-
-  .market-tab.is-active {
-    color: inherit;
-    border-bottom-color: var(--accent, #3b82f6);
-    background: transparent;
-  }
-
-  .market-tab span {
-    display: inline-block;
-    padding-bottom: 0.05rem;
   }
 
   .tab-stage {
@@ -321,8 +289,7 @@ const news = (await getCollection('blog'))
     background: #141824;
   }
 
-  .news-item:hover,
-  .market-tab:hover {
+  .news-item:hover {
     transform: translateY(-1px);
     border-color: color-mix(in srgb, var(--accent, #3b82f6) 35%, transparent);
   }
@@ -530,7 +497,7 @@ const news = (await getCollection('blog'))
     .full-bleed-panel .widget-slot-heatmap,
     .full-bleed-panel .widget-slot-heatmap iframe,
     .full-bleed-panel .widget-slot-heatmap > div {
-      height: 790px;
+      height: 670px;
       min-height: 0;
     }
 
