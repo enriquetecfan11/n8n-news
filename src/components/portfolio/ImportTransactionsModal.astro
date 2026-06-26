@@ -11,7 +11,7 @@ const { portfolioId } = Astro.props;
 <Modal
   id="import-transactions-modal"
   title="Importar Transacciones"
-  subtitle="Carga múltiples transacciones desde un archivo CSV"
+  subtitle="Carga transacciones desde CSV nativo o desde TradingView Paper Trading"
   wide={true}
 >
   <div class="import-info">
@@ -20,17 +20,30 @@ const { portfolioId } = Astro.props;
         <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
         <path d="M10 6V10M10 14H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-      <p>Sube un archivo CSV con las columnas requeridas</p>
+      <p>Sube un CSV nativo o el exportado desde TradingView Paper Trading</p>
     </div>
-    <ul class="csv-columns">
+    <div class="format-tabs" role="tablist" aria-label="Formatos CSV soportados">
+      <button type="button" class="format-tab is-active" data-format-tab="tradingview">TradingView</button>
+      <button type="button" class="format-tab" data-format-tab="native">Nativo</button>
+    </div>
+    <ul class="csv-columns" data-format-panel="tradingview">
+      <li><code>Symbol</code> - Símbolo con bolsa (ej: <strong>NASDAQ:GOOGL</strong>)</li>
+      <li><code>Side</code> - <strong>Buy</strong> o <strong>Sell</strong></li>
+      <li><code>Qty</code> - Cantidad</li>
+      <li><code>Fill Price</code> - Precio de ejecución</li>
+      <li><code>Commission</code> - Comisión</li>
+      <li><code>Closing Time</code> - Fecha/hora (ej: <strong>2026-06-17 13:30:00</strong>)</li>
+    </ul>
+    <ul class="csv-columns hidden" data-format-panel="native">
       <li><code>date</code> - Fecha en formato <strong>YYYY-MM-DD</strong></li>
-      <li><code>type</code> - Tipo de transacción: <strong>buy</strong>, <strong>sell</strong>, <strong>dividend</strong>, <strong>fee</strong></li>
-      <li><code>ticker</code> - Símbolo del activo (ej: <strong>AAPL</strong>, <strong>BTC</strong>)</li>
+      <li><code>type</code> - Tipo: <strong>buy</strong>, <strong>sell</strong>, <strong>dividend</strong>, <strong>fee</strong></li>
+      <li><code>ticker</code> - Símbolo del activo (ej: <strong>AAPL</strong>)</li>
       <li><code>quantity</code> - Cantidad de unidades</li>
       <li><code>unitPrice</code> - Precio por unidad</li>
       <li><code>fee</code> - Comisión <span class="optional">(opcional)</span></li>
-      <li><code>notes</code> - Notas adicionales <span class="optional">(opcional)</span></li>
+      <li><code>notes</code> - Notas <span class="optional">(opcional)</span></li>
     </ul>
+    <p class="import-note">Si TradingView te da un .xlsx, ábrelo en Excel/Sheets y guárdalo como CSV antes de importarlo.</p>
   </div>
 
   <form id="import-transactions-form">
@@ -148,6 +161,40 @@ const { portfolioId } = Astro.props;
     font-style: italic;
   }
 
+  .format-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .format-tab {
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: transparent;
+    color: var(--pf-text-muted);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .format-tab.is-active {
+    background: rgba(99, 102, 241, 0.16);
+    color: #6366f1;
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+
+  .csv-columns.hidden {
+    display: none;
+  }
+
+  .import-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.8rem;
+    color: var(--pf-text-muted);
+    line-height: 1.45;
+  }
+
   .file-input-wrapper {
     position: relative;
   }
@@ -258,6 +305,18 @@ const { portfolioId } = Astro.props;
     const submitBtn = document.getElementById('import-submit');
 
     if (!modal || !form) return;
+
+    modal.querySelectorAll('[data-format-tab]').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const format = tab.getAttribute('data-format-tab');
+        modal.querySelectorAll('[data-format-tab]').forEach((item) => {
+          item.classList.toggle('is-active', item === tab);
+        });
+        modal.querySelectorAll('[data-format-panel]').forEach((panel) => {
+          panel.classList.toggle('hidden', panel.getAttribute('data-format-panel') !== format);
+        });
+      });
+    });
 
     const closeModal = () => {
       modal.classList.add('hidden');

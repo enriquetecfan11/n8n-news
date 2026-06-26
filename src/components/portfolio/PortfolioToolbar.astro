@@ -26,6 +26,14 @@ const { baseCurrency, portfolioId } = Astro.props;
         <span class="btn-label">Acciones</span>
       </summary>
       <div class="toolbar-menu-panel">
+        <a
+          class="toolbar-menu-item"
+          href={`/api/transaction/export-csv?portfolioId=${portfolioId}&format=tradingview`}
+          title="Exportar transacciones para TradingView Paper Trading"
+        >
+          <span>📤</span>
+          <span>Exportar TradingView</span>
+        </a>
         <button class="toolbar-menu-item" data-open-import-modal title="Importar transacciones desde CSV">
           <span>📥</span>
           <span>Importar</span>
@@ -187,6 +195,7 @@ const { baseCurrency, portfolioId } = Astro.props;
     font-size: 0.875rem;
     cursor: pointer;
     text-align: left;
+    text-decoration: none;
   }
 
   .toolbar-menu-item:hover {

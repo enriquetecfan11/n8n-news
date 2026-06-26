@@ -90,7 +90,16 @@ const assetOptions = Array.from(assets.values()).map((a) => ({
           <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolio.name}</a>
           <h1>Historial de Transacciones</h1>
         </div>
-        <button class="btn btn-secondary btn-sm" data-open-import-modal style="align-self: flex-start;">📥 Importar CSV</button>
+        <div class="header-actions">
+          <a
+            class="btn btn-secondary btn-sm"
+            href={`/api/transaction/export-csv?portfolioId=${id}&format=tradingview`}
+            title="Exportar transacciones en formato TradingView"
+          >
+            📤 Exportar TradingView
+          </a>
+          <button class="btn btn-secondary btn-sm" data-open-import-modal>📥 Importar CSV</button>
+        </div>
       </section>
 
       {filteredTransactions.length > 0 ? (
@@ -132,6 +141,17 @@ const assetOptions = Array.from(assets.values()).map((a) => ({
     justify-content: space-between;
     align-items: flex-start;
     gap: 0.75rem;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-self: flex-start;
+  }
+
+  .header-actions .btn {
+    text-decoration: none;
   }
 
   .btn-sm {

@@ -228,6 +228,13 @@ const assetOptions = assets.map((a) => ({
           <details class="bar-menu">
             <summary class="bar-btn bar-btn-secondary" title="Más acciones">Acciones</summary>
             <div class="bar-menu-panel">
+              <a
+                class="bar-menu-item"
+                href={`/api/transaction/export-csv?portfolioId=${id}&format=tradingview`}
+                title="Exportar transacciones para TradingView Paper Trading"
+              >
+                Exportar TradingView
+              </a>
               <button class="bar-menu-item" data-open-import-modal title="Importar transacciones desde CSV">Importar</button>
               <button class="bar-menu-item" data-refresh-prices title="Actualizar precios actuales">Actualizar</button>
               <button class="bar-menu-item" data-open-edit-portfolio-modal title="Editar información del portafolio">Editar</button>
@@ -1272,6 +1279,7 @@ const assetOptions = assets.map((a) => ({
     border: 0;
     background: transparent;
     color: #000;
+    text-decoration: none;
     padding: 0.4rem 0.5rem;
     border-radius: 0.65rem;
     text-align: left;
