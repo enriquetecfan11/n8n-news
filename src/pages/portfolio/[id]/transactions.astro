@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import TransactionsTable from '../../../components/portfolio/TransactionsTable.astro';
+import PortfolioPositionsTable from '../../../components/portfolio/PortfolioPositionsTable.astro';
 import AddTransactionModal from '../../../components/portfolio/AddTransactionModal.astro';
 import ImportTransactionsModal from '../../../components/portfolio/ImportTransactionsModal.astro';
 import {
@@ -9,8 +9,13 @@ import {
   getTransactionsByPortfolio,
   getAssets,
 } from '../../../lib/supabase';
-import { getHoldings } from '../../../lib/portfolio';
-import type { Asset, Transaction } from '../../../lib/portfolio';
+import {
+  getHoldings,
+  getPortfolioSummary,
+  getPriceSnapshotsForHoldings,
+  buildPositionRows,
+} from '../../../lib/portfolio';
+import type { Asset, PositionRow, Portfolio, Transaction } from '../../../lib/portfolio';
 
 const session = await getCurrentSession(Astro.cookies.get('sb-access-token')?.value);
 if (!session) {
@@ -23,12 +28,10 @@ if (!id) {
   return Astro.redirect('/portfolio');
 }
 
-let portfolio = null;
+let portfolio: Portfolio | null = null;
 let transactions: Transaction[] = [];
 let assets: Map<string, Asset> = new Map();
-let filteredTransactions: Transaction[] = [];
-let averageCostByAsset: Map<string, number> = new Map();
-let holdingsByAsset: Map<string, number> = new Map();
+let positionRows: PositionRow[] = [];
 let error: string | null = null;
 
 try {
@@ -42,27 +45,25 @@ try {
   assets = new Map(allAssets.map((a: Asset) => [a.id, a]));
 
   transactions = await getTransactionsByPortfolio(id);
+  let holdings = getHoldings(transactions, assets);
 
-  const costAccumulator = new Map<string, { cost: number; quantity: number }>();
-  for (const tx of transactions) {
-    if (tx.type !== 'buy') continue;
-    const current = costAccumulator.get(tx.asset_id) || { cost: 0, quantity: 0 };
-    current.cost += tx.quantity * tx.unit_price + (tx.fee || 0);
-    current.quantity += tx.quantity;
-    costAccumulator.set(tx.asset_id, current);
-  }
+  const prices = await getPriceSnapshotsForHoldings(holdings);
+  holdings.forEach((holding) => {
+    const snapshot = prices.get(holding.assetId);
+    if (snapshot && typeof snapshot.price === 'number' && snapshot.price > 0) {
+      holding.currentPrice = snapshot.price;
+      holding.currentValue = holding.quantity * holding.currentPrice;
+      holding.pnlAbsolute = holding.currentValue - holding.totalCost;
+      holding.pnlPercent = holding.totalCost > 0 ? (holding.pnlAbsolute / holding.totalCost) * 100 : 0;
+      holding.priceChange24h = snapshot.change24h ?? 0;
+      holding.priceAvailable = true;
+    } else {
+      holding.priceAvailable = false;
+    }
+  });
 
-  averageCostByAsset = new Map(
-    Array.from(costAccumulator.entries()).map(([assetId, value]) => [
-      assetId,
-      value.quantity > 0 ? value.cost / value.quantity : 0,
-    ])
-  );
-
-  const holdings = getHoldings(transactions, assets);
-  holdingsByAsset = new Map(holdings.map((h) => [h.assetId, h.quantity]));
-
-  filteredTransactions = transactions;
+  const summary = getPortfolioSummary(holdings);
+  positionRows = buildPositionRows(holdings, transactions, assets, summary.totalValue);
 } catch (err) {
   console.error('Error loading transactions:', err);
   error = 'Error al cargar las transacciones.';
@@ -72,6 +73,7 @@ if (!portfolio) {
   return Astro.redirect('/portfolio');
 }
 
+const portfolioData = portfolio;
 const assetOptions = Array.from(assets.values()).map((a) => ({
   id: a.id,
   name: a.name,
@@ -80,15 +82,16 @@ const assetOptions = Array.from(assets.values()).map((a) => ({
 ---
 
 <BaseLayout
-  title={`${portfolio.name} - Transacciones`}
-  description={`Historial de transacciones de ${portfolio.name}`}
+  title={`${portfolioData.name} - Transacciones`}
+  description={`Posiciones y métricas de ${portfolioData.name}`}
 >
   <main class="main-content">
     <div class="wrapper">
       <section class="page-header">
         <div>
-          <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolio.name}</a>
-          <h1>Historial de Transacciones</h1>
+          <a href={`/portfolio/${id}`} class="breadcrumb">← {portfolioData.name}</a>
+          <h1>Transacciones</h1>
+          <p class="page-subtitle">Vista por posición con reparto, P&amp;L y dividendos acumulados</p>
         </div>
         <div class="header-actions">
           <a
@@ -102,21 +105,14 @@ const assetOptions = Array.from(assets.values()).map((a) => ({
         </div>
       </section>
 
-      {filteredTransactions.length > 0 ? (
+      {positionRows.length > 0 ? (
         <section class="transactions-section">
-          <TransactionsTable
-            transactions={filteredTransactions}
-            assets={assets}
-            averageCostByAsset={averageCostByAsset}
-            holdingsByAsset={holdingsByAsset}
-            showActions={true}
-            showToolbar={true}
-          />
+          <PortfolioPositionsTable positions={positionRows} showToolbar={true} />
         </section>
       ) : (
         <div class="empty-state">
-          <h2>No hay transacciones</h2>
-          <p>Este portafolio aún no tiene transacciones registradas.</p>
+          <h2>No hay posiciones</h2>
+          <p>Este portafolio aún no tiene activos con posición abierta.</p>
         </div>
       )}
     </div>
@@ -195,6 +191,12 @@ const assetOptions = Array.from(assets.values()).map((a) => ({
     font-size: clamp(1.35rem, 2.3vw, 1.85rem);
     font-weight: 700;
     color: var(--pf-text);
+  }
+
+  .page-subtitle {
+    margin: 0.35rem 0 0;
+    color: var(--pf-text-muted);
+    font-size: 0.9rem;
   }
 
   .transactions-section {

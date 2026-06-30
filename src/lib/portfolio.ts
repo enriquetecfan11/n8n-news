@@ -35,6 +35,108 @@ export interface PortfolioDashboard extends PortfolioSummary {
   lastUpdated: Date;
 }
 
+export interface PositionRow {
+  assetId: string;
+  symbol: string;
+  assetName: string;
+  ticker: string;
+  currency: string;
+  weight: number;
+  quantity: number;
+  averagePrice: number;
+  invested: number;
+  unrealizedPnL: number;
+  unrealizedPnLPercent: number;
+  dailyGain: number;
+  dailyGainPercent: number;
+  totalDividends: number;
+  totalGain: number;
+  priceAvailable: boolean;
+}
+
+export function buildPositionRows(
+  holdings: Holding[],
+  transactions: Transaction[],
+  assets: Map<string, Asset>,
+  totalValue: number
+): PositionRow[] {
+  const dividendsByAsset = new Map<string, number>();
+  const realizedByAsset = new Map<string, number>();
+  const txsByAsset = new Map<string, Transaction[]>();
+
+  for (const tx of transactions) {
+    const assetTxs = txsByAsset.get(tx.asset_id) || [];
+    assetTxs.push(tx);
+    txsByAsset.set(tx.asset_id, assetTxs);
+  }
+
+  for (const [assetId, assetTxs] of txsByAsset) {
+    const sorted = [...assetTxs].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    let averageCost = 0;
+    let quantity = 0;
+    let realized = 0;
+    let dividends = 0;
+
+    for (const tx of sorted) {
+      if (tx.type === 'buy') {
+        const buyCost = tx.quantity * tx.unit_price + (tx.fee || 0);
+        const newQuantity = quantity + tx.quantity;
+        averageCost =
+          newQuantity > 0 ? (averageCost * quantity + buyCost) / newQuantity : 0;
+        quantity = newQuantity;
+      } else if (tx.type === 'sell') {
+        realized += (tx.unit_price - averageCost) * tx.quantity - (tx.fee || 0);
+        quantity = Math.max(0, quantity - tx.quantity);
+        if (quantity === 0) averageCost = 0;
+      } else if (tx.type === 'dividend') {
+        dividends += tx.quantity * tx.unit_price + (tx.fee || 0);
+      }
+    }
+
+    realizedByAsset.set(assetId, realized);
+    dividendsByAsset.set(assetId, dividends);
+  }
+
+  return holdings.map((holding) => {
+    const asset = assets.get(holding.assetId);
+    const symbol =
+      asset?.exchange && holding.ticker
+        ? `${asset.exchange}:${holding.ticker}`
+        : holding.ticker;
+
+    const weight = totalValue > 0 ? (holding.currentValue / totalValue) * 100 : 0;
+    const dailyGainPercent = holding.priceChange24h ?? 0;
+    const dailyGain =
+      holding.priceAvailable && holding.currentValue > 0
+        ? holding.currentValue * (dailyGainPercent / 100)
+        : 0;
+    const totalDividends = dividendsByAsset.get(holding.assetId) || 0;
+    const realizedPnL = realizedByAsset.get(holding.assetId) || 0;
+
+    return {
+      assetId: holding.assetId,
+      symbol,
+      assetName: holding.assetName,
+      ticker: holding.ticker,
+      currency: holding.currency,
+      weight,
+      quantity: holding.quantity,
+      averagePrice: holding.averagePrice,
+      invested: holding.totalCost,
+      unrealizedPnL: holding.pnlAbsolute,
+      unrealizedPnLPercent: holding.pnlPercent,
+      dailyGain,
+      dailyGainPercent,
+      totalDividends,
+      totalGain: holding.pnlAbsolute + realizedPnL + totalDividends,
+      priceAvailable: holding.priceAvailable,
+    };
+  });
+}
+
 export function getHoldings(
   transactions: Transaction[],
   assets: Map<string, Asset>,

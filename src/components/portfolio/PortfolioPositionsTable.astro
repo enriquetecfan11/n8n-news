@@ -1,0 +1,481 @@
+---
+import type { PositionRow } from '../../lib/portfolio';
+import { formatCurrency, formatPercent } from '../../lib/portfolio';
+
+interface Props {
+  positions: PositionRow[];
+  showToolbar?: boolean;
+}
+
+const { positions, showToolbar = true } = Astro.props;
+
+const formatQuantity = (value: number) =>
+  value.toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 8,
+  });
+
+const formatMoney = (value: number, currency: string) => formatCurrency(value, currency);
+
+const formatSignedMoney = (value: number, currency: string) => {
+  const formatted = formatMoney(Math.abs(value), currency);
+  if (value > 0) return `+${formatted}`;
+  if (value < 0) return `-${formatted}`;
+  return formatted;
+};
+
+const pnlClass = (value: number) => (value >= 0 ? 'pnl-positive' : 'pnl-negative');
+---
+
+<div class="positions-wrapper" data-positions-wrapper>
+  {showToolbar && (
+    <div class="positions-toolbar">
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Buscar símbolo..."
+        aria-label="Buscar por símbolo"
+      />
+      <span class="visible-count" data-visible-count>{positions.length} posiciones</span>
+    </div>
+  )}
+
+  <div class="positions-container">
+    <table class="positions-table">
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="symbol">
+            <span>Símbolo</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="weight">
+            <span>Reparto</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="quantity">
+            <span>Cantidad</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="averagePrice">
+            <span>Precio Medio</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="invested">
+            <span>Invertido</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="unrealizedPnL">
+            <span>Ganancia no realizada</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="dailyGain">
+            <span>Ganancia Diaria</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="totalDividends">
+            <span>Dividendo total</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+          <th class="sortable num-header" data-sort="totalGain">
+            <span>Ganancia Total</span>
+            <span class="sort-icon" aria-hidden="true">↕</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody data-positions-body>
+        {positions.map((row) => (
+          <tr
+            class="position-row"
+            data-symbol={row.symbol.toLowerCase()}
+            data-weight={row.weight}
+            data-quantity={row.quantity}
+            data-average-price={row.averagePrice}
+            data-invested={row.invested}
+            data-unrealized-pnl={row.unrealizedPnL}
+            data-daily-gain={row.dailyGain}
+            data-total-dividends={row.totalDividends}
+            data-total-gain={row.totalGain}
+          >
+            <td class="symbol-cell">
+              <div class="symbol-stack">
+                <span class="symbol-ticker">{row.symbol}</span>
+                <span class="symbol-name" title={row.assetName}>{row.assetName}</span>
+              </div>
+            </td>
+            <td class="num-cell">
+              <div class="weight-stack">
+                <span>{row.weight.toFixed(1)}%</span>
+                <div class="weight-bar" aria-hidden="true">
+                  <span class="weight-bar-fill" style={`width: ${Math.min(row.weight, 100)}%`}></span>
+                </div>
+              </div>
+            </td>
+            <td class="num-cell">{formatQuantity(row.quantity)}</td>
+            <td class="num-cell">{formatMoney(row.averagePrice, row.currency)}</td>
+            <td class="num-cell">{formatMoney(row.invested, row.currency)}</td>
+            <td class:list={['num-cell', 'pnl-cell', pnlClass(row.unrealizedPnL)]}>
+              <div class="pnl-stack">
+                <span>{formatSignedMoney(row.unrealizedPnL, row.currency)}</span>
+                <span class="pnl-badge">{formatPercent(row.unrealizedPnLPercent)}</span>
+              </div>
+            </td>
+            <td class:list={['num-cell', 'pnl-cell', row.priceAvailable ? pnlClass(row.dailyGain) : '']}>
+              {row.priceAvailable ? (
+                <div class="pnl-stack">
+                  <span>{formatSignedMoney(row.dailyGain, row.currency)}</span>
+                  <span class="pnl-badge">{formatPercent(row.dailyGainPercent)}</span>
+                </div>
+              ) : (
+                <span class="muted-cell">N/D</span>
+              )}
+            </td>
+            <td class="num-cell">
+              {row.totalDividends > 0 ? formatMoney(row.totalDividends, row.currency) : <span class="muted-cell">-</span>}
+            </td>
+            <td class:list={['num-cell', 'pnl-cell', 'total-gain-cell', pnlClass(row.totalGain)]}>
+              <span class="total-gain-value">{formatSignedMoney(row.totalGain, row.currency)}</span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {positions.length === 0 && (
+      <div class="empty-table">No hay posiciones abiertas</div>
+    )}
+  </div>
+</div>
+
+<style>
+  .positions-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .positions-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-xl);
+  }
+
+  .search-input {
+    min-width: 260px;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--pf-border);
+    border-radius: 999px;
+    background: var(--pf-input-bg);
+    color: var(--pf-text);
+    font-size: 1rem;
+  }
+
+  .search-input::placeholder {
+    color: var(--pf-text-muted);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.55);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+
+  .visible-count {
+    font-size: 0.95rem;
+    color: var(--pf-text-muted);
+    white-space: nowrap;
+  }
+
+  .positions-container {
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: var(--radius-2xl);
+    overflow-x: auto;
+  }
+
+  .positions-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1080px;
+  }
+
+  .positions-table thead {
+    background: var(--pf-stat-bg);
+    border-bottom: 1px solid var(--pf-border);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .positions-table th {
+    padding: 0.9rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--pf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    background: var(--pf-stat-bg);
+  }
+
+  .positions-table th.num-header,
+  .positions-table td.num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sortable:hover {
+    color: var(--pf-text);
+  }
+
+  .sort-icon {
+    opacity: 0.4;
+    font-size: 0.7rem;
+  }
+
+  .sortable.is-sorted-asc .sort-icon,
+  .sortable.is-sorted-desc .sort-icon {
+    opacity: 1;
+    color: #818cf8;
+    font-size: 0;
+  }
+
+  .sortable.is-sorted-asc .sort-icon::before {
+    content: '↑';
+    font-size: 0.75rem;
+  }
+
+  .sortable.is-sorted-desc .sort-icon::before {
+    content: '↓';
+    font-size: 0.75rem;
+  }
+
+  .positions-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--pf-border);
+    color: var(--pf-text);
+    vertical-align: middle;
+    font-size: 0.98rem;
+  }
+
+  .position-row.is-hidden {
+    display: none;
+  }
+
+  .symbol-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .symbol-ticker {
+    font-weight: 700;
+    color: #a5b4fc;
+    font-size: 0.92rem;
+    letter-spacing: 0.03em;
+  }
+
+  .symbol-name {
+    font-size: 0.78rem;
+    color: var(--pf-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+  }
+
+  .weight-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    min-width: 72px;
+  }
+
+  .weight-bar {
+    width: 72px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.18);
+    overflow: hidden;
+  }
+
+  .weight-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+  }
+
+  .pnl-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+
+  .pnl-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--pf-text-muted);
+  }
+
+  .pnl-positive {
+    color: #4ade80;
+  }
+
+  .pnl-negative {
+    color: #f87171;
+  }
+
+  .total-gain-cell {
+    font-weight: 700;
+  }
+
+  .muted-cell {
+    color: var(--pf-text-muted);
+  }
+
+  .empty-table {
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--pf-text-muted);
+  }
+
+  @media (max-width: 768px) {
+    .positions-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-input {
+      min-width: 0;
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  function initPortfolioPositionsTable() {
+    const wrapper = document.querySelector('[data-positions-wrapper]');
+    if (!wrapper) return;
+
+    const tbody = wrapper.querySelector('[data-positions-body]');
+    const rows = () => Array.from(wrapper.querySelectorAll('.position-row'));
+    const visibleCountEl = wrapper.querySelector('[data-visible-count]');
+    const searchInput = wrapper.querySelector('.search-input');
+
+    let searchQuery = '';
+    let sortKey = 'weight';
+    let sortDir = 'desc';
+
+    const updateVisibleCount = () => {
+      if (!visibleCountEl) return;
+      const visible = rows().filter((row) => !row.classList.contains('is-hidden')).length;
+      const total = rows().length;
+      visibleCountEl.textContent =
+        visible === total ? `${total} posiciones` : `${visible} de ${total} posiciones`;
+    };
+
+    const applyFilters = () => {
+      const q = searchQuery.trim().toLowerCase();
+      rows().forEach((row) => {
+        const symbol = row.getAttribute('data-symbol') || '';
+        row.classList.toggle('is-hidden', Boolean(q) && !symbol.includes(q));
+      });
+      updateVisibleCount();
+    };
+
+    const getSortValue = (row: Element, key: string) => {
+      const map: Record<string, string> = {
+        symbol: 'data-symbol',
+        weight: 'data-weight',
+        quantity: 'data-quantity',
+        averagePrice: 'data-average-price',
+        invested: 'data-invested',
+        unrealizedPnL: 'data-unrealized-pnl',
+        dailyGain: 'data-daily-gain',
+        totalDividends: 'data-total-dividends',
+        totalGain: 'data-total-gain',
+      };
+
+      const attr = map[key];
+      if (!attr) return 0;
+      const value = row.getAttribute(attr) || '';
+      return key === 'symbol' ? value : parseFloat(value);
+    };
+
+    const applySort = () => {
+      if (!tbody) return;
+
+      const sorted = rows()
+        .filter((row) => !row.classList.contains('is-hidden'))
+        .sort((a, b) => {
+          const aVal = getSortValue(a, sortKey);
+          const bVal = getSortValue(b, sortKey);
+          if (typeof aVal === 'string') {
+            const cmp = aVal.localeCompare(String(bVal));
+            return sortDir === 'asc' ? cmp : -cmp;
+          }
+          const aNum = Number(aVal);
+          const bNum = Number(bVal);
+          return sortDir === 'asc' ? aNum - bNum : bNum - aNum;
+        });
+
+      const hidden = rows().filter((row) => row.classList.contains('is-hidden'));
+      [...sorted, ...hidden].forEach((row) => tbody.appendChild(row));
+    };
+
+    const updateSortHeaders = () => {
+      wrapper.querySelectorAll('.sortable').forEach((th) => {
+        const key = th.getAttribute('data-sort');
+        th.classList.remove('is-sorted-asc', 'is-sorted-desc');
+        if (key === sortKey) {
+          th.classList.add(sortDir === 'asc' ? 'is-sorted-asc' : 'is-sorted-desc');
+        }
+      });
+    };
+
+    searchInput?.addEventListener('input', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      searchQuery = target.value;
+      applyFilters();
+      applySort();
+    });
+
+    wrapper.querySelectorAll('.sortable').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort');
+        if (!key) return;
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortKey = key;
+          sortDir = key === 'symbol' ? 'asc' : 'desc';
+        }
+        updateSortHeaders();
+        applySort();
+      });
+    });
+
+    updateSortHeaders();
+    applySort();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPortfolioPositionsTable);
+  } else {
+    initPortfolioPositionsTable();
+  }
+</script>
